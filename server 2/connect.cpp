@@ -1,6 +1,5 @@
 #include "connect.h"
 
-Socket sock;
 Socket::Socket() {
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if(server_sock == -1) puts("socket initialize error.");

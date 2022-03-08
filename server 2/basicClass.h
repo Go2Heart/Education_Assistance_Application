@@ -3,7 +3,7 @@
 
 class Timer {
 private:
-    int week, day, hour, minute;
+    int week = 0, day = 0, hour = 0, minute = 0;
 public:
     /*enum {
         Mon = 1, Tue = 2, Wed = 3, Thu = 4, Fri = 5, Sat = 6, Sun = 7
@@ -17,16 +17,24 @@ public:
     Timer() {}
     bool operator < (const Timer &t) {
         return (hour < t.hour || (hour == t.hour && minute < t.minute));
-    }/*
+    }
+    bool operator <= (const Timer &t) {
+        return (hour < t.hour || (hour == t.hour && minute <= t.minute));
+    }
     Timer operator + (const Timer &t) {
-        Timer tmp = Timer(hour + t.hour + (minute + t.minute >= 60), (minute + t.minute) % 60, week + t.week, day + t.day);
-        return tmp;
-    }*/
+        return Timer(hour + t.hour + (minute + t.minute >= 60), (minute + t.minute) % 60, week + t.week, day + t.day);
+    }
+    friend Timer operator - (Timer a, Timer b) {
+        return Timer(a.hour - b.hour - (a.minute < b.minute), (a.minute + 60 - b.minute) % 60);
+    }
     int Week() { return week; }
     int Day() { return day; }
     int Hour() { return hour; }
     int Min() { return minute; }
 };
+
+extern Timer ToTimer(int x);
+extern int ToInt(Timer x);
 
 class Duration {
 private:

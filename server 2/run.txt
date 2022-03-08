@@ -1,0 +1,1 @@
+g++ basicClass.cpp connect.cpp customEvent.cpp graph.cpp main.cpp -o test

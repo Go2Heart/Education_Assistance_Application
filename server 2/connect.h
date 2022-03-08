@@ -23,6 +23,5 @@ public:
     void sendMessage(string message);
     void closeSocket();
 };
-extern Socket sock;
 
 #endif

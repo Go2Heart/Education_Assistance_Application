@@ -2,6 +2,7 @@
 #define CUSTOMOBJECT_H
 
 #include "basicClass.h"
+#include "identity.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -24,21 +25,22 @@ private:
     Duration examDuration;
     vector<string> homeworkInfos;
     vector<File*> files;
+    vector<Student*> students;
 public:
     Lesson(
         string classPlace,
-        string examPlace,
         string teacher,
         string name,
         string QQnumber,
-        vector<Duration> classdurations
+        vector<Duration> classdurations,
+        vector<Student*> students
     ) :
         classPlace(classPlace),
-        examPlace(examPlace),
         teacher(teacher),
         name(name),
         QQnumber(QQnumber),
-        classDurations(classdurations)
+        classDurations(classdurations),
+        students(students)
     {}
     string Name() { return name; }
     vector<Duration> ClassDurations() { return classDurations; }
@@ -54,9 +56,9 @@ public:
     }
     void AddFile(File* file) { files.push_back(file); }
     void SetExamPlace(string place) { examPlace = place; }
-    void SetExamDuration(Duration duration) { examDuration = duration; }
+    void SetExamDura(Duration duration) { examDuration = duration; }
     void SetClassPlace(string place) { classPlace = place; }
-    void SetClassDuration(vector<Duration> durations) { classDurations = durations; }
+    void SetClassDura(vector<Duration> durations) { classDurations = durations; }
 };
 
 class Lessons {
@@ -71,27 +73,42 @@ public:
         for(int i = 0; i < lessons.size(); i++)
             if(name == lessons[i]->Name())
                 return lessons[i];
+        return nullptr;
     }
     Lesson* GetLesson(int id) {
         if(id >= lessons.size()) return nullptr;
         return lessons[id];
     }
 };
-extern Lessons lessonGroup;
-/*
+
 class Activity {
 private:
     string place, name;
     int type;
     Duration duration;
+    vector<Student*> students;
 public:
-    /*enum { PERSONAL = 1, PUBLIC = 2 };
-    Activity(string place, string name, int type, Duration duration) :
+    Activity(string place, string name, int type, Duration duration, vector<Student*> students) :
         place(place),
         name(name),
         type(type),
-        duration(duration)
+        duration(duration),
+        students(students)
     {}
-    Duration Duration() { return duration; }
-};*/
+    Duration Dura() { return duration; }
+};
+
+class Activities {
+private:
+    vector<Activity*> activities;
+public:
+    int AddActivities(Activity* activity){
+        activities.push_back(activity);
+        return activities.size() - 1;
+    }
+    Activity* GetActivity(int id) {
+        return activities[id];
+    }
+};
+
 #endif

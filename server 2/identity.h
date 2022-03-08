@@ -2,17 +2,22 @@
 #define IDENTITY_H
 
 #include "customEvent.h"
+using namespace std;
 
 class Student {
+//private:
 private:
-	string name;
-	EventGroup *events;
+	string name, studentNumber;
+	EventGroup* events;
 public:
-	Student(string name) : 
-		name(name)
+	Student(string number, string name) : 
+		studentNumber(number),
+		name(name),
+		events(new EventGroup) 
 	{}
 	string Name() { return name; }
-	EventGroup *Events() { return events; }
+	string Number() { return studentNumber; }
+	EventGroup* Events() { return events; }
 };
 
 class Students {
@@ -20,11 +25,13 @@ private:
 	vector<Student*> students;
 public:
 	void AddStudent(Student *student) { students.push_back(student); }
-	Student *GetStudent(string name) {
+	Student* GetStudent(string number) {
 		for(int i = 0; i < students.size(); i++)
-			if(students[i]->Name() == name) return students[i];
+			if(students[i]->Number() == number) return students[i];
 		return nullptr;
 	}
+	Student* GetStudent(int id) {
+		return students[id];
+	}
 };
-extern Students students;
 #endif // IDENTITY_H
