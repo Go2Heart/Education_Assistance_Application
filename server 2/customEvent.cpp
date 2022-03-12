@@ -2,7 +2,7 @@
 #include "customEvent.h"
 #include "global.h"
 
-bool EventGroup::VerifyDuration(vector<Duration> durations) {
+bool EventGroup::VerifyDuration(Vector<Duration> durations) {
     for(int i = 0; i < lessons.size(); i++)
         if(lessonGroup.GetLesson(lessons[i]->Id())->cross(durations)) return false;
     for(int i = 0; i < activities.size(); i++)
@@ -19,7 +19,7 @@ void EventGroup::AddLesson(int lessonId) {
 }
 
 void EventGroup::AddActivity(int ActivityId) {
-    vector<Duration> tmpDuration;
+    Vector<Duration> tmpDuration;
     tmpDuration.push_back(ActivityGroup.GetActivity(ActivityId)->Dura());
     if(!VerifyDuration(tmpDuration))
         puts("NO");

@@ -1,8 +1,10 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <string>
-#include <vector>
+//#include <string>
+#include "data_structure/string.h"
+#include "data_structure/vector.h"
+//#include <vector>
 #include "basicClass.h"
 #include <cstdlib>
 #include <cstring>
@@ -10,19 +12,19 @@
 using namespace std;
 
 extern int humanSpeed, bicycleSpeed, busCost, shuttleCost; 
-extern vector<Timer> bus, shuttle;
+extern Vector<Timer> bus, shuttle;
 
 class Point {
 private:
-	string name;
+	String name;
 	int id, belong = -1;
 public:
-	Point(string name, int id) :
+	Point(String name, int id) :
 		name(name),
 		id(id)
 	{}
 	Point() {}
-	string Name() { return name; }
+	String Name() { return name; }
 	int Id() { return id; }
 	int Bel() { return belong; }
 	void SetBel(int x) { belong  = x; }
@@ -57,6 +59,7 @@ private:
 	int type, tool;
 	int id;
 public:
+	Result() {}
 	Result(int type, int tool, int id) :
 		type(type),
 		tool(tool),
@@ -67,9 +70,9 @@ public:
 class ResPackage {
 private:
 	Timer timeCost;
-	vector<Result> v;
+	Vector<Result> v;
 public:
-	ResPackage(Timer t, vector<Result> v) :
+	ResPackage(Timer t, Vector<Result> v) :
 		timeCost(t),
 		v(v)
 	{}
@@ -120,7 +123,7 @@ public:
 	void GetCross(Timer t);
 	void Dij(int x, int mode);
 	ResPackage QueryDis(int s, int t, int mode);
-	ResPackage QueryDis(vector<int> v, int mode) {
+	ResPackage QueryDis(Vector<int> v, int mode) {
 		ResPackage tmp;
 		for(int i = 1; i < v.size(); i++) {
 			tmp = tmp + QueryDis(v[i - 1], v[i], mode);

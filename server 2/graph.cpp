@@ -1,7 +1,7 @@
 #include "graph.h"
 
 int humanSpeed = 1, bicycleSpeed = 2, busCost = 1800, shuttleCost = 3600;
-vector<Timer> bus, shuttle;
+Vector<Timer> bus, shuttle;
 
 void Graph::GetColor(int id, int c) {
 	p[id].SetBel(c);
@@ -61,7 +61,7 @@ void Graph::GetCross(Timer t) {
 }
 
 ResPackage Graph::QueryDis(int s, int t, int mode) {
-	vector<Result> res;
+	Vector<Result> res;
 	Timer totTime;
 	res.push_back(Result(3, 0, 0));
 	if(p[s].Bel() != p[t].Bel()) {
@@ -69,7 +69,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 		Dij(rt[p[t].Bel()], mode);
 		GetCross(lastTime + ToTimer(dis[p[s].Bel()]));
 
-		vector<Result> tmpRes;
+		Vector<Result> tmpRes;
 		int now = t;
 		while(now != rt[p[t].Bel()]) {
 			tmpRes.push_back(Result(2, 0, now));
@@ -93,7 +93,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 		totTime = ToTimer(dis[p[s].Bel()] + dis[t] + crossTime);
 	} else {
 		Dij(s, mode);
-		vector<Result> tmpRes;
+		Vector<Result> tmpRes;
 		int now = t;
 		while(now != s) {
 			tmpRes.push_back(Result(2, 0, now));
@@ -111,23 +111,29 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 }
 
 void Graph::Init() {
+	puts("graph init begin.");
 	FILE* in = fopen("default_settings/graph.in", "r");
 	fscanf(in, "%d %d", &n, &m);
 	for(int i = 0; i < n; i++) {
 		char name[45];
 		fscanf(in, "%s", name);
 		p[i] = Point(name, i);
+		//printf("%s\n",name);
 	}
+	puts("graph name init end.");
 	for(int i = 0; i < m; i++) {
 		int x, y, type;
-		scanf("%d%d%d", &x, &y, &type);
-		if(type != 3) AddEdge(x, y,GetRandDis(), type == 0);
+		fscanf(in, "%d%d%d", &x, &y, &type);
+		//printf("%d %d %d\n",x,y,type);
+		if(type != 3) AddEdge(x, y, GetRandDis(), type == 0);
 		else {
 			rt[0] = x;
 			rt[1] = y;
 			crossEdgeId = i;
 		}
+		//printf("%d %d %d\n",x,y,type);
 	}
+	puts("graph read complete.");
 	GetColor(rt[0], 0);
 	GetColor(rt[1], 1);
 	fclose(in);
@@ -150,4 +156,5 @@ void Graph::Init() {
 	}
 		
 	fclose(in);
+	puts("graph init complete.");
 }

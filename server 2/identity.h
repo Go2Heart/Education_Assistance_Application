@@ -7,25 +7,25 @@ using namespace std;
 class Student {
 //private:
 private:
-	string name, studentNumber;
+	String name, studentNumber;
 	EventGroup* events;
 public:
-	Student(string number, string name) : 
+	Student(String number, String name) : 
 		studentNumber(number),
 		name(name),
 		events(new EventGroup) 
 	{}
-	string Name() { return name; }
-	string Number() { return studentNumber; }
+	String Name() { return name; }
+	String Number() { return studentNumber; }
 	EventGroup* Events() { return events; }
 };
 
 class Students {
 private:
-	vector<Student*> students;
+	Vector<Student*> students;
 public:
 	void AddStudent(Student *student) { students.push_back(student); }
-	Student* GetStudent(string number) {
+	Student* GetStudent(String number) {
 		for(int i = 0; i < students.size(); i++)
 			if(students[i]->Number() == number) return students[i];
 		return nullptr;

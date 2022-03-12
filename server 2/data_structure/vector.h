@@ -1,0 +1,74 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
+#include <assert.h>
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <cstddef>
+using namespace std;
+
+template<class T>
+class Vector {
+protected:
+    int siz;
+    int capacity;
+    T* buf;
+    void newCapacity(int capa) {
+        capacity = capa;
+        T* newbuf = new T[capacity];
+        if(buf) {
+            memcpy(newbuf, buf, siz * sizeof(T));
+            delete [] buf;
+        }
+        buf = newbuf;
+    }
+public:
+    Vector() : siz(0), capacity(0), buf(NULL) {}
+    ~Vector() {
+        if(buf) {
+            delete[] buf;
+            buf = NULL;
+        }
+        siz = capacity = 0;
+    }
+    Vector(const Vector<T>& mv) {
+        siz = mv.siz;
+        capacity = mv.capacity;
+        buf = new T[capacity];
+        memcpy(buf, mv.buf, siz * sizeof(T));
+    }
+
+    Vector<T> &operator = (const Vector<T> &mv) {
+        if(&mv != this) {
+            siz = mv.siz;
+            capacity = mv.capacity;
+            buf = new T[capacity];
+            memcpy(buf, mv.buf, siz * sizeof(T));
+        }
+        return *this;
+    }
+    T& operator[](int idx) const {
+        assert(siz > 0 && idx >= 0 && idx < siz);
+        return buf[idx];
+    }
+    //void getVal
+    void push_back(const T& t) {
+        if(siz == capacity) {
+            int capa = capacity * 2 + 1;
+            newCapacity(capa);
+        }
+        buf[siz++] = t;
+    }
+    void clear() {
+        siz = capacity = 0;
+        if(buf) {
+            delete [] buf;
+            buf = NULL;
+        }
+    }
+    int size() const { return siz; }
+    //int capacity() { return capacity; }
+};
+
+#endif

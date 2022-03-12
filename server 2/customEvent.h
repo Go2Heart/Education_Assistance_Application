@@ -1,20 +1,22 @@
 #ifndef CUSTOMEVENT_H
 #define CUSTOMEVENT_H
 
-#include <string>
-#include <vector>
+//#include <string>
+//#include <vector>
+#include "data_structure/string.h"
+#include "data_structure/vector.h"
 #include "basicClass.h"
 
 using namespace std;
 
 class Homework_Student {
 private:
-    vector<string> savePath;
+    Vector<String> savePath;
     bool finished = false;
     int version = 0;
 public:
     Homework_Student(){}
-    void Upload(string path) {
+    void Upload(String path) {
         finished = true;
         savePath.push_back(path);
         version++;
@@ -25,7 +27,7 @@ public:
 class Lesson_Student {
 private:
     int id;
-    vector<Homework_Student*> homeworkStates;
+    Vector<Homework_Student*> homeworkStates;
 public:
     Lesson_Student(int id) : id(id) {}
     int Id() { return id; }
@@ -35,12 +37,12 @@ public:
 
 class EventGroup {
 private:
-    vector<Lesson_Student*> lessons;
-    vector<int> activities;
+    Vector<Lesson_Student*> lessons;
+    Vector<int> activities;
 public:
     void AddLesson(int lessonId);
     void AddActivity(int ActivityId);
-    bool VerifyDuration(vector<Duration> durations);
+    bool VerifyDuration(Vector<Duration> durations);
     Lesson_Student* GetLesson(int lessonId) {
         for(int i = 0; i < lessons.size(); i++)
             if(lessons[i]->Id() == lessonId) return lessons[i];
