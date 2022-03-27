@@ -67,18 +67,22 @@ void MainWindow::Init() {
     connect(closeBtn, &QPushButton::clicked, [=]{close();});
 
     //login page
-    loginpage = new loginPage(ui->mainWidget);
+    /*loginpage = new loginPage(ui->mainWidget);
     ui->mainLayout->addWidget(loginpage);
-    loginpage->show();
+    loginpage->show();*/
     mainpage = new mainPage(ui->mainWidget);
-    connect(loginpage,
+    ui->mainLayout->addWidget(mainpage);
+    mainpage->show();
+    //mainpage->raisePage();
+    /*connect(loginpage,
         &loginPage::logined,
         [=] {
-            loginpage->hide();
             ui->mainLayout->removeWidget(loginpage);
+            loginpage->hide();
             ui->mainLayout->addWidget(mainpage);
             mainpage->show();
-    });
+            //mainpage->activateWindow();
+    });*/
 }
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     if(event->button() == Qt::LeftButton) {
@@ -91,7 +95,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     if(event->buttons() == Qt::NoButton)
         mousePressed = false;
-    //qDebug()<<event->pos().x()<<" "<<event->pos().y();
+    //qDebug()<<mousePressed<<mouseState;
     if(!mousePressed) {
         mouseState = 0;
         if(!maximized) {

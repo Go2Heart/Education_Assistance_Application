@@ -15,6 +15,7 @@
 #include <QtMath>
 #include <QtDebug>
 #include <QStyleOption>
+#include <algorithm>
 
 #define MAXSPEED 70
 
@@ -93,8 +94,9 @@ public:
     void updateHeight();
     void clear();
 private:
-    int spacing = 3;
+    int spacing = 10;
     QVector<QWidget*> widgets;
+    QVector<int> originWidth;
     int size = 0;
     QVector<int> ys;
 };

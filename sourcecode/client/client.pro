@@ -18,7 +18,8 @@ SOURCES += \
     main.cpp \
     mainpage.cpp \
     mainwindow.cpp \
-    slidepage.cpp
+    slidepage.cpp \
+    specifiedWidgets.cpp
 
 HEADERS += \
     basicClass.h \
@@ -28,7 +29,8 @@ HEADERS += \
     loginpage.h \
     mainpage.h \
     mainwindow.h \
-    slidepage.h
+    slidepage.h \
+    specifiedWidgets.h
 
 FORMS += \
     mainwindow.ui

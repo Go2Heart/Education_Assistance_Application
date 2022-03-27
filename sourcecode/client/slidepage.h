@@ -31,7 +31,7 @@ private:
         bg->resize(this->parentWidget()->size());
     }
 public:
-    SheildLayer(QWidget *parent = nullptr) :
+    SheildLayer(QWidget* parent = nullptr) :
         QWidget(parent)
     {
         bg = new QWidget(this);
@@ -71,7 +71,7 @@ private:
 public:
     enum{ EXPANDING = 0, WIDTH_FIXED = 1, HEIGHT_FIXED = 2, FIXED = 3};
     //是否需要采用explicit?
-    SlidePage(int radius, int type, int width, int height, QString name, QWidget *parent = nullptr, int posy = 0);
+    SlidePage(int radius, int type, int width, int height, QString name, QWidget* parent = nullptr, int posy = 0);
     int Type() { return type; }
     void SetRadius(int radius);
     void SetName(QString name);

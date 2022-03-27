@@ -10,7 +10,6 @@ customIcon::customIcon(QString iconPath, QString hint, int r, QWidget* parent) :
     iconHint(hint)
 {
     //qDebug()<<height();
-
     QSvgRenderer renderer;
     renderer.load(iconPath);
     QSize size = renderer.defaultSize();
@@ -464,30 +463,33 @@ bigIconButton::bigIconButton(int type, const QString &iconPath, const QString &d
     /* set background */
     bgWidget = new QWidget(this);
     bgWidget->resize(this->size());
-    radiusStyle = QString::asprintf("border-radius:%dpx;border:1px solid gray;", cornerRadius);
-    bgWidget->setStyleSheet(radiusStyle + "background-color:#04000000");
+    if(type & FRAMELESS)
+        radiusStyle = QString::asprintf("border-radius:%dpx;border:transparent;", cornerRadius);
+    else
+        radiusStyle = QString::asprintf("border-radius:%dpx;border:1px solid gray;", cornerRadius);
+    bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((type & DISABLE) ? noColor : defaultColor));
     bgWidget->show();
 }
 
 void bigIconButton::resizeEvent(QResizeEvent *event){
     //qDebug()<<width()<<height();
     if(buttonType & ICON) {
-        qreal scale = 1.0 * (width() - margin) / iconImg->width();
+        scale = 1.0 * (width() - margin) / iconImg->width();
         if(scale > 0)setScale(scale);
     }
     bgWidget->setFixedSize(this->size());
 }
 
 void bigIconButton::enterEvent(QEvent *event){
-    bgWidget->setStyleSheet(radiusStyle + "background-color:#0a0078D4");
+    bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : hoverColor));
 }
 
 void bigIconButton::leaveEvent(QEvent *event){
-    bgWidget->setStyleSheet(radiusStyle + "background-color:#04000000");
+    bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : defaultColor));
 }
 
 void bigIconButton::mousePressEvent(QMouseEvent *event){
-    bgWidget->setStyleSheet(radiusStyle + "background-color:#1a0078D4");
+    bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : pressColor));
     mousePressed = true;
 }
 
@@ -508,9 +510,17 @@ void bigIconButton::setScale(qreal scale){
     icon->setPixmap(*iconImg);
 }
 
+void bigIconButton::setPixmap(QString iconPath) {
+    iconImg = new QPixmap(iconPath);
+    iconImg = new QPixmap(iconImg->scaled(iconImg->size() * scale, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    icon->setPixmap(*iconImg);
+}
+
 textInputItem::textInputItem(const QString &name, QWidget *parent) :
     QWidget(parent)
 {
+    setStyleSheet("border:1px solid gray");
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QFont nameFont = QFont("Corbel", 12);
     QFontMetrics fm(nameFont);
     qreal height = fm.lineSpacing();
@@ -519,7 +529,7 @@ textInputItem::textInputItem(const QString &name, QWidget *parent) :
     itemName->setFont(nameFont);
     itemName->setFixedHeight(height);
     itemName->setAlignment(Qt::AlignHCenter);//change
-    itemName->setStyleSheet("background-color:#00000000;color:#1c1c1c");
+    itemName->setStyleSheet("border-style:none; background-color:#00000000;color:#1c1c1c");
 
     QFont textFont = QFont("Corbel", 12);
     fm = QFontMetrics(textFont);
@@ -567,8 +577,9 @@ textInputItem::textInputItem(const QString &name, QWidget *parent) :
 
 void textInputItem::resizeEvent(QResizeEvent *event){
     itemName->move(margin, this->height() / 2 - itemName->height() / 2);
-    itemName->setFixedWidth(this->width() * 0.3 - margin - spacing);
+    itemName->setFixedWidth(std::max(this->width() * 0.3 - margin - spacing, 0.0));
     int width = QFontMetrics(editor->font()).size(Qt::TextSingleLine, editor->text()).width() + 3;
+    qDebug()<<this->size();
     if(!onEditing){
         if(width > this->width() * 0.7 - margin)
             editor->resize(this->width() * 0.7 - margin, editor->height());
@@ -860,4 +871,165 @@ topButton::topButton(QWidget* parent) :
 bool topButton::event(QEvent* e) {
     raise();
     return QPushButton::event(e);
+}
+
+QLineDelegate::QLineDelegate(QTableView* tableView)
+{
+    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItemV4());
+    QColor gridColor = static_cast<QRgb>(gridHint);
+    pen = QPen(gridColor, 0, tableView->gridStyle());
+    view = tableView;
+}
+
+void QLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,const QModelIndex& index)const
+{
+    QStyledItemDelegate::paint(painter, option, index);
+    QPen oldPen = painter->pen();
+    painter->setPen(pen);
+
+    //draw verticalLine
+    //painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
+
+    //draw horizontalLine
+    //painter->drawLine(option.rect.bottomLeft(), option.rect.bottomRight());
+    //above code, line have breakpoint, the following code can solve it well
+
+    QPoint p1 = QPoint(option.rect.bottomLeft().x()-1,option.rect.bottomLeft().y());
+    QPoint p2 = QPoint(option.rect.bottomRight().x()+1,option.rect.bottomRight().y());
+    painter->drawLine(p1, p2);
+    painter->setPen(oldPen);
+}
+
+ClockTable::ClockTable(QWidget* parent) :
+    QTableWidget(parent)
+{
+    setColumnCount(5);
+    setRowCount(5);
+    setFocusPolicy(Qt::NoFocus);
+    setAlternatingRowColors(true);
+    setStyleSheet("border-radius:0px;"
+        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 100), stop:1 rgba(151, 169, 255, 150));"
+        "alternate-background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 250), stop:1 rgba(151, 169, 255, 200));"
+        "selection-background-color:gray");
+    setShowGrid(false);
+    //horizontalHeader()->setStretchLastSection(true);
+    horizontalHeader()->setDefaultSectionSize(100);
+    //horizontalHeader()->setHighlightSections(false);
+    horizontalHeader()->setStyleSheet("QHeaderView::section{"
+        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 0), stop:1 rgba(151, 169, 255, 100));"
+        "color: black;"
+        //"border-radius:12px"
+        "border-top:0px solid #D8D8D8;"
+        "border-left:0px solid #D8D8D8;"
+        "border-right:0px solid #D8D8D8;"
+        "border-bottom:1px solid #D8D8D8;"
+        "padding:4px;"
+    "}");
+    verticalHeader()->setVisible(false);
+
+    horizontalScrollBar()->setStyleSheet("QScrollBar{background:transparent; height:10px;}"
+        "QScrollBar::handle{background:lightgray; border:2px solid transparent; border-radius:5px;}"
+        "QScrollBar::handle:hover{background:gray;}"
+        "QScrollBar::sub-line{background:transparent;}"
+        "QScrollBar::sub-page{background:transparent;}"
+        "QScrollBar::add-line{background:transparent;}"
+        "QScrollBar::add-page{background:transparent;}");
+    setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    //setItemDelegate(new QLineDelegate(this));
+    QStringList header;
+    header<<QString("时间")<<QString("仅一次")<<QString("循环");
+    setHorizontalHeaderLabels(header);
+    //setStyleSheet("selection-background-color:pink;border-radius:0px");
+    for(int i = 0; i < 5; i++) setRowHeight(i, 30), Height += 30;
+    for(int i = 0; i < 5; i++) setColumnWidth(i, 50), Width += 50;
+    setItem(0,0,new QTableWidgetItem("Tom"));
+    //qDebug()<<table->width()<<table->height();
+    resize(Width, Height);
+}
+
+foldWidget::foldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* parent) :
+    QWidget(parent),
+    maxHeight(h),
+    extraIcons(icons),
+    leftIcon(new bigIconButton(1, ":/icons/icons/arrow-left.svg")),
+    downIcon(new bigIconButton(1, ":/icons/icons/arrow-down.svg"))
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    setFixedHeight(titleHeight);
+    titleWidget = new QWidget(this);
+    titleWidget->setStyleSheet("background-color:rgb(200, 200, 200); border-radius:0px;");
+        QFont textFont = QFont("Corbel Light", 24);
+        QFontMetrics fm(textFont);
+        nameLabel = new QLabel(name, titleWidget);
+        textFont.setStyleStrategy(QFont::PreferAntialias);
+        nameLabel->setFont(textFont);
+        nameLabel->setFixedHeight(fm.lineSpacing());
+        leftIcon->setParent(titleWidget);
+        leftIcon->setFixedSize(titleHeight - 10, titleHeight - 10);
+        connect(leftIcon, &bigIconButton::clicked, this, [=] {
+           leftIcon->hide();
+           downIcon->show();
+           foldChange();
+        });
+        downIcon->setParent(titleWidget);
+        downIcon->setFixedSize(titleHeight - 10, titleHeight - 10);
+        connect(downIcon, &bigIconButton::clicked, this, [=] {
+           downIcon->hide();
+           leftIcon->show();
+           foldChange();
+        });
+        for(int i = 0; i < extraIcons.size(); i++) {
+            extraIcons[i]->setParent(titleWidget);
+            extraIcons[i]->setFixedSize(titleHeight - 10, titleHeight - 10);
+            connect(extraIcons[i], &bigIconButton::clicked, this, [=] {emit clicked(i);});
+        }
+    container = new ScrollAreaCustom(false, this);
+    container->lower();
+}
+void foldWidget::resizeEvent(QResizeEvent*) {
+    titleWidget->resize(width(), titleHeight);
+    titleWidget->move(0, 0);
+        nameLabel->move(margin, titleHeight / 2 - nameLabel->height() / 2);
+        leftIcon->move(width() - margin - leftIcon->width(), titleHeight / 2 - leftIcon->height() / 2);
+        downIcon->move(width() - margin - downIcon->width(), titleHeight / 2 - downIcon->height() / 2);
+    if(fold) {
+        leftIcon->show();
+        downIcon->hide();
+    }
+    else {
+        leftIcon->hide();
+        downIcon->show();
+    }
+    int prex = width() - margin - leftIcon->width() - spacing;
+    for(int i = extraIcons.size() - 1; i >= 0; i--) {
+        extraIcons[i]->move(prex - extraIcons[i]->width(), titleHeight / 2 - extraIcons[i]->height() / 2);
+        prex -= extraIcons[i]->width() + spacing;
+    }
+    container->resize(width(), height() - titleHeight + overlap);
+    container->move(0, titleHeight - overlap);
+}
+void foldWidget::foldChange() {
+    QPropertyAnimation* animation = new QPropertyAnimation(this, ""); //qt动画类
+    animation->setDuration(500);
+    if(fold) {
+        animation->setStartValue(height());//动画开始值和结束值
+        animation->setEndValue(maxHeight - titleHeight + overlap);
+        connect(animation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value){
+            this->setFixedHeight(value.toInt());
+        });
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+        fold = false;
+    } else {
+        animation->setStartValue(height());
+        animation->setEndValue(titleHeight);
+        connect(animation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value){
+            this->setFixedHeight(value.toInt());
+        });
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+        fold = true;
+    }
 }

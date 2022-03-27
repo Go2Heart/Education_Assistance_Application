@@ -1,0 +1,10 @@
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/install/strip.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/install.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/list_install_components.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/client_other_files.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/install/local.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/client.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/client_autogen_timestamp_deps.dir
+/Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug/CMakeFiles/client_autogen.dir

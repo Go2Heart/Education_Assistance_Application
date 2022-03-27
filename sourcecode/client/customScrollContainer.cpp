@@ -4,10 +4,11 @@ ScrollAreaCustom::ScrollAreaCustom(bool b, QWidget *parent) :
     indicatorEnabled(b),
     QWidget(parent)
 {
+    //setStyleSheet("background-color:red");
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     container = new ScrollListContainer(this);
-    container->move(0, 0);
-    container->resize(this->width() - margin, 3);
+    container->move(margin, margin);
+    container->resize(this->width() - 2 * margin, 3);
     getCord = new QTimer;
     getCord->setSingleShot(true);
     rfrshView = new QTimer;
@@ -47,13 +48,13 @@ void ScrollAreaCustom::paintEvent(QPaintEvent *event) {
     painter.drawRoundedRect(this->rect(), 12, 12);
     //qDebug()<< width() << " " << height();
 
-    container->resize(this->width() - margin, container->height());
+    container->resize(this->width() - 2 * margin, container->height());
     //missing
     if(container->height() > this->height() && container->y() < this->height() - container->height() && curSpd == 0) {
         //container->move(container->x(), container->height())
     }
     if(container->height() <= this->height()) {
-        container->move(container->x(), 0);
+        container->move(container->x(), margin);
         indicator->hide();
     } else
         indicator->show();
@@ -225,6 +226,7 @@ ScrollListContainer::ScrollListContainer(QWidget *parent) :
 
 void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
     //整体加长
+    //qDebug()<< widget->width() <<widget->height();
     this->resize(this->width(), this->height() + widget->height() + spacing);
     widgets.push_back(widget);
     size++;
@@ -295,7 +297,7 @@ void ScrollListContainer::RemoveWidget(QWidget *widget) {
     widget->hide();
     widget->setParent(nullptr);
     QParallelAnimationGroup *dpGroup = new QParallelAnimationGroup;
-    for(int i=index - 1; i >= 0; i--) {
+    for(int i = index - 1; i >= 0; i--) {
         ys[i] -= widget->height() + spacing;
         QPropertyAnimation *move = new QPropertyAnimation(widgets[i], "pos");
         move->setDuration(750);
@@ -324,7 +326,7 @@ void ScrollListContainer::clear() {
 
 void ScrollListContainer::paintEvent(QPaintEvent *event) {
     for(int i = 0; i < widgets.size(); i++) {
-        widgets[i]->resize(this->width(), widgets[i]->height());
+        widgets[i]->resize(width(), widgets[i]->height());
     }
 }
 

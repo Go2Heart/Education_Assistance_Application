@@ -37,7 +37,7 @@ private:
         AT_TOP_LEFT = 3, AT_TOP_RIGHT = 6, AT_BOTTOM_LEFT = 9, AT_BOTTOM_RIGHT = 12,
     };
     bool mousePressed = false;
-    int mouseState;
+    int mouseState = 0;
     QPoint lastPos;
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);

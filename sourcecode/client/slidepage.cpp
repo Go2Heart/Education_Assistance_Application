@@ -1,6 +1,6 @@
 #include "slidepage.h"
 
-SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, QWidget *parent, int posy) :
+SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, QWidget* parent, int posy) :
     QWidget(parent),
     type(type),
     Width(Width),
@@ -20,6 +20,7 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
     if(!(type & HEIGHT_FIXED)) {
         Height = parent->height();
     }
+    qDebug()<<Width<<Height;
     this->resize(Width, Height);
     this->move(QPoint(-this->width() - 30, posy));
 
@@ -56,7 +57,7 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
         titleLayouter->setAlignment(Qt::AlignLeft);
         titleBar->setLayout(titleLayouter);
         //qDebug()<<nameLabel->height();
-        mainLayouter->addWidget(titleBar);
+        mainLayouter->insertWidget(0, titleBar);
     }
 
     //为背景widget设置style
@@ -75,6 +76,7 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
     sheildLayer->resize(this->parentWidget()->size());
     sheildLayer->setGraphicsEffect(opacity);
     sheildLayer->setMouseTracking(true);
+    sheildLayer->hide();
     connect(
         sheildLayer,
         &SheildLayer::clicked,
@@ -100,6 +102,7 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
 
 //resize指本层重构后如何对子图形产生影响
 void SlidePage::resizeEvent(QResizeEvent*) {
+    qDebug()<<width()<<height();
     bgWidget->resize(this->size());
     sheildLayer->resize(this->parentWidget()->size());
     if(!onShown && !curAni)
@@ -131,11 +134,13 @@ void SlidePage::slideIn() {
     onShown = true;
     sheildLayer->raise();
     sheildLayer->setEnabled(true);
-    this->raise();
     sheildLayer->show();
+    this->raise();
+    this->show();
     QParallelAnimationGroup *inGroup = new QParallelAnimationGroup(this);
     QPropertyAnimation *slideInAni = new QPropertyAnimation(this, "pos", this);
     slideInAni->setStartValue(this->pos());
+    qDebug()<<this->pos()<<this->size();
     slideInAni->setEndValue(QPoint(0, posy));
     slideInAni->setDuration(1000);
     slideInAni->setEasingCurve(QEasingCurve::InOutExpo);

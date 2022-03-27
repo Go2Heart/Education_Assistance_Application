@@ -9,5 +9,6 @@ int main(int argc, char *argv[])
     w.setWindowFlag(Qt::FramelessWindowHint);
     w.setAttribute(Qt::WA_TranslucentBackground);
     w.show();
+    qRegisterMetaType<QVector<QString> >("QVector<QString>");
     return a.exec();
 }

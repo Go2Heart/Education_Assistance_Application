@@ -14,6 +14,9 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QFocusEvent>
+#include <QtGui>
+#include <algorithm>
+#include "customScrollContainer.h"
 
 class customIcon : public QPushButton{
     Q_OBJECT
@@ -157,11 +160,16 @@ signals:
 //    void RemoveItem(QWidget* item);
 //};
 
-class bigIconButton : public QWidget{
+class bigIconButton : public QWidget {
     Q_OBJECT
 
 private:
-    enum {ICON = 1, TEXT = 2};
+    QString defaultColor = "#0a0078D4";
+    QString hoverColor = "#04000000";
+    QString pressColor = "#1a0078D4";
+    QString noColor = "#00000000";
+
+    enum {ICON = 1, TEXT = 2, FRAMELESS = 4, DISABLE = 8};
     QPixmap* iconImg = nullptr;
     QLabel* icon = nullptr;
     QLabel* text = nullptr;
@@ -169,6 +177,7 @@ private:
 
     int cornerRadius, margin = 10, buttonType;
     QString radiusStyle;
+    qreal scale = 1.0;
 
     bool selectable = false;
     bool mousePressed = false;
@@ -184,6 +193,7 @@ public:
     bigIconButton(int type, const QString &iconPath = "", const QString &description = "", int radius = 0, QWidget* parent = nullptr);
     void setSelectable(bool sel = true){selectable = sel;}
     void setScale(qreal scale);
+    void setPixmap(QString iconPath);
 
 signals:
     void clicked();
@@ -231,7 +241,7 @@ signals:
     void textEdited(QString text);
 };
 
-class textButton : public QWidget{
+class textButton : public QWidget {
     Q_OBJECT
 
 private:
@@ -252,6 +262,7 @@ private:
 public:
     textButton(QString text, QWidget* parent = nullptr, qreal ratio = 0.5);
     textButton(QString text, QString defC, QString hoverC, QString pressedC, QWidget* parent = nullptr, qreal ratio = 0.5);
+    void setText(QString s) { btnText->setText(s); }
 
 signals:
     void clicked();
@@ -289,6 +300,48 @@ private:
     bool event(QEvent* e);
 public:
     topButton(QWidget* parent = nullptr);
+};
+
+class QLineDelegate : public QStyledItemDelegate {
+public:
+    QLineDelegate(QTableView* tableView);
+protected:
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+private:
+    QPen pen;
+    QTableView* view;
+};
+
+class ClockTable : public QTableWidget {
+    Q_OBJECT
+private:
+    int Width = 100, Height = 30;
+public:
+    ClockTable(QWidget* parent = nullptr);
+};
+
+
+class foldWidget : public QWidget {
+    Q_OBJECT
+private:
+    QWidget* titleWidget;
+    QLabel* nameLabel;
+    bigIconButton* leftIcon;
+    bigIconButton* downIcon;
+    QVector<bigIconButton*> extraIcons;
+
+    ScrollAreaCustom* container;
+    int overlap = 5, margin = 10, titleHeight = 40, maxHeight, spacing = 3;
+    bool fold = true;
+    void resizeEvent(QResizeEvent*);
+    void foldChange();
+public:
+    foldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* parent = nullptr);
+    void addContent(QWidget* w) {
+        container->addWidget(w, true);
+    }
+signals:
+    void clicked(int id);
 };
 
 #endif // CUSTOMWIDGETS_H

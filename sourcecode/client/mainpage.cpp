@@ -10,7 +10,7 @@ mainPage::mainPage(QWidget* parent) :
     mainLayout->setSpacing(0);
         toolbar = new QWidget(this);
         toolbar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-        toolbar->setStyleSheet("background-color:#97a9ff;border-radius:0px");
+        toolbar->setStyleSheet("background-color:#97a9ff;border-radius:0px;");
         toolbar->setFixedWidth(56);
         QVBoxLayout* toolLayout = new QVBoxLayout(toolbar);
         toolbar->setLayout(toolLayout);
@@ -41,6 +41,7 @@ mainPage::mainPage(QWidget* parent) :
         displayLayout->setContentsMargins(30, 30, 30, 30);
         displayLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         displayLayout->setSpacing(10);
+        displayWidget->setLayout(displayLayout);
             clock = new Clock(displayWidget);
             displayLayout->addWidget(clock);
             QWidget* infoWidget = new QWidget(displayWidget);
@@ -49,17 +50,26 @@ mainPage::mainPage(QWidget* parent) :
             infoLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
             infoLayout->setSpacing(15);
             infoLayout->setContentsMargins(0, 0, 0, 0);
-                infoContainer = new ScrollAreaCustom(false, infoWidget);
-                infoContainer->setFixedWidth(250);
-                infoLayout->addWidget(infoContainer);
-                    QVector<QWidget*> qaq;
-                    for(int i = 0; i < 50; i++){
-                        textInputItem *version = new textInputItem("version", infoContainer);
-                        version->setValue("beta");
-                        version->setEnabled();
-                        qaq.push_back(version);
-                    }
-                    infoContainer->addWidgets(qaq);
+                QWidget* eventWidget = new QWidget(infoWidget);
+                eventWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+                eventWidget->setFixedWidth(400);
+                QVBoxLayout* eventLayout = new QVBoxLayout(eventWidget);
+                eventLayout->setAlignment(Qt::AlignCenter);
+                eventLayout->setSpacing(15);
+                eventLayout->setContentsMargins(0, 0, 0, 0);
+                    infoContainer = new ScrollAreaCustom(false, eventWidget);
+                    infoContainer->setFixedWidth(400);
+                    eventLayout->addWidget(infoContainer);
+
+                    QVector<bigIconButton*> iconVec;
+                    iconVec.push_back(new bigIconButton(1, ":/icons/icons/add.svg"));
+                    clockfoldWidget* clockWidget = new clockfoldWidget("clock", 500, iconVec, displayWidget, eventWidget);
+                    connect(clockWidget, &clockfoldWidget::addPage, this, [=](clockAddPage* page) {
+                        clockPageList.push_back(page);
+                    });
+                    eventLayout->addWidget(clockWidget);
+
+                infoLayout->addWidget(eventWidget);
                 QWidget* classTable = new QWidget(displayWidget);
                 classTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                 classTable->setStyleSheet("border:1px solid gray;background-color:green");
@@ -67,14 +77,18 @@ mainPage::mainPage(QWidget* parent) :
             displayLayout->addWidget(infoWidget);
         mainLayout->addWidget(displayWidget);
 
-        userInfo = new SlidePage(10, SlidePage::FIXED, 250, 100, "", displayWidget, 10);
-        pageList.push_back(userInfo);
+        userInfo = new SlidePage(10, SlidePage::WIDTH_FIXED, 250, 100, "", displayWidget, 0);
+        slidePageList.push_back(userInfo);
         connect(userBtn, &bigIconButton::clicked, userInfo, &SlidePage::slideIn);
 }
 
 void mainPage::resizeEvent(QResizeEvent*) {
-    for(int i = 0; i < pageList.size(); i++) {
-        pageList[i]->resize(pageList[i]->width() - 1, pageList[i]->Type() == SlidePage::EXPANDING ? displayWidget->height() : pageList[i]->height());
-        pageList[i]->resize(pageList[i]->width() + 1, pageList[i]->height());
+    for(int i = 0; i < slidePageList.size(); i++) {
+        slidePageList[i]->resize(slidePageList[i]->width() - 1, (slidePageList[i]->Type() & SlidePage::HEIGHT_FIXED) ? slidePageList[i]->height() : displayWidget->height());
+        slidePageList[i]->resize(slidePageList[i]->width() + 1, slidePageList[i]->height());
+    }
+    for(int i = 0; i < clockPageList.size(); i++) {
+        clockPageList[i]->resize(clockPageList[i]->width() - 1, (clockPageList[i]->Type() & SlidePage::HEIGHT_FIXED) ? clockPageList[i]->height() : displayWidget->height());
+        clockPageList[i]->resize(clockPageList[i]->width() + 1, clockPageList[i]->height());
     }
 }
