@@ -67,6 +67,7 @@ private:
     void bounceback();
 public:
     ScrollAreaCustom(bool b, QWidget *parent = nullptr);
+    void addSpacing(int x);
     void addWidget(QWidget *widget, bool setAnimation);
     void addWidgets(QVector<QWidget*> widgets) {
         for(int i = 0; i < widgets.size(); i++) addWidget(widgets[i], false);

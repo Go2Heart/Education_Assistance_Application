@@ -69,12 +69,14 @@ private:
     //槽函数部分，由于不需要进行拖动，我们只需要实现resize即可
     void resizeEvent(QResizeEvent*);
 public:
-    enum{ EXPANDING = 0, WIDTH_FIXED = 1, HEIGHT_FIXED = 2, FIXED = 3};
+    enum{ EXPANDING = 0, WIDTH_FIXED = 1, HEIGHT_FIXED = 2, FIXED = 3, FROM_RIGHT = 4};
     //是否需要采用explicit?
     SlidePage(int radius, int type, int width, int height, QString name, QWidget* parent = nullptr, int posy = 0);
     int Type() { return type; }
     void SetRadius(int radius);
     void SetName(QString name);
+    void changeParent(QWidget* parent) { sheildLayer->setParent(parent); setParent(parent); }
+    void AddSpacing(int x) { pageContentContainer->addSpacing(x); }
     void AddContent(QWidget* widget) { pageContentContainer->addWidget(widget, false); }
     void AddContents(QVector<QWidget*> widgets) { pageContentContainer->addWidgets(widgets); }
     void RemoveContents(QVector<QWidget*> widgets) {

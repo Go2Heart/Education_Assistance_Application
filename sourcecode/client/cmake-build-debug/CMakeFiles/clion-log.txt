@@ -1,4 +1,0 @@
-"/Users/go2heart/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/213.7172.20/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/Users/go2heart/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/213.7172.20/CLion.app/Contents/bin/ninja/mac/ninja" -G Ninja /Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/go2heart/Library/CloudStorage/OneDrive-bupt.edu.cn/Codefield/DS_Design/Source/Education_Assistance_Application/sourcecode/client/cmake-build-debug

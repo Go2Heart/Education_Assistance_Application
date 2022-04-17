@@ -18,8 +18,10 @@ protected:
         capacity = capa;
         T* newbuf = new T[capacity];
         if(buf) {
-            memcpy(newbuf, buf, siz * sizeof(T));
+            for(int i = 0; i < siz; i++) newbuf[i] = buf[i];
+            //memcpy(newbuf, buf, siz * sizeof(T));
             delete [] buf;
+            buf = NULL;
         }
         buf = newbuf;
     }
@@ -36,7 +38,8 @@ public:
         siz = mv.siz;
         capacity = mv.capacity;
         buf = new T[capacity];
-        memcpy(buf, mv.buf, siz * sizeof(T));
+        //memcpy(buf, mv.buf, siz * sizeof(T));
+        for(int i = 0; i < siz; i++) buf[i] = mv.buf[i];
     }
 
     Vector<T> &operator = (const Vector<T> &mv) {
@@ -44,7 +47,8 @@ public:
             siz = mv.siz;
             capacity = mv.capacity;
             buf = new T[capacity];
-            memcpy(buf, mv.buf, siz * sizeof(T));
+            for(int i = 0; i < siz; i++) buf[i] = mv.buf[i];
+            //memcpy(buf, mv.buf, siz * sizeof(T));
         }
         return *this;
     }

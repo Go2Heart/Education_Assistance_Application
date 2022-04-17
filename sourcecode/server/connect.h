@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <string>
+#include "data_structure/string.h"
 using namespace std;
 
 class Socket {
@@ -19,8 +19,8 @@ private:
     //struct sockaddr_in client_addr;
 public:
     Socket();
-    string receiveMessage();
-    void sendMessage(string message);
+    String receiveMessage();
+    void sendMessage(String message);
     void closeSocket();
 };
 

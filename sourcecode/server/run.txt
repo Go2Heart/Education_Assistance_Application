@@ -1,1 +1,1 @@
-g++ basicClass.cpp connect.cpp customEvent.cpp graph.cpp main.cpp -o test
+g++ basicClass.cpp connect.cpp customEvent.cpp graph.cpp main.cpp data_structure/string.cpp data_structure/heap.cpp huffman/decoder.cpp huffman/encoder.cpp -o test

@@ -26,4 +26,5 @@ public slots:
     void Released() { addTimer->start(defaultSpeed * ratio); }
 };
 
+
 #endif // CLOCK_H

@@ -6,14 +6,19 @@
 #include "identity.h"
 #include "connect.h"
 #include "graph.h"
+#include "server.h"
+#include "huffman/decoder.h"
+#include "huffman/encoder.h"
 
 Timer beg[20];
 Timer fin[20];
-Socket sock;
 Students studentGroup;
 Activities ActivityGroup;
 Lessons lessonGroup;
 Graph graph;
+Encoder EncodeSolver;
+Decoder DecodeSolver;
+Server server;
 
 String GetStr(FILE *fin) {
 	char tmp[100];
@@ -104,38 +109,8 @@ void InitActivity() {
 	}
 }
 
-Vector<String> GetParms(String message, int size) {
-	int idx, tot = 0;
-	Vector<String> parms;
-	String parm;
-	for(idx = 1; idx < message.length(); idx++) {
-		if(message[idx] == '#') {
-			parms.push_back(parm);
-			parm.clear();
-			if(++tot == size) break;
-			continue;
-		}
-		parm.push_back(message[idx]);
-	}
-	parms.push_back(parm);
-	return parms;
-}
-
-unsigned long long GetHash(String s) {
-	unsigned long long tmp = 0;
-	for(int i = 0; i < s.length(); i++)
-		tmp = tmp * 10007 + s[i];
-	return tmp;
-}
-
-void WriteFile(String path, String file) {
-	FILE* out = fopen(path.c_str(), "wb");
-	fwrite(file.c_str(), file.length() - 1, 1, out);
-	fclose(out);
-}
-
 int main() {
-	InitTime();
+	/*InitTime();
 	puts("phase 1 finished.");
 	InitStudent();
 	puts("phase 2 finished.");
@@ -145,36 +120,6 @@ int main() {
 	puts("phase 4 finished.");
 	graph.Init();
 	puts("phase 5 finished.");
-	String a = ToString(233);
-	printf("%s\n", a.c_str());
-	/*
-	while(1) {
-		String message = sock.receiveMessage();
-		switch (message[0]) {
-			case 0x01 : {// 上传课程资料				
-				Vector<String> parms = GetParms(message, 3);// lessonname filename file
-				Lesson* nowLesson = lessonGroup.GetLesson(parms[0]);
-				String savePath = "data/lesson_files/" + nowLesson->Name() + '/' + parms[1];
-				unsigned long long tmpHash = GetHash(parms[2]);
-				File* file = new File(savePath, tmpHash);
-				nowLesson->AddFile(file);
-				WriteFile(savePath, parms[2]);
-				sock.closeSocket();
-				break;
-			}
-			case 0x02 : {//提交作业
-				Vector<String> parms = GetParms(message, 5);//studentId lessonid homeworkid filename file
-				Homework_Student* nowHomework = studentGroup.GetStudent(atoi(parms[0].c_str()))->Events()->GetLesson(atoi(parms[1].c_str()))->GetHomework(atoi(parms[2].c_str()));
-				String savePath = "data/student_files/" + parms[0] + "/lessons/" + parms[1] + '/' + parms[2] + '/' + to_string(nowHomework->Ver()) + '/' + parms[3];
-				nowHomework->Upload(savePath);
-				WriteFile(savePath, parms[3]);
-				sock.closeSocket();
-				break;
-			}
-			case 0x03 : {
-				
-				break;
-			}
-		}
-	}*/
+	*/
+	server.run();
 }

@@ -20,9 +20,12 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
     if(!(type & HEIGHT_FIXED)) {
         Height = parent->height();
     }
-    qDebug()<<Width<<Height;
+    //qDebug()<<Width<<Height;
     this->resize(Width, Height);
-    this->move(QPoint(-this->width() - 30, posy));
+    if(type & FROM_RIGHT)
+        this->move(QPoint(parentWidget()->width() + 30, posy));
+    else
+        this->move(QPoint(-this->width() - 30, posy));
 
     opacity = new QGraphicsOpacityEffect(this);
     opacity->setOpacity(0);
@@ -102,11 +105,14 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
 
 //resize指本层重构后如何对子图形产生影响
 void SlidePage::resizeEvent(QResizeEvent*) {
-    qDebug()<<width()<<height();
+    //qDebug()<<width()<<height();
     bgWidget->resize(this->size());
     sheildLayer->resize(this->parentWidget()->size());
     if(!onShown && !curAni)
-        this->move(QPoint(-this->width() - 30, posy));
+        if(type & FROM_RIGHT)
+            this->move(QPoint(parentWidget()->width() + 30, posy));
+        else
+            this->move(QPoint(-this->width() - 30, posy));
     //若此时正在渐出动画中，我们需要把动画终点改变
     else if(!onShown && curAni)
         emit sizeChange();
@@ -140,8 +146,10 @@ void SlidePage::slideIn() {
     QParallelAnimationGroup *inGroup = new QParallelAnimationGroup(this);
     QPropertyAnimation *slideInAni = new QPropertyAnimation(this, "pos", this);
     slideInAni->setStartValue(this->pos());
-    qDebug()<<this->pos()<<this->size();
-    slideInAni->setEndValue(QPoint(0, posy));
+    if(type & FROM_RIGHT)
+        slideInAni->setEndValue(QPoint(parentWidget()->width() - this->width(), posy));
+    else
+        slideInAni->setEndValue(QPoint(0, posy));
     slideInAni->setDuration(1000);
     slideInAni->setEasingCurve(QEasingCurve::InOutExpo);
     QPropertyAnimation *fadeInAni = new QPropertyAnimation(opacity, "opacity", this);
@@ -173,7 +181,11 @@ void SlidePage::slideOut() {
     QParallelAnimationGroup *outGroup = new QParallelAnimationGroup(this);
     QPropertyAnimation *slideOutAni = new QPropertyAnimation(this, "pos", this);
     slideOutAni->setStartValue(this->pos());
-    slideOutAni->setEndValue(QPoint(- this->width() - 30, posy));
+    if(type & FROM_RIGHT)
+        slideOutAni->setEndValue(QPoint(parentWidget()->width() + 30, posy));
+    else
+        slideOutAni->setEndValue(QPoint(- this->width() - 30, posy));
+
     slideOutAni->setDuration(1000);
     slideOutAni->setEasingCurve(QEasingCurve::InOutExpo);
     QPropertyAnimation *fadeOutAni = new QPropertyAnimation(opacity, "opacity", this);
@@ -197,7 +209,10 @@ void SlidePage::slideOut() {
         &SlidePage::sizeChange,
         slideOutAni,
         [=] {
-            slideOutAni->setEndValue(QPoint(- this->width() - 30, posy));
+            if(type & FROM_RIGHT)
+                slideOutAni->setEndValue(QPoint(parentWidget()->width() + 30, posy));
+            else
+                slideOutAni->setEndValue(QPoint(- this->width() - 30, posy));
         }
     );
     outGroup->start();

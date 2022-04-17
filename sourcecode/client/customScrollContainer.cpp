@@ -218,6 +218,13 @@ void ScrollAreaCustom::updateHeight() {
     container->updateHeight();
 }
 
+void ScrollAreaCustom::addSpacing(int x) {
+    QWidget* space = new QWidget(container);
+    space->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    space->setFixedHeight(x);
+    container->AddWidget(space, false);
+}
+
 ScrollListContainer::ScrollListContainer(QWidget *parent) :
     QWidget(parent)
 {

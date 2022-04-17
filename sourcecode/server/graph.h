@@ -4,6 +4,7 @@
 //#include <string>
 #include "data_structure/string.h"
 #include "data_structure/vector.h"
+#include "data_structure/heap.h"
 //#include <vector>
 #include "basicClass.h"
 #include <cstdlib>
@@ -86,18 +87,6 @@ public:
 	}
 };
 
-class Node { 
-private:
-	int dis, id;
-public:
-	Node(int dis, int id):
-		dis(dis),
-		id(id)
-	{}
-	int Id() { return id; }
-	friend bool operator<(Node a, Node b) { return a.dis > b.dis; }
-};
-
 class Graph {
 private:
 	int num = 1, n, m;
@@ -133,5 +122,7 @@ public:
 	void UpdGraph(Timer t);
 	void Init();
 };
+
+extern Heap pq;
 
 #endif

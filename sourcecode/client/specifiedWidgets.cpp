@@ -5,34 +5,60 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
 {
     description = new textInputItem("描述：", this);
     place = new textInputItem("地点：", this);
-    time = new textInputItem("时间：", this);
+    timeBar = new QWidget(this);
+    timeBar->setStyleSheet("background-color:transparent;");
+    timeBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QHBoxLayout* timeLayout = new QHBoxLayout(timeBar);
+    timeLayout->setContentsMargins(0, 0, 0, 0);
+    timeLayout->setSpacing(3);
+    timeLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        hour = new ComboBox(timeBar);
+        hour->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        hour->setFixedSize(45, 25);
+        hour->setNumberRange(0, 24);
+        timeLayout->addWidget(hour);
+        QFont font = QFont("Corbel Light", 13);
+        QFontMetrics fm(font);
+        font.setStyleStrategy(QFont::PreferAntialias);
+        QLabel* split = new QLabel(":", timeBar);
+        split->setFont(font);
+        split->setFixedHeight(fm.lineSpacing());
+        split->setStyleSheet("color: black");
+        timeLayout->addWidget(split);
+        minute = new ComboBox(timeBar);
+        minute->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        minute->setFixedSize(45, 25);
+        minute->setNumberRange(0, 60);
+        timeLayout->addWidget(minute);
+    timeBar->setFixedHeight(30);
+    customWidget* timeWidget = new customWidget("时间：", timeBar, this);
+
     clockBar = new QWidget(this);
     QHBoxLayout* clockLayout = new QHBoxLayout(clockBar);
     clockLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     clockLayout->setSpacing(10);
     clockLayout->setContentsMargins(0, 0, 0, 0);
-        bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, clockBar);
-        alarmOn->setFixedSize(30, 30);
-        clockLayout->addWidget(alarmOn);
-        bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", 0, clockBar);
-        alarmOff->setFixedSize(30, 30);
-        frequency = new textInputItem("频率：", clockBar);
-        clockLayout->addWidget(frequency);
+        bigIconButton* alarmBtn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, clockBar);
+        alarmBtn->setFixedSize(30, 30);
+        clockLayout->addWidget(alarmBtn);
+        frequency = new ComboBox(clockBar);
+        frequency->addItem("仅一次");
+        frequency->addItem("每周");
+        frequency->addItem("每月");
+        frequency->setFixedSize(100, 25);
+        customWidget* freWidget = new customWidget("频率：", frequency, this);
+        clockLayout->addWidget(freWidget);
+    clockBar->setFixedHeight(40);
 
-        connect(alarmOn, &bigIconButton::clicked, this, [=] {
-            clockLayout->removeWidget(alarmOn);
-            alarmOn->hide();
-            clockLayout->insertWidget(0, alarmOff);
-            alarmOff->show();
+    connect(alarmBtn, &bigIconButton::clicked, this, [=] {
+        if(alarm){
+            alarmBtn->setPixmap(":/icons/icons/alarm_off.svg");
             alarm = false;
-        });
-        connect(alarmOff, &bigIconButton::clicked, this, [=] {
-            clockLayout->removeWidget(alarmOff);
-            alarmOff->hide();
-            clockLayout->insertWidget(0, alarmOn);
-            alarmOn->show();
+        } else {
+            alarmBtn->setPixmap(":/icons/icons/alarm_on.svg");
             alarm = true;
-        });
+        }
+    });
 
     textButton* createBtn = new textButton("Create!", this);
     connect(createBtn, &textButton::clicked, this, [=] {
@@ -47,7 +73,7 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
     });
     AddContent(createBtn);
     AddContent(clockBar);
-    AddContent(time);
+    AddContent(timeWidget);
     AddContent(place);
     AddContent(description);
 }
@@ -56,9 +82,9 @@ QVector<QString> clockAddPage::collectMsg() {
     QVector<QString> tmp;
     tmp.push_back(description->value());
     tmp.push_back(place->value());
-    tmp.push_back(time->value());
+    tmp.push_back(hour->currentText() + ":" + minute->currentText());
     tmp.push_back(alarm ? "true" : "alse");
-    tmp.push_back(frequency->value());
+    tmp.push_back(frequency->currentText());
     return tmp;
 }
 
@@ -117,7 +143,7 @@ void clockInfoWidget::modify(QVector<QString> info) {
 clockWidget::clockWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    etSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setFixedHeight(100);
     bgWidget = new QWidget(this);
     bgWidget->resize(this->size());

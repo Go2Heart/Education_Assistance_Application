@@ -165,8 +165,8 @@ class bigIconButton : public QWidget {
 
 private:
     QString defaultColor = "#0a0078D4";
-    QString hoverColor = "#04000000";
-    QString pressColor = "#1a0078D4";
+    QString hoverColor = "#1a0078D4";
+    QString pressColor = "#2a0078D4";
     QString noColor = "#00000000";
 
     enum {ICON = 1, TEXT = 2, FRAMELESS = 4, DISABLE = 8};
@@ -217,6 +217,8 @@ private:
     bool onEditing = false;
 
     bool enabled = true;
+    int type = 0;
+    int nameWidth = 0;
 
     void enterEditEffect();
     void leaveEditEffect();
@@ -229,7 +231,7 @@ private:
     //void focusOutEvent(QFocusEvent* event);
 
 public:
-    textInputItem(const QString &name, QWidget* parent = nullptr);
+    textInputItem(const QString &name, QWidget* parent = nullptr, int type = 0);
     QLineEdit* lineEditor(){return editor;}
     QString value(){return editor->text();}
 
@@ -342,6 +344,31 @@ public:
     }
 signals:
     void clicked(int id);
+};
+
+class ComboBox : public QComboBox {
+    Q_OBJECT
+public:
+    ComboBox(QWidget* parent = nullptr);
+    void setNumberRange(int l, int r);
+};
+
+class customWidget : public QWidget {
+    Q_OBJECT
+
+private:
+    const int margin = 10;
+    const int spacing = 10;
+    QLabel* itemName;
+    QWidget* bgWidget;
+    QWidget* contentWidget;
+
+    void enterEvent(QEvent* event);
+    void leaveEvent(QEvent* event);
+    void resizeEvent(QResizeEvent* event);
+
+public:
+    customWidget(const QString &name, QWidget* content, QWidget* parent = nullptr);
 };
 
 #endif // CUSTOMWIDGETS_H

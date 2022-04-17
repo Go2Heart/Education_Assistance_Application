@@ -17,18 +17,29 @@ Socket::Socket() {
 	puts("listen success");
 }
 
-string Socket::receiveMessage() {
+String Socket::receiveMessage() {
+    puts("accept begin");
     client_sock = accept(server_sock, NULL, NULL);
     puts("accept success");
     int idx = 0, read_len = 0, str_len = 0;
-    string message;
+    String message;    
+    puts("receive begin");
+    int len = 0;
     char x;
-    while(read_len = read(client_sock, &x, 1))
-        message.push_back(x);
+    for(int i = 0; i < 4; i++) {
+        read(client_sock, &x, 1);
+        len = (len << 8) + x;
+    }
+    printf("len:%d\n", len);
+    printf("message:");
+    for(int i = 0; i < len; i++) {
+        read(client_sock, &x, 1);
+        message.push_back(x),printf("%d ", x);
+    }
 	return message;
 }
 
-void Socket::sendMessage(string message) {
+void Socket::sendMessage(String message) {
 	write(client_sock, message.c_str(), message.length());
 }
 

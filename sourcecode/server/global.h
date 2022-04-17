@@ -4,6 +4,8 @@
 extern class Students studentGroup;
 extern class Activities ActivityGroup;
 extern class Lessons lessonGroup;
-extern class Socket sock;
+extern class Graph graph;
+extern class Encoder EncodeSolver;
+extern class Decoder DecodeSolver;
 
 #endif

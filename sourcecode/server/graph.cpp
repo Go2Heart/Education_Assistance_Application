@@ -2,6 +2,7 @@
 
 int humanSpeed = 1, bicycleSpeed = 2, busCost = 1800, shuttleCost = 3600;
 Vector<Timer> bus, shuttle;
+Heap pq;
 
 void Graph::GetColor(int id, int c) {
 	p[id].SetBel(c);
@@ -16,14 +17,16 @@ void Graph::UpdGraph(Timer t) {
 void Graph::Dij(int x, int mode) {
 	for(int i = 0; i < n; i++) if(p[i].Bel() == p[x].Bel()) dis[i] = INF, vis[i] = false;
 	dis[x] = 0; sour[x] = x;
-	priority_queue<Node> pq;
-	pq.push(Node(0, x));
-	while(!pq.empty()) {
-		Node tmp = pq.top(); pq.pop();
-		if(vis[tmp.Id()]) continue;
-		vis[tmp.Id()] = true;
-		for(int i = head[tmp.Id()]; i; i = e[i].Nxt()) {
-			int curDis = dis[tmp.Id()];
+	//priority_queue<Node> pq;
+	//pq.push(Node(0, x));
+	pq.Push(0, x);
+	while(pq.Size()) {
+		HeapNode tmp;
+		pq.Pop(tmp);
+		if(vis[tmp.Id]) continue;
+		vis[tmp.Id] = true;
+		for(int i = head[tmp.Id]; i; i = e[i].Nxt()) {
+			int curDis = dis[tmp.Id];
 			switch (mode) {
 				case 1 :
 					curDis += e[i].Dis();
@@ -37,8 +40,8 @@ void Graph::Dij(int x, int mode) {
 			}
 			if(dis[e[i].To()] > curDis) {
 				dis[e[i].To()] = curDis;
-				sour[e[i].To()] = tmp.Id();
-				pq.push(Node(curDis, e[i].To()));
+				sour[e[i].To()] = tmp.Id;
+				pq.Push(curDis, e[i].To());
 			}
 		}
 	}

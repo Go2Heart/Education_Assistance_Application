@@ -19,6 +19,13 @@ public:
         Vector::push_back(x);
         Vector::push_back('\0');
     }
+    /*
+    String(const String& str) {
+        siz = str.siz;
+        capacity = siz;
+        buf = new char[capacity];
+        memcpy(buf, str.buf, siz * sizeof(char));
+    }*/
     String &operator = (const char* x) {
         siz = strlen(x) + 1;
         capacity = siz;
@@ -27,25 +34,18 @@ public:
         return *this;
     }
     String operator + (const String &str) {
-        if(str.siz > 0) {
-            buf[siz - 1] = str.buf[0]; 
-            for(int i = 1; i < str.siz; i++) Vector::push_back(str.buf[i]);
-        }
-        return *this;
+        String str_temp(*this);
+        for(int i = 0; i < str.siz; i++) str_temp.push_back(str.buf[i]);
+        return str_temp;
     }
     String operator + (const char x) {
     	String str_temp(*this);
-        str_temp.buf[siz - 1] = x;
-        str_temp.Vector::push_back('\0');
+        str_temp.push_back(x);
         return str_temp;
     }
     String operator + (const char* x) {
     	String str_temp(*this);
-        if(strlen(x) > 0) {
-            str_temp.buf[siz - 1] = x[0];
-            for(int i = 1; i < strlen(x); i++) str_temp.Vector::push_back(x[i]);
-            str_temp.Vector::push_back('\0');
-        }
+        for(int i = 0; i < strlen(x); i++) str_temp.push_back(x[i]);
         return str_temp;
     }
     friend String operator + (const char a, const String b) {
