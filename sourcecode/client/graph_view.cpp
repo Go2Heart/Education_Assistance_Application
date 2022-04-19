@@ -294,7 +294,7 @@ void MyGraphicsView::SaveToFile(QTextStream &ts){
 }
 
 void MyGraphicsView::ReadFromFile(QTextStream &ts){
-    ts.setCodec("utf-8");
+    //ts.setCodec("utf-8");
     ts.readLine();
     int v = ts.readLine().toInt();
     for(int i = 0; i < v; i++){

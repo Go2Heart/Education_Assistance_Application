@@ -17,6 +17,17 @@
 #include <QtGui>
 #include <algorithm>
 #include "customScrollContainer.h"
+#include <QLabel>
+#include <QGraphicsOpacityEffect>
+#include <QVBoxLayout>
+#include <QStyledItemDelegate>
+#include <QTableView>
+#include <QComboBox>
+#include <QTableWidget>
+#include <QStyleOptionViewItem>
+#include <QHeaderView>
+#include <QScrollBar>
+
 
 class customIcon : public QPushButton{
     Q_OBJECT

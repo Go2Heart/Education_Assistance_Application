@@ -873,7 +873,7 @@ bool topButton::event(QEvent* e) {
 
 QLineDelegate::QLineDelegate(QTableView* tableView)
 {
-    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItemV4());
+    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItem());
     QColor gridColor = static_cast<QRgb>(gridHint);
     pen = QPen(gridColor, 0, tableView->gridStyle());
     view = tableView;
