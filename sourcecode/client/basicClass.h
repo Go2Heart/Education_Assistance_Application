@@ -1,6 +1,8 @@
 #ifndef BASICCLASS_H
 #define BASICCLASS_H
 
+#include <QDebug>
+
 class Timer {
 private:
     int week = 0, day = 0, hour = 0, minute = 0;
@@ -31,6 +33,21 @@ public:
     int Day() { return day; }
     int Hour() { return hour; }
     int Min() { return minute; }
+    int Zip() {
+        return week * (1 << 24) + day * (1 << 16) + hour * (1 << 8) + minute;
+    }
+    void FromZip(int x) {
+        minute = x % 256;
+        x >>= 8;
+        hour = x % 256;
+        x >>= 8;
+        day = x % 256;
+        x >>= 8;
+        week = x % 256;
+    }
+    void Print() {
+        qDebug() << week << day << hour << minute;
+    }
 };
 
 extern Timer ToTimer(int x);

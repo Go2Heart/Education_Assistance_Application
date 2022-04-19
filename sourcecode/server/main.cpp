@@ -28,7 +28,7 @@ String GetStr(FILE *fin) {
 }
 
 void InitStudent() {
-	FILE *in = fopen("default_settings/student.in", "r");
+	FILE *in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -38,7 +38,7 @@ void InitStudent() {
 }
 
 void InitTime() {
-	FILE* in = fopen("default_settings/time.in", "r");
+	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/time.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -50,7 +50,7 @@ void InitTime() {
 }
 
 void InitLesson() {
-	FILE* in = fopen("default_settings/class.in", "r");
+	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/class.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -82,7 +82,7 @@ void InitLesson() {
 }
 
 void InitActivity() {
-	FILE* in = fopen("default_settings/activity.in", "r");
+	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -110,7 +110,7 @@ void InitActivity() {
 }
 
 int main() {
-	/*InitTime();
+	InitTime();
 	puts("phase 1 finished.");
 	InitStudent();
 	puts("phase 2 finished.");
@@ -120,6 +120,5 @@ int main() {
 	puts("phase 4 finished.");
 	graph.Init();
 	puts("phase 5 finished.");
-	*/
 	server.run();
 }

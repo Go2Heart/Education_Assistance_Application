@@ -202,8 +202,7 @@ void MyCanvas::Init(){
 
 
     textInputItem *startPos = new textInputItem("Start", defInfoPage);
-    startPos->setValue(startName);
-    connect(this, &MyCanvas::startNameChanged, this, [=](){startPos->setValue(startName);});
+    connect(this, &MyCanvas::startChanged, this, [=](){startPos->setValue(start->Text());});
     startPos->setEnabled(false);
     defTextLayout->addWidget(startPos);
     /*
@@ -219,8 +218,7 @@ void MyCanvas::Init(){
     */
     //for horizontal layout adding
     textInputItem *endPos = new textInputItem("End", defInfoPage);
-    endPos->setValue(endName);
-    connect(this, &MyCanvas::endNameChanged, this, [=](){endPos->setValue(endName);});
+    connect(this, &MyCanvas::endChanged, this, [=](){endPos->setValue(end->Text());});
     endPos->setEnabled(false);
     defTextLayout->addWidget(endPos);
 
@@ -346,23 +344,36 @@ void MyCanvas::Init(){
      * button function
      * connections
      */
-     connect(setStart, &textButton::clicked, this, [=]() {
-         if (view->selectedVex() != nullptr) {
-             //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
-             startName = view->selectedVex()->Text();
-             emit startNameChanged(startName);
-             //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as start"),0);
-         }
-     });
-     connect(setEnd, &textButton::clicked, this, [=]() {
-         if (view->selectedVex() != nullptr) {
-             //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
-             endName = view->selectedVex()->Text();
-             emit endNameChanged(endName);
-             //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as end"),0);
-         }
-     });
-
+    connect(setStart, &textButton::clicked, this, [=]() {
+     if (view->selectedVex() != nullptr) {
+         //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
+         //startName = view->selectedVex()->Text();
+         //startId = view->selectedVex()->
+         start = view->selectedVex();
+         emit startChanged();
+         //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as start"),0);
+     }
+    });
+    connect(setEnd, &textButton::clicked, this, [=]() {
+     if (view->selectedVex() != nullptr) {
+         //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
+         end = view->selectedVex();
+         emit endChanged();
+         //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as end"),0);
+     }
+    });
+    connect(goIcon, &bigIconButton::clicked, this, [=] {
+        if(start != nullptr && end != nullptr) {
+            QVector<int> v;
+            v.push_back(start->id);
+            v.push_back(end->id);
+            DisQuery* query = new DisQuery(v);
+            connect(query, &DisQuery::receive, this, [=](QVariant varValue) {
+                ResPackage result = varValue.value<ResPackage>();
+                result.timeCost.Print();
+            });
+        }
+    });
 }
 
 void MyCanvas::addVex(MyGraphicsVexItem *vex) {

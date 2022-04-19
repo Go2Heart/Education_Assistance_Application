@@ -11,6 +11,7 @@
 #include "slidepage.h"
 #include "graph_view.h"
 #include "graph_implement.h"
+#include "connect.h"
 
 class MyCanvas : public QWidget {
     Q_OBJECT
@@ -21,8 +22,10 @@ private:
     QWidget *infoWidget;
     QLabel *pageName;
     //for guidance
-    QString startName="";
-    QString endName="";
+    /*QString startName="";
+    QString endName="";*/
+    MyGraphicsVexItem* start;
+    MyGraphicsVexItem* end;
     AbstractGraph *g;
     void Init();
 
@@ -31,8 +34,8 @@ public:
 
 signals:
     void setDel(MyCanvas* target);
-    void startNameChanged(QString name);
-    void endNameChanged(QString name);
+    void startChanged();
+    void endChanged();
     void modeBtnClicked();
     void passBtnClicked();
 

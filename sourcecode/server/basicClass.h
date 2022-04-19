@@ -31,6 +31,9 @@ public:
     int Day() { return day; }
     int Hour() { return hour; }
     int Min() { return minute; }
+    int Zip() {
+        return week * (1 << 24) + day * (1 << 16) + hour * (1 << 8) + minute;  
+    }
 };
 
 extern Timer ToTimer(int x);

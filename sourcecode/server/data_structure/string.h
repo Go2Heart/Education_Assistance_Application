@@ -35,7 +35,7 @@ public:
     }
     String operator + (const String &str) {
         String str_temp(*this);
-        for(int i = 0; i < str.siz; i++) str_temp.push_back(str.buf[i]);
+        for(int i = 0; i < str.length(); i++) str_temp.push_back(str.buf[i]);
         return str_temp;
     }
     String operator + (const char x) {

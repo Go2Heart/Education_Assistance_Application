@@ -52,14 +52,12 @@ public:
 	double Ratio() { return spdRatio; }
 };
 
-class Result {
-private:
+struct Result {
 // type: 0: x -> y 1: y -> x 2: point 3: start 4: end
 // tool: 对于校区内的路:0: foot 1: bicycle
 // tool：对于校区间的路:0: bus 1: shuttle
 	int type, tool;
 	int id;
-public:
 	Result() {}
 	Result(int type, int tool, int id) :
 		type(type),
@@ -68,11 +66,9 @@ public:
 	{}
 };
 
-class ResPackage {
-private:
+struct ResPackage {
 	Timer timeCost;
 	Vector<Result> v;
-public:
 	ResPackage(Timer t, Vector<Result> v) :
 		timeCost(t),
 		v(v)

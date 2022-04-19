@@ -1,4 +1,11 @@
 #include "connect.h"
+
+int UnZip(std::string x) {
+    int y = 0;
+    for(int i = 0; i < x.length(); i++) y = (y << 8) + (unsigned char)x[i];
+    return y;
+}
+
 TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
@@ -49,25 +56,49 @@ void TcpConnector::readData() {
         QVector<Parameter*> parms;
         int idx = 0;
         qDebug() << "readBuf len:"<<readBuf.length();
-        while(idx < readBuf.length() - 1) { // 这里是否减一未定
+        while(idx < readBuf.length()) {
             std::string parm;
             int len = 0;
-            bool isFile = false;
-            if((unsigned char)readBuf[idx] & 128) isFile = true, readBuf[idx] -= 128;
+            int type = readBuf[idx];
+            idx++;
             for(int j = idx; j <= idx + 3; j++)
                 len = (len << 8) + (unsigned char)readBuf[j];
-            qDebug()<<"len:"<<len;
-            for(int j = idx + 4; j < idx + 4 + len; j++) parm.push_back(readBuf[j]);
-            idx = idx + 4 + len;
-            qDebug()<<idx;
-            if(isFile)
-                parms.push_back(new Parameter(parm, isFile));
-            else
-                parms.push_back(new Parameter(QString::fromUtf8(parm.data(), parm.length()), isFile));
-
+            idx += 4;
+            for(int j = idx; j < idx + len; j++) parm.push_back(readBuf[j]);
+            idx += len;
+            switch (type) {
+                case Parameter::STRING:
+                    parms.push_back(new Parameter(QString::fromUtf8(parm.data(), parm.length())));
+                    break;
+                case Parameter::FILE:
+                    parms.push_back(new Parameter(parm));
+                    break;
+                case Parameter::INT:
+                    parms.push_back(new Parameter(UnZip(parm)));
+                    break;
+            }
         }
         emit receive(QVariant::fromValue(parms));
         socket->close();
         socket->deleteLater();
     }
+}
+
+DisQuery::DisQuery(QVector<int> v) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(3));
+    paras.push_back(new Parameter(v.size()));
+    for(int i = 0; i < v.size(); i++) paras.push_back(new Parameter(v[i]));
+    paras.push_back(new Parameter(1));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        Timer nowTimer;
+        nowTimer.FromZip(parms[0]->number);
+        int size = parms[1]->number;
+        QVector<Result> v;
+        for(int i = 1, j = 2; i <= size; i++, j += 3)
+            v.push_back(Result(parms[j]->number, parms[j + 1]->number, parms[j + 2]->number));
+        emit receive(QVariant::fromValue(ResPackage(nowTimer, v)));
+    });
 }

@@ -80,6 +80,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
 					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, rt[p[t].Bel()]));
 		tmpRes.push_back(Result(p[t].Bel() ^ 1, crossType, crossEdgeId));
@@ -90,6 +91,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
 					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, s));
 		for(int i = tmpRes.size() - 1; i >= 0; i--) res.push_back(tmpRes[i]);
@@ -99,11 +101,13 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 		Vector<Result> tmpRes;
 		int now = t;
 		while(now != s) {
+			//printf("%d\n", now);
 			tmpRes.push_back(Result(2, 0, now));
 			int x = sour[now];
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
 					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, s));
 		for(int i = tmpRes.size() - 1; i >= 0; i--) res.push_back(tmpRes[i]);
@@ -115,13 +119,13 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 
 void Graph::Init() {
 	puts("graph init begin.");
-	FILE* in = fopen("default_settings/graph.in", "r");
+	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/graph.in", "r");
 	fscanf(in, "%d %d", &n, &m);
 	for(int i = 0; i < n; i++) {
 		char name[45];
 		fscanf(in, "%s", name);
 		p[i] = Point(name, i);
-		//printf("%s\n",name);
+		printf("%s\n",name);
 	}
 	puts("graph name init end.");
 	for(int i = 0; i < m; i++) {
@@ -141,7 +145,7 @@ void Graph::Init() {
 	GetColor(rt[1], 1);
 	fclose(in);
 
-	in = fopen("default_settings/traffic.in", "r");
+	in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/traffic.in", "r");
 	int x, y, z;
 	fscanf(in, "%d", &x);
 	for(int i = 0; i < x; i++)

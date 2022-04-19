@@ -6,6 +6,12 @@
 #include "connect.h"
 #include "graph.h"
 
+int UnZip(String x) {
+    int y = 0;
+    for(int i = 0; i < x.length(); i++) y = (y << 8) + (unsigned char)x[i];
+    return y;
+}
+
 void setSockNonBlock(int sock) {
     int flags = fcntl(sock, F_GETFL, 0);
     if(flags < 0) {
@@ -19,18 +25,28 @@ void setSockNonBlock(int sock) {
 Vector<Parameter> GetParms(String message) {
 	int idx = 0, tot = 0, parmid = 0;
 	Vector<Parameter> parms;
-	while(idx < message.length() - 1) {
+	while(idx < message.length()) {
         String parm;
         int len = 0;
-        bool isFile = false;
-        if((unsigned char)message[idx] & 128) message[idx] -= 128, isFile = true;
+        int type = (unsigned char)message[idx];
+        idx++;
         for(int j = idx; j <= idx + 3; j++)
             len = (len << 8) + (unsigned char)message[j];
         printf("parm id:%d len:%d\n", ++parmid, len);
         for(int j = idx + 4; j < idx + 4 + len; j++)
             parm.push_back(message[j]);
         idx = idx + 4 + len;
-        parms.push_back(Parameter(parm, isFile));
+        switch(type) {
+            case 1:
+                parms.push_back(Parameter(parm, false));
+                break;
+            case 2:
+                parms.push_back(Parameter(parm, true));
+                break;
+            case 3:
+                parms.push_back(Parameter(UnZip(parm)));
+                break;
+        }
     }
 	return parms;
 }
@@ -81,18 +97,19 @@ bool sendAll(int &socket, Vector<Parameter> parms) {
         len[i] = nowsize % 256;
         nowsize >>= 8;
     }
-    /*for(int i = 0; i <= 3; i++) {
-        fprintf(stderr, "%d ", (int)len[i]);
-    }*/
+    for(int i = 0; i <= 3; i++) {
+        printf("%d ", (unsigned char)len[i]);
+    }
     socket_send(socket, len, 4);
     for(int i = 0; i < parms.size(); i++) {
         char buf[1024];
         for(int j = 0; j < parms[i].s.length(); j += 1024) {
             int nowlen = min(1024, (int)parms[i].s.length() - j);
-            for(int k = 0; k < nowlen; k++) buf[k] = parms[i].s[j + k];
+            for(int k = 0; k < nowlen; k++) buf[k] = parms[i].s[j + k], printf("%d ", (unsigned char)buf[k]);
             socket_send(socket, buf, nowlen);
         }
     }
+    puts("");
     puts("end send");
     return true;
 }
@@ -185,32 +202,52 @@ void Server::run() {
                 }
                 puts("finish recv");
                 Vector<Parameter> parms = GetParms(message);
-               /* switch (parms[0][0]) {
+                switch (parms[0].number) {
                     case 0x01 : {// 上传课程资料				
                         // lessonname filename file
-                        Lesson* nowLesson = lessonGroup.GetLesson(parms[0]);
+                        /*Lesson* nowLesson = lessonGroup.GetLesson(parms[0]);
                         String savePath = "data/lesson_files/" + nowLesson->Name() + '/' + parms[1];
                         unsigned long long tmpHash = GetHash(parms[2]);
                         File* file = new File(savePath, tmpHash);
                         nowLesson->AddFile(file);
                         WriteFile(savePath, parms[2]);
+                        break;*/
                         break;
                     }
                     case 0x02 : {//提交作业
                         //studentId lessonid homeworkid filename file
-                        Homework_Student* nowHomework = studentGroup.GetStudent(atoi(parms[0].c_str()))->Events()->GetLesson(atoi(parms[1].c_str()))->GetHomework(atoi(parms[2].c_str()));
+                        /*Homework_Student* nowHomework = studentGroup.GetStudent(atoi(parms[0].c_str()))->Events()->GetLesson(atoi(parms[1].c_str()))->GetHomework(atoi(parms[2].c_str()));
                         String savePath = "data/student_files/" + parms[0] + "/lessons/" + parms[1] + '/' + parms[2] + '/' + ToString(nowHomework->Ver()) + '/' + parms[3];
                         nowHomework->Upload(savePath);
                         WriteFile(savePath, parms[3]);
+                        break;*/
                         break;
                     }
-                    case 'a' : {*/
+                    case 0x03 : {//查询路径
+                        Vector<int> v;
+                        int vectorSize = parms[1].number;
+                        for(int j = 2; j < 2 + vectorSize; j++)
+                            v.push_back(parms[j].number);
+                        int queryMode = (unsigned char)parms[2 + vectorSize].number;
+                        ResPackage result = graph.QueryDis(v, queryMode);
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(result.timeCost.Zip()));
+                        resultParms.push_back(Parameter(result.v.size()));
+                        for(int j = 0; j < result.v.size(); j++) {
+                            resultParms.push_back(Parameter(result.v[j].id));
+                            resultParms.push_back(Parameter(result.v[j].tool));
+                            resultParms.push_back(Parameter(result.v[j].type));
+                        }
+                        sendAll(i, resultParms);
+                        break;
+                    }/*
+                    case 'a' : {
                         puts("getmessage");
                         sendAll(i, parms);
                         //sleep(100);
                         //break;
-                    //}
-                //}
+                    }*/
+                }
                 if(close(i) == -1) {
                     perror("close failed");
                 }
