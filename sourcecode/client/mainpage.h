@@ -118,4 +118,8 @@ public:
     }
 };
 
+extern int type;
+extern int studentId;
+extern int teacherId;
+
 #endif // MAINPAGE_H

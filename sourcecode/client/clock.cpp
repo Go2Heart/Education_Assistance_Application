@@ -19,7 +19,7 @@ Clock::Clock(QWidget *parent) :
     clock->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     clock->setFixedSize(QSize(250, fm.lineSpacing()));
     clock->setAlignment(Qt::AlignCenter);
-    clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
+    //clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
     clockLayout->addWidget(clock);
 
     horizontalValueAdjuster* radioAdjuster = new horizontalValueAdjuster("clock speed", 0.1, 10, 0.1, this);
@@ -28,16 +28,22 @@ Clock::Clock(QWidget *parent) :
         &horizontalValueAdjuster::valueChanged,
         this,
         [=](qreal ratio) {
-            qDebug() << ratio;
-            ChgRatio(ratio);
+            TimeSpdChg* update = new TimeSpdChg(round((double)ratio * 10));
     });
     clockLayout->addWidget(radioAdjuster);
 
     addTimer = new QTimer;
     addTimer->setSingleShot(true);
-    addTimer->start((1.0 / ratio) * defaultSpeed);
-    connect(addTimer,
-        &QTimer::timeout,this, [=] { Add(); addTimer->start((1.0 / ratio) * defaultSpeed); });
+    addTimer->start(100);
+    connect(addTimer, &QTimer::timeout,this, [=] {
+        //Add();
+        TimeQuery* query = new TimeQuery();
+        connect(query, &TimeQuery::receive, this, [=](int zipTimer) {
+            nowTime.FromZip(zipTimer);
+            clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
+        });
+        addTimer->start(100);
+    });
 }
 
 void Clock::Add() {

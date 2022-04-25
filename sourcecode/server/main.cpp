@@ -9,16 +9,19 @@
 #include "server.h"
 #include "huffman/decoder.h"
 #include "huffman/encoder.h"
+#include "clock.h"
 
 Timer beg[20];
 Timer fin[20];
 Students studentGroup;
-Activities ActivityGroup;
+Teachers teacherGroup;
+Activities activityGroup;
 Lessons lessonGroup;
 Graph graph;
-Encoder EncodeSolver;
-Decoder DecodeSolver;
+Encoder encodeSolver;
+Decoder decodeSolver;
 Server server;
+Clock timeTracker;
 
 String GetStr(FILE *fin) {
 	char tmp[100];
@@ -32,8 +35,8 @@ void InitStudent() {
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
-		String studentNumber = GetStr(in), name = GetStr(in);
-		studentGroup.AddStudent(new Student(studentNumber, name));
+		String studentNumber = GetStr(in), name = GetStr(in), password = GetStr(in);
+		studentGroup.AddStudent(new Student(studentNumber, name, password));
 	}
 }
 
@@ -103,7 +106,7 @@ void InitActivity() {
 			tmpStudents.push_back(studentGroup.GetStudent(number));
 		}
 		Activity* tmpActivity = new Activity(place, name, type, tmpDuration, tmpStudents);
-		int activityId = ActivityGroup.AddActivities(tmpActivity);
+		int activityId = activityGroup.AddActivities(tmpActivity);
 		for(int j = 0; j < m; j++)
 			tmpStudents[j]->Events()->AddActivity(activityId);
 	}

@@ -100,8 +100,8 @@ private:
 public:
 	enum { INF = 1 << 30 };
 	void AddEdge(int x, int y, int dis, int type) {
-		num++; e[num] = Edge(y, head[x], dis, type); head[x] = num;
-		num++; e[num] = Edge(x, head[y], dis, type); head[y] = num;
+		++num; e[num] = Edge(y, head[x], dis, type); head[x] = num;
+		++num; e[num] = Edge(x, head[y], dis, type); head[y] = num;
 	}
 	int GetRandDis() { return 25 + rand()%10; }
 	void GetColor(int id, int c);

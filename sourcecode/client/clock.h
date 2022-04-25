@@ -3,6 +3,7 @@
 
 #include "basicClass.h"
 #include "customWidgets.h"
+#include "connect.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QTimer>

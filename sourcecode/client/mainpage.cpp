@@ -1,5 +1,9 @@
 #include "mainpage.h"
 
+int type = -1;
+int studentId = 255;
+int teacherId = 255;
+
 clockAddPage::clockAddPage(int radius, int type, int width, int height, QString name, QWidget* parent, int posy) :
     SlidePage(radius, type, width, height, name, parent, posy)
 {

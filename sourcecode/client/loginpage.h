@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QPainter>
 #include "customWidgets.h"
+#include "connect.h"
 
 class loginPage : public QWidget
 {
@@ -26,5 +27,9 @@ public:
 signals:
     void logined();
 };
+
+extern int type;
+extern int studentId;
+extern int teacherId;
 
 #endif // LOGINPAGE_H

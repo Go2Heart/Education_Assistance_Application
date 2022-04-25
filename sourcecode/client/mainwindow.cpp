@@ -19,17 +19,6 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::Init() {
-    unsetTimer = new QTimer(this);
-    unsetTimer->setSingleShot(true);
-    unsetTimer->start(100);
-    connect(unsetTimer,
-        &QTimer::timeout,
-        this,
-        [=]{
-            if(ui->mainWidget->geometry().contains(ui->centralWidget->mapFromGlobal(QCursor::pos())) && !forceState)
-                unsetCursor();
-            unsetTimer->start(100);
-    });
 
     QPainterPath path;
     path.addRoundedRect(ui->mainWidget->rect(), cornerRadius - 1, cornerRadius - 1);
@@ -57,32 +46,35 @@ void MainWindow::Init() {
 
     miniBtn = new topButton(ui->mainWidget);
     miniBtn->move(ui->mainWidget->width() - verticalMargin - 2 * 12 - 2 * 6, horizontalMargin);
+    miniBtn->setGraphicsEffect(0);
     adjBtn = new topButton(ui->mainWidget);
     adjBtn->move(ui->mainWidget->width() - verticalMargin - 1 * 12 - 1 * 6, horizontalMargin);
+    adjBtn->setGraphicsEffect(0);
     closeBtn = new topButton(ui->mainWidget);
     closeBtn->move(ui->mainWidget->width() - verticalMargin, horizontalMargin);
+    closeBtn->setGraphicsEffect(0);
 
     connect(miniBtn, &QPushButton::clicked, [=]{showMinimized();});
     connect(adjBtn, &QPushButton::clicked, [=]{controlWindowScale();});
     connect(closeBtn, &QPushButton::clicked, [=]{close();});
 
     //login page
-    /*loginpage = new loginPage(ui->mainWidget);
+    loginpage = new loginPage(ui->mainWidget);
     ui->mainLayout->addWidget(loginpage);
-    loginpage->show();*/
+    loginpage->show();
     mainpage = new mainPage(ui->mainWidget);
-    ui->mainLayout->addWidget(mainpage);
-    mainpage->show();
+    //mainpage->setGraphicsEffect(0);
+    //ui->mainLayout->addWidget(mainpage);
+    //mainpage->show();
     //mainpage->raisePage();
-    /*connect(loginpage,
+    connect(loginpage,
         &loginPage::logined,
         [=] {
             ui->mainLayout->removeWidget(loginpage);
             loginpage->hide();
             ui->mainLayout->addWidget(mainpage);
             mainpage->show();
-            //mainpage->activateWindow();
-    });*/
+    });
 }
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     if(event->button() == Qt::LeftButton) {

@@ -7,7 +7,7 @@ bool EventGroup::VerifyDuration(Vector<Duration> durations) {
         if(lessonGroup.GetLesson(lessons[i]->Id())->cross(durations)) return false;
     for(int i = 0; i < activities.size(); i++)
         for(int j = 0; j < durations.size(); j++)
-            if(ActivityGroup.GetActivity(activities[i])->Dura().cross(durations[j])) return false;
+            if(activityGroup.GetActivity(activities[i])->Dura().cross(durations[j])) return false;
     return true;
 }
 
@@ -20,7 +20,7 @@ void EventGroup::AddLesson(int lessonId) {
 
 void EventGroup::AddActivity(int ActivityId) {
     Vector<Duration> tmpDuration;
-    tmpDuration.push_back(ActivityGroup.GetActivity(ActivityId)->Dura());
+    tmpDuration.push_back(activityGroup.GetActivity(ActivityId)->Dura());
     if(!VerifyDuration(tmpDuration))
         puts("NO");
     else

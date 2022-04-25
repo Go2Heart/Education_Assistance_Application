@@ -26,7 +26,7 @@ private:
     QString endName="";*/
     MyGraphicsVexItem* start;
     MyGraphicsVexItem* end;
-    AbstractGraph *g;
+    ALGraph *g;
     void Init();
 
 public:

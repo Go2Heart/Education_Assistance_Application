@@ -14,7 +14,7 @@ MyCanvas::MyCanvas(QTextStream &ts, int radius, QWidget *parent) :
     view->setSceneRect(view->rect());
     view->setStyleSheet("background-color: #FFFFFF;border:1px solid #cfcfcf;border-radius:10px;");
     mainLayout->addWidget(view);
-    g = (AbstractGraph*)(new ALGraph(1));
+    g = new ALGraph(1);
     connect(view, SIGNAL(vexAdded(MyGraphicsVexItem*)), this, SLOT(addVex(MyGraphicsVexItem*)));
     connect(view, SIGNAL(arcAdded(MyGraphicsLineItem*)), this, SLOT(addArc(MyGraphicsLineItem*)));
     connect(view, &MyGraphicsView::visitClear, this, [=](){g->ClearVisit();});
@@ -371,6 +371,24 @@ void MyCanvas::Init(){
             connect(query, &DisQuery::receive, this, [=](QVariant varValue) {
                 ResPackage result = varValue.value<ResPackage>();
                 result.timeCost.Print();
+                for(int i = 0, j = 0; i < result.v.size(); i = j + 1, j = i) {
+                    //view->hasVisitedItem = true;
+                    if(result.v[j].type == 3) {
+                        while(result.v[j].type != 4) ++j;
+                        int beginVexId;
+                        for(int k = i + 1; k < j; k++) {
+                            if(result.v[k].type == 2) {
+                                view->vexFromId(result.v[k].id)->visit();
+                                beginVexId = result.v[k].id;
+                            } else {
+                                MyGraphicsLineItem* line = view->lineFromId(result.v[k].id);
+                                if(line->stVex()->id != beginVexId) line->reverseDirection();
+                                line->visit();
+                            }
+                        }
+                    } else qDebug()<<"format error!";
+                    //view->visitClear();
+                }
             });
         }
     });

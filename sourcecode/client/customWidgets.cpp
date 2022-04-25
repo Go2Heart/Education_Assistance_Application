@@ -873,7 +873,7 @@ bool topButton::event(QEvent* e) {
 
 QLineDelegate::QLineDelegate(QTableView* tableView)
 {
-    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItemV4());
+    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItem());
     QColor gridColor = static_cast<QRgb>(gridHint);
     pen = QPen(gridColor, 0, tableView->gridStyle());
     view = tableView;
@@ -1103,4 +1103,17 @@ void customWidget::enterEvent(QEvent *event){
 
 void customWidget::leaveEvent(QEvent *event){
     bgWidget->setStyleSheet("border:transparent;border-radius:5px;background-color:#00000000");
+}
+
+textItem::textItem(QString text, QWidget* parent) :
+    QLabel(parent)
+{
+    QFont font = QFont("Corbel", 13);
+    QFontMetrics fm(font);
+    qreal height = fm.lineSpacing();
+    setText(text);
+    setFont(font);
+    setMinimumHeight(height);
+    setStyleSheet("color:#2c2c2c");
+    setAlignment(Qt::AlignCenter);
 }

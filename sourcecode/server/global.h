@@ -2,10 +2,12 @@
 #define GLOBAL_H
 
 extern class Students studentGroup;
-extern class Activities ActivityGroup;
+extern class Teachers teacherGroup;
+extern class Activities activityGroup;
 extern class Lessons lessonGroup;
 extern class Graph graph;
-extern class Encoder EncodeSolver;
-extern class Decoder DecodeSolver;
+extern class Encoder encodeSolver;
+extern class Decoder decodeSolver;
+extern class Clock timeTracker;
 
 #endif

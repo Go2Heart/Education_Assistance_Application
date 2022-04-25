@@ -17,6 +17,17 @@
 #include <QtGui>
 #include <algorithm>
 #include "customScrollContainer.h"
+#include <QLabel>
+#include <QGraphicsOpacityEffect>
+#include <QVBoxLayout>
+#include <QStyledItemDelegate>
+#include <QTableView>
+#include <QComboBox>
+#include <QTableWidget>
+#include <QStyleOptionViewItem>
+#include <QHeaderView>
+#include <QScrollBar>
+
 
 class customIcon : public QPushButton{
     Q_OBJECT
@@ -38,7 +49,7 @@ private:
 
 protected:
     void paintEvent(QPaintEvent* event);
-    void enterEvent(QEvent *event);
+    void enterEvent(QEvent* event);
     void leaveEvent(QEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
@@ -106,7 +117,7 @@ public:
     void AddItem(selectionItem* item);
     void RemoveItem(selectionItem* item);
     void SetSelection(selectionItem* item);
-    qreal value(){return selectedID;}
+    int value(){return selectedID;}
 
 signals:
     void selectedItemChange(int selectID);
@@ -286,7 +297,7 @@ public:
     void AddItem(selectionItem* item);
     void RemoveItem(selectionItem* item);
     void SetSelection(selectionItem* item);
-    qreal value(){return selectedID;}
+    int value(){return selectedID;}
 
 signals:
     void selectedItemChange(int selectID);
@@ -369,6 +380,12 @@ private:
 
 public:
     customWidget(const QString &name, QWidget* content, QWidget* parent = nullptr);
+};
+
+class textItem : public QLabel {
+    Q_OBJECT
+public:
+    textItem(QString text, QWidget* parent = nullptr);
 };
 
 #endif // CUSTOMWIDGETS_H

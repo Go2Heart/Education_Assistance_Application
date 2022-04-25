@@ -130,7 +130,9 @@ public:
     MyGraphicsView(int _type = UDG, QWidget *parent = nullptr);
 
     MyGraphicsVexItem* selectedVex();
+    MyGraphicsVexItem* vexFromId(int id) { return vexes[id]; }
     MyGraphicsLineItem* selectedArc();
+    MyGraphicsLineItem* lineFromId(int id) { return lines[id]; }
 
     void RemoveVex(MyGraphicsVexItem *vex);
     void RemoveArc(MyGraphicsLineItem *line);

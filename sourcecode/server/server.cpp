@@ -1,4 +1,5 @@
 #include "server.h"
+#include "clock.h"
 #include "global.h"
 #include "basicClass.h"
 #include "customObject.h"
@@ -32,7 +33,7 @@ Vector<Parameter> GetParms(String message) {
         idx++;
         for(int j = idx; j <= idx + 3; j++)
             len = (len << 8) + (unsigned char)message[j];
-        printf("parm id:%d len:%d\n", ++parmid, len);
+        //printf("parm id:%d len:%d\n", ++parmid, len);
         for(int j = idx + 4; j < idx + 4 + len; j++)
             parm.push_back(message[j]);
         idx = idx + 4 + len;
@@ -84,33 +85,36 @@ ssize_t socket_send(int sockfd, const char* buffer, size_t buflen) {
     return tmp;
 }
 
-bool sendAll(int &socket, Vector<Parameter> parms) {
-    puts("begin send");
+bool sendAll(int &socket, Vector<Parameter> parms, bool debug) {
+    if(debug) puts("begin send");
     char len[4];
     int totlen = 0;
     for(int i = 0; i < parms.size(); i++) {
         totlen += parms[i].s.length();
     }
-    printf("totlen:%d\n",totlen);
+    if(debug) printf("totlen:%d\n",totlen);
     int nowsize = totlen;
     for(int i = 3; i >= 0; i--) {
         len[i] = nowsize % 256;
         nowsize >>= 8;
     }
     for(int i = 0; i <= 3; i++) {
-        printf("%d ", (unsigned char)len[i]);
+        if(debug) printf("%d ", (unsigned char)len[i]);
     }
     socket_send(socket, len, 4);
     for(int i = 0; i < parms.size(); i++) {
         char buf[1024];
         for(int j = 0; j < parms[i].s.length(); j += 1024) {
             int nowlen = min(1024, (int)parms[i].s.length() - j);
-            for(int k = 0; k < nowlen; k++) buf[k] = parms[i].s[j + k], printf("%d ", (unsigned char)buf[k]);
+            for(int k = 0; k < nowlen; k++) {
+                buf[k] = parms[i].s[j + k];
+                if(debug) printf("%d ", (unsigned char)buf[k]);
+            }
             socket_send(socket, buf, nowlen);
         }
     }
-    puts("");
-    puts("end send");
+    if(debug) puts("");
+    if(debug) puts("end send");
     return true;
 }
 
@@ -174,7 +178,7 @@ void Server::run() {
                 if(!inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip_str, sizeof(client_ip_str))) {
                     perror("inet_ntop failed");//将IP转换为点数类型
                 }
-                printf("accept a client from: %s\n", client_ip_str);
+                //printf("accept a client from: %s\n", client_ip_str);
                 setSockNonBlock(new_sock);
                 int on = 1;
                 //setsockopt(new_sock, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
@@ -187,7 +191,7 @@ void Server::run() {
                 for(int i = 0; i < 4; i++) {
                     Size = (Size << 8) + (unsigned char)buffer[i]; 
                 }
-                printf("Size: %d\n", Size);
+                //printf("Size: %d\n", Size);
                 String message;
                 while(Size > 0) {
                     if((recv_size = recv(i, buffer, sizeof(buffer), 0)) == -1) {
@@ -200,7 +204,7 @@ void Server::run() {
                     for(int i = 0; i < min(recv_size, Size); i++) message.push_back(buffer[i])/*, printf("%d ", (unsigned char)buffer[i])*/;
                     Size -= recv_size;
                 }
-                puts("finish recv");
+                //puts("finish recv");
                 Vector<Parameter> parms = GetParms(message);
                 switch (parms[0].number) {
                     case 0x01 : {// 上传课程资料				
@@ -234,13 +238,39 @@ void Server::run() {
                         resultParms.push_back(Parameter(result.timeCost.Zip()));
                         resultParms.push_back(Parameter(result.v.size()));
                         for(int j = 0; j < result.v.size(); j++) {
-                            resultParms.push_back(Parameter(result.v[j].id));
-                            resultParms.push_back(Parameter(result.v[j].tool));
                             resultParms.push_back(Parameter(result.v[j].type));
+                            resultParms.push_back(Parameter(result.v[j].tool));
+                            resultParms.push_back(Parameter(result.v[j].id));
+                            printf("%d %d\n", result.v[j].type, result.v[j].id);
                         }
-                        sendAll(i, resultParms);
+                        sendAll(i, resultParms, true);
                         break;
-                    }/*
+                    }
+                    case 0x04 : {//查询时间
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(timeTracker.NowTimer().Zip()));
+                        sendAll(i, resultParms, false);
+                        break;
+                    }
+                    case 0x05 : {//修改速度
+                        timeTracker.ChgSpd(parms[1].number / 10.0);
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, false);
+                        break;
+                    }
+                    case 0x06 : {
+                        Vector<Parameter> resultParms;
+                        int value;
+                        if(parms[1].number == 1)
+                            value = teacherGroup.GetTeacherCheck(parms[2].message, parms[3].message);
+                        else
+                            value = studentGroup.GetStudentCheck(parms[2].message, parms[3].message);
+                        resultParms.push_back(Parameter(value));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    /*
                     case 'a' : {
                         puts("getmessage");
                         sendAll(i, parms);

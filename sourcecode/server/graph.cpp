@@ -79,7 +79,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			int x = sour[now];
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
-					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), (i >> 1) /*- 1*/));
 			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, rt[p[t].Bel()]));
@@ -90,7 +90,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			int x = sour[now];
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
-					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), (i >> 1)));
 			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, s));
@@ -106,7 +106,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			int x = sour[now];
 			for(int i = head[x]; i; i = e[i].Nxt())
 				if(e[i].To() == now)
-					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), i));
+					tmpRes.push_back(Result(i % 2, mode == 3 && e[i].Type(), (i >> 1)));
 			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, s));

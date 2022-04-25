@@ -15,12 +15,12 @@ TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 }
 
 void TcpConnector::connected() {
-    qDebug()<<"send start";
+    //qDebug()<<"send start";
     int sendlen = 0;
     for(int i = 0; i < m.size(); i++) {
         sendlen = sendlen + m[i]->s.length();
     }
-    qDebug()<<"sendlen:"<<sendlen;
+    //qDebug()<<"sendlen:"<<sendlen;
     char len[4];
     int tmpint = sendlen;
     for(int i = 3; i >= 0; i--) len[i] = tmpint % 256, tmpint >>= 8;
@@ -34,7 +34,7 @@ void TcpConnector::connected() {
         }
     }
     socket->flush();
-    qDebug()<<"send end";
+    //qDebug()<<"send end";
 }
 
 void TcpConnector::readData() {
@@ -46,16 +46,16 @@ void TcpConnector::readData() {
         for(int i = 0; i < 4; i++) receiveLen = (receiveLen << 8) + (unsigned char)nowbyte[i];
         readSize = true;
         beginIdx += 4;
-        qDebug()<<receiveLen;
+        //qDebug()<<receiveLen;
     }
     for(int i = beginIdx; i < nowbyte.length(); i++) readBuf.push_back(nowbyte[i]);
     receiveLen -= nowbyte.length() - beginIdx;
 
     if(!receiveLen) {
-        qDebug()<<"finish recv";
+        //qDebug()<<"finish recv";
         QVector<Parameter*> parms;
         int idx = 0;
-        qDebug() << "readBuf len:"<<readBuf.length();
+        //qDebug() << "readBuf len:"<<readBuf.length();
         while(idx < readBuf.length()) {
             std::string parm;
             int len = 0;
@@ -100,5 +100,35 @@ DisQuery::DisQuery(QVector<int> v) {
         for(int i = 1, j = 2; i <= size; i++, j += 3)
             v.push_back(Result(parms[j]->number, parms[j + 1]->number, parms[j + 2]->number));
         emit receive(QVariant::fromValue(ResPackage(nowTimer, v)));
+    });
+}
+
+TimeQuery::TimeQuery() {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(4));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+       QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+       emit receive(parms[0]->number);
+    });
+}
+
+TimeSpdChg::TimeSpdChg(int x) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(5));
+    paras.push_back(new Parameter(x));
+    connector = new TcpConnector(paras);
+}
+
+LoginQuery::LoginQuery(int type, QString name, QString password) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(6));
+    paras.push_back(new Parameter(type));
+    paras.push_back(new Parameter(name));
+    paras.push_back(new Parameter(password));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+       QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+       emit Id(parms[0]->number);
     });
 }

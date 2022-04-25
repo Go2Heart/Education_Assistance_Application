@@ -12,6 +12,8 @@ add_executable(test
         data_structure/vector.h
         basicClass.cpp
         basicClass.h
+        clock.h
+        clock.cpp
         customEvent.cpp
         customEvent.h
         customObject.h

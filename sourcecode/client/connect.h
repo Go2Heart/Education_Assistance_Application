@@ -117,4 +117,32 @@ signals:
     void receive(QVariant varValue);
 };
 
+class TimeQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TimeQuery();
+signals:
+    void receive(int);
+};
+
+class TimeSpdChg : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TimeSpdChg(int x);
+};
+
+class LoginQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    LoginQuery(int type, QString name, QString password);
+signals:
+    void Id(int);
+};
+
 #endif // CONNECT_H

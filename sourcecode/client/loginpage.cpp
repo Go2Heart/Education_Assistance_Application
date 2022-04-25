@@ -36,7 +36,23 @@ loginPage::loginPage(QWidget *parent) :
             textInputItem* username = new textInputItem("用户名", checkWidget);
             textInputItem* password = new textInputItem("密码", checkWidget);
             textButton* login = new textButton("登录", checkWidget);
-            connect(login, &textButton::clicked, [=]{emit logined();});
+            connect(login, &textButton::clicked, [=]{
+                LoginQuery* loginQuery = new LoginQuery(identitySel->value(), username->value(), password->value());
+                connect(loginQuery, &LoginQuery::Id, this, [=](int id) {
+                   if(id == 255) {
+
+                   } else {
+                       if(identitySel->value() == 0) {
+                           type = 0;
+                           studentId = id;
+                       } else {
+                           type = 1;
+                           teacherId = id;
+                       }
+                       emit logined();
+                   }
+                });
+            });
             checkLayout->addWidget(identitySel);
             checkLayout->addWidget(username);
             checkLayout->addWidget(password);
