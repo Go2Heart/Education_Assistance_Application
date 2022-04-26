@@ -4,11 +4,35 @@ int type = -1;
 int studentId = 255;
 int teacherId = 255;
 
-clockAddPage::clockAddPage(int radius, int type, int width, int height, QString name, QWidget* parent, int posy) :
+clockAddPage::clockAddPage(int radius, int type, int width, int height, QString name, QVector<toDo*>* toDoList, QWidget* parent,  int posy) :
     SlidePage(radius, type, width, height, name, parent, posy)
 {
     description = new textInputItem("描述：", this);
     place = new textInputItem("地点：", this);
+    dayBar = new QWidget(this);
+    dayBar->setStyleSheet("background-color: transparent;");
+    dayBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QHBoxLayout* dayLayout = new QHBoxLayout(dayBar);
+    dayLayout->setContentsMargins(0, 0, 0, 0);
+    dayLayout->setSpacing(3);
+    dayLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        week = new ComboBox(dayBar);
+        week->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        week->setFixedSize(45,25);
+        week->setNumberRange(1,20);
+        dayLayout->addWidget(week);
+        QLabel* daySplit = new QLabel("周", dayBar);
+        daySplit->setStyleSheet("background-color: transparent;");
+        dayLayout->addWidget(daySplit);
+        day = new ComboBox(dayBar);
+        day->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        day->setFixedSize(45,25);
+        day->setNumberRange(1,7);
+        QLabel* daySplit2 = new QLabel("天", dayBar);
+        daySplit2->setStyleSheet("background-color: transparent;");
+        dayLayout->addWidget(day);
+        dayLayout->addWidget(daySplit2);
+    dayBar->setFixedHeight(30);
     timeBar = new QWidget(this);
     timeBar->setStyleSheet("background-color:transparent;");
     timeBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -24,7 +48,7 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
         QFont font = QFont("Corbel Light", 13);
         QFontMetrics fm(font);
         font.setStyleStrategy(QFont::PreferAntialias);
-        QLabel* split = new QLabel(":", timeBar);
+        QLabel* split = new QLabel("：", timeBar);
         split->setFont(font);
         split->setFixedHeight(fm.lineSpacing());
         split->setStyleSheet("color: black");
@@ -35,8 +59,10 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
         minute->setNumberRange(0, 60);
         timeLayout->addWidget(minute);
     timeBar->setFixedHeight(30);
-    customWidget* timeWidget = new customWidget("时间：", timeBar, this);
 
+    customWidget* dayWidget = new customWidget("日期：", dayBar, this);
+
+    customWidget* timeWidget = new customWidget("时间：", timeBar, this);
     clockBar = new QWidget(this);
     QHBoxLayout* clockLayout = new QHBoxLayout(clockBar);
     clockLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -47,12 +73,14 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
         clockLayout->addWidget(alarmBtn);
         frequency = new ComboBox(clockBar);
         frequency->addItem("仅一次");
+        frequency->addItem("每天");
         frequency->addItem("每周");
-        frequency->addItem("每月");
         frequency->setFixedSize(100, 25);
         customWidget* freWidget = new customWidget("频率：", frequency, this);
         clockLayout->addWidget(freWidget);
+
     clockBar->setFixedHeight(40);
+
 
     connect(alarmBtn, &bigIconButton::clicked, this, [=] {
         if(alarm){
@@ -66,6 +94,21 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
 
     textButton* createBtn = new textButton("Create!", this);
     connect(createBtn, &textButton::clicked, this, [=] {
+        if(description->value().isEmpty() || place->value().isEmpty()){
+            QMessageBox::warning(this, "Warning", "请填写完整信息！");
+            return;
+        }
+
+        if(hour->currentText().isEmpty() || minute->currentText().isEmpty()){
+            QMessageBox::warning(this, "Warning", "请填写完整时间！");
+            return;
+        }
+
+        Timer* tempTime = new Timer(hour->currentText().toInt(), minute->currentText().toInt(), day->currentText().toInt(), week->currentText().toInt());
+
+        toDo* toDos = new toDo(description->value(), place->value(), tempTime, alarm, frequency->currentIndex());
+        toDoList->push_back(toDos);
+        QMessageBox::information(this, "Success", "创建成功！");
         slideOut();
         createBtn->setText("Modify!");
         if(created)
@@ -76,8 +119,10 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
         }
     });
     AddContent(createBtn);
+
     AddContent(clockBar);
     AddContent(timeWidget);
+    AddContent(dayWidget);
     AddContent(place);
     AddContent(description);
 }
@@ -165,12 +210,12 @@ void clockWidget::resizeEvent(QResizeEvent *) {
     bgWidget->resize(this->size());
 }
 
-clockfoldWidget::clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent) :
+clockfoldWidget::clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QVector<toDo*>* toDoList, QWidget* parent) :
     foldWidget(name, h, icons, parent),
     slideParent(p)
 {
     connect(icons[0], &bigIconButton::clicked, this, [=] {
-        clockAddPage* newPage = new clockAddPage(12, 1, 300, 0, "创建新待办", slideParent);
+        clockAddPage* newPage = new clockAddPage(12, 1, 300, 0, "创建新待办", toDoList,slideParent);
         emit addPage(newPage);
         connect(newPage, &clockAddPage::deliver, this, [=](QVector<QString> s) {
             clockWidget* newWidget = new clockWidget(s, this);
@@ -248,7 +293,7 @@ mainPage::mainPage(QWidget* parent) :
 
                     QVector<bigIconButton*> iconVec;
                     iconVec.push_back(new bigIconButton(9, ":/icons/icons/add.svg"));
-                    clockfoldWidget* clockWidget = new clockfoldWidget("clock", 500, iconVec, displayWidget, eventWidget);
+                    clockfoldWidget* clockWidget = new clockfoldWidget("clock", 500, iconVec, displayWidget, &toDoList,eventWidget);
                     connect(clockWidget, &clockfoldWidget::addPage, this, [=](clockAddPage* page) {
                         clockPageList.push_back(page);
                     });
@@ -282,6 +327,45 @@ mainPage::mainPage(QWidget* parent) :
 
         guidePage = new GuidePage(this);
         guidePage->hide();
+
+        connect(clock, &Clock::checkAlarm, this, [=] {
+            for (int i = 0; i< toDoList.size(); i++) {
+                //qDebug() << toDoList[i]->getTime().Hour() << ":" << toDoList[i]->getTime().Min();
+                if(clock->Hour() == toDoList[i]->getTime().Hour() && clock->Min() == toDoList[i]->getTime().Min() && toDoList[i]->getAlarm()){
+                    switch(toDoList[i]->getFrequency()){
+                        case 0:
+                            //alarm once
+                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                            new QLabel(toDoList[i]->getDescription() + " at " + toDoList[i]->getPlace(), this);
+
+                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
+                            eventList.back()->setStyleSheet("background-color:#ffffb3");
+                            infoContainer->addWidget(eventList.back(), 0);
+                            toDoList[i]->setAlarm(false);
+                            break;
+                        case 1:
+                            //alarm daily
+                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
+                            eventList.back()->setStyleSheet("background-color:#ffffb3");
+                            infoContainer->addWidget(eventList.back(), 0);
+                            break;
+                        case 2:
+                            //alarm weekly
+                            if(clock->Day() == toDoList[i]->getTime().Day()){
+                                QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                                eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace(), this));
+                                eventList.back()->setStyleSheet("background-color:#ffffb3");
+                                infoContainer->addWidget(eventList.back(), 0);
+                            }
+                            break;
+                        default:
+                            qDebug() << "error";
+                    }
+                }
+            }
+        });
+
         connect(guideBtn, &bigIconButton::clicked, [=] {
             hideCurrentPage();
             if (currentPage == GUIDE){
@@ -334,4 +418,12 @@ void mainPage::resizeEvent(QResizeEvent*) {
         clockPageList[i]->resize(clockPageList[i]->width() - 1, (clockPageList[i]->Type() & SlidePage::HEIGHT_FIXED) ? clockPageList[i]->height() : displayWidget->height());
         clockPageList[i]->resize(clockPageList[i]->width() + 1, clockPageList[i]->height());
     }
+}
+
+toDo::toDo(QString desc, QString place, Timer* time, bool alarm, int freq, QWidget* parent) {
+    this->description = desc;
+    this->place = place;
+    this->clockTime = time;
+    this->alarm = alarm;
+    this->frequency = (frequenceType)freq;
 }

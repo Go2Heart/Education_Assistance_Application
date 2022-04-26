@@ -132,3 +132,5 @@ LoginQuery::LoginQuery(int type, QString name, QString password) {
        emit Id(parms[0]->number);
     });
 }
+
+

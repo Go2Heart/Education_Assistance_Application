@@ -26,6 +26,7 @@ private:
     QString endName="";*/
     MyGraphicsVexItem* start;
     MyGraphicsVexItem* end;
+    QVector <MyGraphicsVexItem*> pathVector;
     ALGraph *g;
     void Init();
 
