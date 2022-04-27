@@ -20,9 +20,12 @@ private:
     Timer nowTime;
 public:
     Clock(QWidget *parent = nullptr);
-    void Add();
+    int Hour() {return nowTime.Hour();}
+    int Min() {return nowTime.Min();}
+    int Day() {return nowTime.Day();}
+signals:
+    void checkAlarm();
 public slots:
-    void ChgRatio(qreal ratio);
     void Blocked() { addTimer->stop(); }
     void Released() { addTimer->start(defaultSpeed * ratio); }
 };

@@ -41,19 +41,9 @@ Clock::Clock(QWidget *parent) :
         connect(query, &TimeQuery::receive, this, [=](int zipTimer) {
             nowTime.FromZip(zipTimer);
             clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
+            emit checkAlarm();
         });
         addTimer->start(100);
     });
 }
 
-void Clock::Add() {
-    nowTime = nowTime + Timer(0, 1);
-    //qDebug()<<nowTime.Week()<<"    "<<nowTime.Day()<<"    "<<nowTime.Hour()<<"   "<<nowTime.Minute();
-    if(nowTime.Hour() >= 18 && nowTime.Min() > 10)
-        nowTime = Timer(8, 0, nowTime.Week() + (nowTime.Day() == 7), nowTime.Day() == 7 ? 1 : nowTime.Day() + 1);
-    clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
-}
-
-void Clock::ChgRatio(qreal ratio) {
-    this->ratio = ratio;
-}

@@ -66,72 +66,95 @@ void MyCanvas::Init(){
     upperLayout->addWidget(pageName);
     upperLayout->addWidget(upperSplitter);
 
-    QWidget *lower = new QWidget(infoWidget);
+    /*QWidget *lower = new QWidget(infoWidget);
     QVBoxLayout *lowerLayout = new QVBoxLayout(lower);
     lower->setLayout(lowerLayout);
     lowerLayout->setContentsMargins(0, 5, 0, 0);
     lower->setObjectName("lower");
     lower->setStyleSheet("QWidget#lower{border:1px solid #cfcfcf;border-radius:5px;}");
+     */
     /*
     QWidget *lowerSplitter = new QWidget(lower);
     lowerSplitter->setFixedSize(30, 6);
     lowerSplitter->setStyleSheet("background-color:#3c3c3c;border-radius:3px;");
     lowerLayout->addWidget(lowerSplitter);
     */
-    QWidget *lowerSplitter1 = new QWidget(lower);
-    QHBoxLayout *lowerLayout1 = new QHBoxLayout(lowerSplitter1);
-    lowerSplitter1->setLayout(lowerLayout1);
-    lowerSplitter1->setObjectName("lowerSplitter1");
-    lowerSplitter1->setStyleSheet("QWidget#lowerSplitter1{border:2px solid transparent;border-radius:5px;}");
+    //QWidget *lowerSplitter1 = new QWidget(lower);
+    //QHBoxLayout *lowerLayout1 = new QHBoxLayout(lowerSplitter1);
+    //lowerSplitter1->setLayout(lowerLayout1);
+    //lowerSplitter1->setObjectName("lowerSplitter1");
+    //lowerSplitter1->setStyleSheet("QWidget#lowerSplitter1{border:2px solid transparent;border-radius:5px;}");
     //lowerLayout1->setContentsMargins(0, 0, 0, 0);
-
-    textInputItem *chooseMode = new textInputItem("Mode", lowerSplitter1);
-    chooseMode->setValue("模式");
+    QWidget *modeWidget = new QWidget(infoWidget);
+    QHBoxLayout *modeLayout = new QHBoxLayout(modeWidget);
+    modeLayout->setContentsMargins(0, 0, 0, 10);
+    modeWidget->setObjectName("modeWidget");
+    modeWidget->setStyleSheet("QWidget#modeWidget{border:2px solid transparent;border-radius:5px;}");
+    modeWidget->setLayout(modeLayout);
+    textInputItem *chooseMode = new textInputItem("Mode", upper);
+    QString qsmode = "时间搜索模式";
+    chooseMode->setValue(qsmode);
     chooseMode->setEnabled(false);
-    lowerLayout1->addWidget(chooseMode);
 
+    modeLayout->addWidget(chooseMode);
 
-    bigIconButton *modeBtn = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, lowerSplitter1);
+    bigIconButton *modeBtn = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, upper);
     modeBtn->setFixedSize(30, 30);
-    lowerLayout1->addWidget(modeBtn);
-    lowerLayout->addWidget(lowerSplitter1);
-    QWidget *lowerSplitter2 = new QWidget(lower);
-    lowerSplitter2->setObjectName("LowerSplitter2");
-    lowerSplitter2->setStyleSheet("QWidget#LowerSplitter2{border:2px solid transparent #cfcfcf;border-radius:5px;}");
+    modeLayout->addWidget(modeBtn);
+    //QWidget *lowerSplitter2 = new QWidget(lower);
+    //lowerSplitter2->setObjectName("LowerSplitter2");
+    //lowerSplitter2->setStyleSheet("QWidget#LowerSplitter2{border:2px solid transparent #cfcfcf;border-radius:5px;}");
 
-    QHBoxLayout *lowerLayout2 = new QHBoxLayout(lowerSplitter2);
-    lowerSplitter2->setLayout(lowerLayout2);
-    lowerLayout2->setContentsMargins(10, 5, 12, 5);
+    //QHBoxLayout *lowerLayout2 = new QHBoxLayout(lowerSplitter2);
+    //lowerSplitter2->setLayout(lowerLayout2);
+    //lowerLayout2->setContentsMargins(10, 5, 12, 5);
     //lowerLayout2->setAlignment(Qt::AlignLeft);
-    textInputItem *choosePass = new textInputItem("Pass", lowerSplitter2);
-    choosePass->setValue("选择路径");
-    choosePass->setEnabled(false);
-    lowerLayout2->addWidget(choosePass);
-    bigIconButton *passChooseIcon = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, lowerSplitter2);
+    //textInputItem *choosePass = new textInputItem("Pass", lowerSplitter2);
+    //choosePass->setValue("选择路径");
+    //choosePass->setEnabled(false);
+    //lowerLayout2->addWidget(choosePass);
+    //bigIconButton *passChooseIcon = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, lowerSplitter2);
     connect(modeBtn, &bigIconButton::clicked, this, [=] {
         emit modeBtnClicked();
         //modeInfo->slideIn();
     });
-    connect(passChooseIcon, &bigIconButton::clicked, this, [=] {
-        emit passBtnClicked();
-        //modeInfo->slideIn();
-    });
+    //connect(passChooseIcon, &bigIconButton::clicked, this, [=] {
+    //    emit passBtnClicked();
+    //    //modeInfo->slideIn();
+    //});
     //passChooseIcon->setObjectName("PassChooseIcon");
 
     //passChooseIcon->setStyleSheet("border:1px solid trans;background-color:transparent;");
-    passChooseIcon->setFixedSize(30, 30);
-    lowerLayout2->addWidget(passChooseIcon);
-    lowerLayout->addWidget(lowerSplitter2);
+    // passChooseIcon->setFixedSize(30, 30);
+    // lowerLayout2->addWidget(passChooseIcon);
+    // lowerLayout->addWidget(lowerSplitter2);
 
+    QWidget *path = new QWidget;
+    QVBoxLayout *pathLayout = new QVBoxLayout(path);
+    path->setLayout(pathLayout);
+    pathLayout->setContentsMargins(0, 5, 0, 0);
+    path->setObjectName("path");
+    path->setStyleSheet("QWidget#path{border:1px solid #cfcfcf;border-radius:5px;}");
+    QLabel *pathLabel = new QLabel(path);
+    pathLabel->setObjectName("pathLabel");
+    pathLabel->setStyleSheet("QLabel#pathLabel{border:2px solid transparent #cfcfcf;border-radius:5px;}");
+    pathLabel->setText("路径");
+    pathLabel->setObjectName("pathLabel");
+    pathLabel->setAlignment(Qt::AlignCenter | Qt::AlignTop);
+    ScrollAreaCustom *pathArea = new ScrollAreaCustom(path);
+    pathArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    pathLayout->addWidget(pathLabel);
+    pathLayout->addWidget(pathArea);
 
 
     /*Start Guide Button*/
-    QWidget *lowerSplitter3 = new QWidget(infoWidget);
-    QHBoxLayout *lowerLayout3 = new QHBoxLayout(lowerSplitter3);
-    //lowerSplitter3->resize(30, 40);
+    QWidget *lower3 = new QWidget(infoWidget);
+    QHBoxLayout *lowerLayout3 = new QHBoxLayout(lower3);
+    //lower3->resize(30, 40);
     lowerLayout3->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-    lowerLayout3->setContentsMargins(11, 100, 0, 11);
-    bigIconButton *goIcon = new bigIconButton(1, ":/icons/icons/find-path.svg", "", 25, lowerSplitter3);
+    lowerLayout3->setContentsMargins(11, 10, 0, 11);
+    bigIconButton *goIcon = new bigIconButton(1, ":/icons/icons/find-path.svg", "", 25, lower3);
     lowerLayout3->addWidget(goIcon);
     goIcon->setFixedSize(50, 50);
 
@@ -158,8 +181,9 @@ void MyCanvas::Init(){
     //log
     */
     infoLayout->addWidget(upper);
-    infoLayout->addWidget(lower);
-    infoLayout->addWidget(lowerSplitter3);
+    //infoLayout->addWidget(lower);
+    infoLayout->addWidget(path);
+    infoLayout->addWidget(lower3);
     //lower->hide();
     //Add specific items and connections
     //Default page
@@ -221,7 +245,7 @@ void MyCanvas::Init(){
     connect(this, &MyCanvas::endChanged, this, [=](){endPos->setValue(end->Text());});
     endPos->setEnabled(false);
     defTextLayout->addWidget(endPos);
-
+    defTextLayout->addWidget(modeWidget);
     /*
     textInputItem *vexNumText = new textInputItem("Vex", defInfoPage);
     vexNumText->setValue(QString::asprintf("%d", view->vexNum));
@@ -261,6 +285,8 @@ void MyCanvas::Init(){
     textButton *setEnd =new textButton("Set End", vexInfoPage);
     traverseLayout->addWidget(setEnd);
     vexInfoLayout->addWidget(traverseBar);
+    textButton *add2Path =new textButton("Add to Path", vexInfoPage);
+    vexInfoLayout->addWidget(add2Path);
     upperLayout->addWidget(vexInfoPage);
     vexInfoPage->hide();
 
@@ -305,7 +331,7 @@ void MyCanvas::Init(){
         if(type == MyGraphicsVexItem::Type){
             defInfoPage->hide();
             arcInfoPage->hide();
-            lower->hide();
+            path->hide();
             goIcon->hide();
             vexInfoPage->show();
             textTag->setValue(view->selectedVex()->Text());
@@ -313,7 +339,7 @@ void MyCanvas::Init(){
         else if(type == MyGraphicsLineItem::Type){
             defInfoPage->hide();
             vexInfoPage->hide();
-            lower->hide();
+            path->hide();
             goIcon->hide();
             arcInfoPage->show();
 
@@ -334,7 +360,7 @@ void MyCanvas::Init(){
         vexInfoPage->hide();
         arcInfoPage->hide();
         defInfoPage->show();
-        lower->show();
+        path->show();
         goIcon->show();
         //vexNumText->setValue(QString::asprintf("%d",view->vexNum));
         //arcNumText->setValue(QString::asprintf("%d",view->arcNum));
@@ -345,22 +371,30 @@ void MyCanvas::Init(){
      * connections
      */
     connect(setStart, &textButton::clicked, this, [=]() {
-     if (view->selectedVex() != nullptr) {
-         //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
-         //startName = view->selectedVex()->Text();
-         //startId = view->selectedVex()->
-         start = view->selectedVex();
-         emit startChanged();
-         //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as start"),0);
-     }
+        if (view->selectedVex() != nullptr) {
+            //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
+            //startName = view->selectedVex()->Text();
+            //startId = view->selectedVex()->
+            start = view->selectedVex();
+            emit startChanged();
+            //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as start"),0);
+        }
     });
     connect(setEnd, &textButton::clicked, this, [=]() {
-     if (view->selectedVex() != nullptr) {
-         //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
-         end = view->selectedVex();
-         emit endChanged();
-         //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as end"),0);
-     }
+        if (view->selectedVex() != nullptr) {
+            //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
+            end = view->selectedVex();
+            emit endChanged();
+            //logDisplay->addWidget(new viewLog("[Vex] | Set \""+view->selectedVex()->Text()+"\" as end"),0);
+        }
+    });
+    connect(add2Path, &textButton::clicked, this, [=]() {
+        if (view->selectedVex() != nullptr) {
+            //qDebug() << view->selectedVex()->Text() << view->selectedVex()->getData() << Qt::endl;
+            pathVector.push_back(view->selectedVex());
+            pathArea->addWidget(new viewLog("Pass "+QString::number(pathVector.length())+" \""+view->selectedVex()->Text()+"\""),0);
+            //logDisplay->addWidget(new viewLog("[Vex] | Add \""+view->selectedVex()->Text()+"\" to path"),0);
+        }
     });
     connect(goIcon, &bigIconButton::clicked, this, [=] {
         if(start != nullptr && end != nullptr) {
