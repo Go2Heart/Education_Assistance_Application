@@ -156,4 +156,15 @@ signals:
     void receive(QVariant varValue);
 
 };
+
+class classQuery: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    classQuery(int id);
+signals:
+    void receive(QVariant varValue);
+};
 #endif // CONNECT_H

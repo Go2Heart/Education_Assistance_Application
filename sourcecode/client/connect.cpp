@@ -134,3 +134,13 @@ LoginQuery::LoginQuery(int type, QString name, QString password) {
 }
 
 
+classQuery::classQuery(int id) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(7));
+    paras.push_back(new Parameter(id));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+       QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+       emit receive(parms[0]->number);
+    });
+}

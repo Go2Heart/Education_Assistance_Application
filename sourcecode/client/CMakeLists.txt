@@ -38,6 +38,7 @@ qt_add_executable(client WIN32 MACOSX_BUNDLE
         mainwindow.cpp mainwindow.h mainwindow.ui
         mycanvas.cpp mycanvas.h
         slidepage.cpp slidepage.h
+        classpage.cpp classpage.h
         )
 target_link_libraries(client PUBLIC
         Qt::Core
@@ -59,6 +60,7 @@ set(resourse_resource_files
         "icons/group-activity.svg"
         "icons/personal-activity.svg"
         "icons/user.svg"
+        "icons/search.svg"
         )
 
 qt6_add_resources(client "resourse"
