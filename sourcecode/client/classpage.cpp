@@ -3,6 +3,7 @@
 //
 
 #include "classpage.h"
+#include "loginpage.h"
 
 classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent),
@@ -19,7 +20,7 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont descFont = QFont("Corbel Light", 13);
     QFontMetrics descm(descFont);
     descFont.setStyleStrategy(QFont::PreferAntialias);
-    descLabel = new QLabel("#活动#" + info[0], infoWidget);
+    descLabel = new QLabel("[课程]" + info[0], infoWidget);
     descLabel->setFont(descFont);
     descLabel->setFixedHeight(descm.lineSpacing());
     descLabel->setStyleSheet("color: black");
@@ -28,7 +29,7 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont detailFont = QFont("Corbel Light", 10);
     QFontMetrics detailm(detailFont);
     detailFont.setStyleStrategy(QFont::PreferAntialias);
-    detailLabel = new QLabel("#内容#" + info[1] + "       #地点#" + info[2] + "     #时间#" + info[3], infoWidget);
+    detailLabel = new QLabel("[教师]" + info[1] + "       [地点]" + info[2] + "     [时间]" + info[3], infoWidget);
     detailLabel->setFont(detailFont);
     detailLabel->setFixedHeight(detailm.lineSpacing());
     detailLabel->setStyleSheet("color: gray");
@@ -161,7 +162,7 @@ ClassPage::ClassPage(QWidget* parent):
     searchLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
-    textInputItem* classSearch = new textInputItem("活动", searchBar);
+    textInputItem* classSearch = new textInputItem("课程", searchBar);
     bigIconButton* searchclass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchclass->setFixedSize(30,30);
 
@@ -175,10 +176,10 @@ ClassPage::ClassPage(QWidget* parent):
     //itemList->setFixedWidth(400);
     //eventLayout->addWidget(itemList);
 
-    classListWidget* classWidget = new classListWidget("class", 500, itemWidget, eventWidget);
+    classListWidget* classList = new classListWidget("class", 500, itemWidget, eventWidget);
 
 
-    eventLayout->addWidget(classWidget);
+    eventLayout->addWidget(classList);
     QVector<QWidget*> items;
 //                    connect(iconVec[0], &bigIconButton::clicked, this, [=]{
 //                        classAddPage* newPage = new classAddPage(12,1,300,0,"Create an class", slideParent);
@@ -201,6 +202,21 @@ ClassPage::ClassPage(QWidget* parent):
     itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
     itemLayout->addWidget(itemInfoTable);
     mainLayout->addWidget(itemWidget);
+    classQuery* query = new classQuery(studentId);
+    connect(query, &classQuery::receive, this, [=](QVariant varValue){
+        QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
+        for(int i = 0; i < classResult.size(); i++){
+            QVector<QString> info;
+            info.push_back(classResult[i]->name);
+            info.push_back(classResult[i]->teacher);
+            info.push_back(classResult[i]->place);
+            info.push_back(classResult[i]->time);
+            //info.push_back
+
+            classWidget * newClass = new classWidget(info, itemWidget);
+            classList->addContent(newClass);
+        }
+    });
 }
 void ClassPage::resizeEvent(QResizeEvent*) {
     itemWidget->resize(this->size());

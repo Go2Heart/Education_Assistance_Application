@@ -106,6 +106,21 @@ struct ResPackage {
 };
 
 Q_DECLARE_METATYPE(ResPackage)
+//classResult
+struct ClassResult {
+    QString name;
+    QString teacher;
+    QString place;
+    QString time;
+
+    ClassResult() {}
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time) :
+        name(name),
+        teacher(teacher),
+        place(place),
+        time(time)
+    {}
+};
 
 class DisQuery : public QObject {
     Q_OBJECT

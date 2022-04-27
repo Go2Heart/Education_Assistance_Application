@@ -138,9 +138,15 @@ classQuery::classQuery(int id) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(7));
     paras.push_back(new Parameter(id));
+    qDebug() << id;
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
-       emit receive(parms[0]->number);
+       QVector<ClassResult*> v;
+       for(int i = 0; i < parms.size(); i += 4) {
+           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
+       }
+       qDebug()<<"classQuery";
+       emit receive(QVariant::fromValue(v));
     });
 }
