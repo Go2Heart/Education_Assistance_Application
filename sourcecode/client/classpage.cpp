@@ -202,8 +202,8 @@ ClassPage::ClassPage(QWidget* parent):
     itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
     itemLayout->addWidget(itemInfoTable);
     mainLayout->addWidget(itemWidget);
-    classQuery* query = new classQuery(studentId);
-    connect(query, &classQuery::receive, this, [=](QVariant varValue){
+    ClassQuery* query = new ClassQuery(studentId);
+    connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
         QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
         for(int i = 0; i < classResult.size(); i++){
             QVector<QString> info;
@@ -214,6 +214,9 @@ ClassPage::ClassPage(QWidget* parent):
             //info.push_back
 
             classWidget * newClass = new classWidget(info, itemWidget);
+            connect(newClass, &classWidget::clicked, this, [=]{
+            //TODO adding specific class page
+            });
             classList->addContent(newClass);
         }
     });

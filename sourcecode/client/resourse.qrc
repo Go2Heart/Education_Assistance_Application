@@ -9,6 +9,9 @@
         <file>icons/group-activity.svg</file>
         <file>icons/personal-activity.svg</file>
         <file>icons/find-path.svg</file>
+        <file>icons/left-square.svg</file>
+        <file>icons/right-square.svg</file>
+        <file>icons/search.svg</file>
     </qresource>
     <qresource prefix="/style">
         <file>combostyle.qss</file>

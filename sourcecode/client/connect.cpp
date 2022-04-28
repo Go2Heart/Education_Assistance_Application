@@ -134,7 +134,7 @@ LoginQuery::LoginQuery(int type, QString name, QString password) {
 }
 
 
-classQuery::classQuery(int id) {
+ClassQuery::ClassQuery(int id) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(7));
     paras.push_back(new Parameter(id));
@@ -146,7 +146,7 @@ classQuery::classQuery(int id) {
        for(int i = 0; i < parms.size(); i += 4) {
            v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
        }
-       qDebug()<<"classQuery";
+       qDebug()<<"ClassQuery";
        emit receive(QVariant::fromValue(v));
     });
 }

@@ -121,6 +121,7 @@ struct ClassResult {
         time(time)
     {}
 };
+Q_DECLARE_METATYPE(ClassResult*)
 
 class DisQuery : public QObject {
     Q_OBJECT
@@ -172,13 +173,13 @@ signals:
 
 };
 
-class classQuery: public QObject {
+class ClassQuery: public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
 
 public:
-    classQuery(int id);
+    ClassQuery(int id);
 signals:
     void receive(QVariant varValue);
 };

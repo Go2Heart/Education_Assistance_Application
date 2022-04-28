@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     activitypage.cpp \
     basicClass.cpp \
+    classpage.cpp \
     clock.cpp \
     connect.cpp \
     customScrollContainer.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
 HEADERS += \
     activitypage.h \
     basicClass.h \
+    classpage.h \
     clock.h \
     connect.h \
     customScrollContainer.h \
