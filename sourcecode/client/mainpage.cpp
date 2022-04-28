@@ -328,44 +328,18 @@ mainPage::mainPage(QWidget* parent) :
         guidePage = new GuidePage(this);
         guidePage->hide();
 
-        connect(clock, &Clock::checkAlarm, this, [=] {
-            for (int i = 0; i< toDoList.size(); i++) {
-                //qDebug() << toDoList[i]->getTime().Hour() << ":" << toDoList[i]->getTime().Min();
-                if(clock->Hour() == toDoList[i]->getTime().Hour() && clock->Min() == toDoList[i]->getTime().Min() && toDoList[i]->getAlarm()){
-                    switch(toDoList[i]->getFrequency()){
-                        case 0:
-                            //alarm once
-                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                            new QLabel(toDoList[i]->getDescription() + " at " + toDoList[i]->getPlace(), this);
-
-                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
-                            eventList.back()->setStyleSheet("background-color:#ffffb3");
-                            infoContainer->addWidget(eventList.back(), 0);
-                            toDoList[i]->setAlarm(false);
-                            break;
-                        case 1:
-                            //alarm daily
-                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
-                            eventList.back()->setStyleSheet("background-color:#ffffb3");
-                            infoContainer->addWidget(eventList.back(), 0);
-                            break;
-                        case 2:
-                            //alarm weekly
-                            if(clock->Day() == toDoList[i]->getTime().Day()){
-                                QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                                eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace(), this));
-                                eventList.back()->setStyleSheet("background-color:#ffffb3");
-                                infoContainer->addWidget(eventList.back(), 0);
-                            }
-                            break;
-                        default:
-                            qDebug() << "error";
-                    }
-                }
+        classPage = new ClassPage(this);
+        classPage->hide();
+        connect(classBtn, &bigIconButton::clicked, this, [=] {
+            hideCurrentPage();
+            if(currentPage == CLASS){
+                showNewPage(displayWidget);
+                currentPage = MAIN;
+            } else {
+                showNewPage(classPage);
+                currentPage = CLASS;
             }
         });
-
         connect(guideBtn, &bigIconButton::clicked, [=] {
             hideCurrentPage();
             if (currentPage == GUIDE){
@@ -382,6 +356,43 @@ mainPage::mainPage(QWidget* parent) :
                 //pageList.push_back(page);
             }
         });
+    connect(clock, &Clock::checkAlarm, this, [=] {
+        for (int i = 0; i< toDoList.size(); i++) {
+            //qDebug() << toDoList[i]->getTime().Hour() << ":" << toDoList[i]->getTime().Min();
+            if(clock->Hour() == toDoList[i]->getTime().Hour() && clock->Min() == toDoList[i]->getTime().Min() && toDoList[i]->getAlarm()){
+                switch(toDoList[i]->getFrequency()){
+                    case 0:
+                        //alarm once
+                        QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                        new QLabel(toDoList[i]->getDescription() + " at " + toDoList[i]->getPlace(), this);
+
+                        eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
+                        eventList.back()->setStyleSheet("background-color:#ffffb3");
+                        infoContainer->addWidget(eventList.back(), 0);
+                        toDoList[i]->setAlarm(false);
+                        break;
+                    case 1:
+                        //alarm daily
+                        QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                        eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
+                        eventList.back()->setStyleSheet("background-color:#ffffb3");
+                        infoContainer->addWidget(eventList.back(), 0);
+                        break;
+                    case 2:
+                        //alarm weekly
+                        if(clock->Day() == toDoList[i]->getTime().Day()){
+                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
+                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace(), this));
+                            eventList.back()->setStyleSheet("background-color:#ffffb3");
+                            infoContainer->addWidget(eventList.back(), 0);
+                        }
+                        break;
+                    default:
+                        qDebug() << "error";
+                }
+            }
+        }
+    });
 }
 
 void mainPage::hideCurrentPage() {
@@ -391,6 +402,8 @@ void mainPage::hideCurrentPage() {
             displayWidget->hide();
             break;
         case CLASS:
+            mainLayout->removeWidget(classPage);
+            classPage->hide();
             break;
         case ACTIVITY:
             mainLayout->removeWidget(activityPage);

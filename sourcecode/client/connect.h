@@ -106,6 +106,22 @@ struct ResPackage {
 };
 
 Q_DECLARE_METATYPE(ResPackage)
+//classResult
+struct ClassResult {
+    QString name;
+    QString teacher;
+    QString place;
+    QString time;
+
+    ClassResult() {}
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time) :
+        name(name),
+        teacher(teacher),
+        place(place),
+        time(time)
+    {}
+};
+Q_DECLARE_METATYPE(ClassResult*)
 
 class DisQuery : public QObject {
     Q_OBJECT
@@ -155,5 +171,16 @@ public:
 signals:
     void receive(QVariant varValue);
 
+};
+
+class ClassQuery: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ClassQuery(int id);
+signals:
+    void receive(QVariant varValue);
 };
 #endif // CONNECT_H

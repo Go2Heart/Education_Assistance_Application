@@ -10,6 +10,7 @@
 #include "slidepage.h"
 #include "activitypage.h"
 #include "guidepage.h"
+#include "classpage.h"
 #include "clock.h"
 
 class toDo : public QWidget {
@@ -125,6 +126,7 @@ private:
     QVector<toDo*> toDoList;
     QVector<QLabel*> eventList;
     GuidePage* guidePage  = nullptr;
+    ClassPage* classPage = nullptr;
     int cornerRadius = 12;
     bool stateChanged = false;
     int currentPage = 0;
