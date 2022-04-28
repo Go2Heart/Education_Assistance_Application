@@ -60,13 +60,11 @@ void classInfoWidget::resizeEvent(QResizeEvent *event) {
 
 
 
-classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* parent) :
-        QWidget(parent),
-        maxHeight(h),
-        slideParent(p)
+classListWidget::classListWidget(QString name, QWidget* parent) :
+        QWidget(parent)
+//        slideParent(p)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setFixedHeight(maxHeight - titleHeight + overlap);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     titleWidget = new QWidget(this);
     titleWidget->setStyleSheet("background-color:rgb(200, 200, 200); border-radius:0px;");
     QFont textFont = QFont("Corbel Light", 24);
@@ -161,6 +159,11 @@ ClassPage::ClassPage(QWidget* parent):
     searchLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
+    QStringList selectList;
+    selectList<<"名称"<<"教师"<<"地点"<<"时间"<<"成员";
+    ComboBox* selections = new ComboBox(searchBar);
+    selections->setFixedWidth(100);
+    selections->addItems(selectList);
     textInputItem* classSearch = new textInputItem("活动", searchBar);
     bigIconButton* searchclass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchclass->setFixedSize(30,30);
@@ -168,6 +171,7 @@ ClassPage::ClassPage(QWidget* parent):
     /*TODO connect */
 
     searchLayout->addWidget(classSearch);
+    searchLayout->addWidget(selections);
     searchLayout->addWidget(searchclass);
     eventLayout->addWidget(searchBar);
 
@@ -175,7 +179,7 @@ ClassPage::ClassPage(QWidget* parent):
     //itemList->setFixedWidth(400);
     //eventLayout->addWidget(itemList);
 
-    classListWidget* classWidget = new classListWidget("class", 500, itemWidget, eventWidget);
+    classListWidget* classWidget = new classListWidget("class", eventWidget);
 
 
     eventLayout->addWidget(classWidget);

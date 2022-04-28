@@ -75,15 +75,15 @@ signals:
 class classListWidget : public QWidget {
 Q_OBJECT
 private:
-    QWidget* slideParent;
+//    QWidget* slideParent;
     QWidget* titleWidget;
     QLabel* nameLabel;
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
 
-    int overlap = 5, margin = 10, titleHeight = 40, maxHeight, spacing = 3;
+    int overlap = 5, margin = 10, titleHeight = 40, spacing = 3;
 public:
-    classListWidget(QString name, int h, QWidget* p, QWidget* parent = nullptr);
+    classListWidget(QString name, QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
     }
