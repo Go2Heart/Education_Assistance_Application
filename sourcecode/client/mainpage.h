@@ -4,19 +4,42 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QMessageBox>
 #include "customWidgets.h"
 #include "customScrollContainer.h"
 #include "slidepage.h"
 #include "activitypage.h"
 #include "guidepage.h"
+#include "classpage.h"
 #include "clock.h"
+
+class toDo : public QWidget {
+Q_OBJECT
+private:
+    QString description;
+    QString place;
+    Timer* clockTime;
+    bool alarm;
+    enum frequenceType{once, weekly, monthly} frequency;
+public:
+    toDo(QString desc, QString place, Timer* time, bool alarm, int freq, QWidget* parent = nullptr);
+    Timer getTime() {return *clockTime;}
+    QString getPlace() {return place;}
+    QString getDescription() {return description;}
+    bool getAlarm() {return alarm;}
+    int getFrequency() {return frequency;}
+    void setAlarm(bool x) {alarm = x;}
+};
 
 class clockAddPage : public SlidePage {
     Q_OBJECT
 private:
     textInputItem* description;
     textInputItem* place;
+    QWidget* dayBar;
     QWidget* timeBar;
+    ComboBox* week;
+    ComboBox* day;
     ComboBox*  hour;
     ComboBox* minute;
     QWidget* clockBar;
@@ -24,8 +47,9 @@ private:
     bool alarm = true;
     bool created = false;
     QVector<QString> collectMsg();
+
 public:
-    clockAddPage(int radius, int type, int width, int height, QString name, QWidget *parent = nullptr, int posy = 0);
+    clockAddPage(int radius, int type, int width, int height, QString name, QVector<toDo*>* toDoList,QWidget *parent = nullptr, int posy = 0);
 signals:
     void deliver(QVector<QString> msg);
     void modify(QVector<QString> msg);
@@ -80,7 +104,7 @@ private:
     QWidget* slideParent;
     QVector<clockAddPage*> pageList;
 public:
-    clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
+    clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QVector<toDo*>* toDoList, QWidget* parent = nullptr);
 signals:
     void addPage(clockAddPage*);
 };
@@ -99,8 +123,10 @@ private:
     ScrollAreaCustom* infoContainer = nullptr;
     QVector<SlidePage*> slidePageList;
     QVector<clockAddPage*> clockPageList;
-
+    QVector<toDo*> toDoList;
+    QVector<QLabel*> eventList;
     GuidePage* guidePage  = nullptr;
+    ClassPage* classPage = nullptr;
     int cornerRadius = 12;
     bool stateChanged = false;
     int currentPage = 0;

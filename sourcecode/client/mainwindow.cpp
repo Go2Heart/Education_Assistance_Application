@@ -59,12 +59,9 @@ void MainWindow::Init() {
     connect(closeBtn, &QPushButton::clicked, [=]{close();});
 
     //login page
-    //*
     loginpage = new loginPage(ui->mainWidget);
     ui->mainLayout->addWidget(loginpage);
     loginpage->show();
-//    loginpage->hide();
-    //*/
     mainpage = new mainPage(ui->mainWidget);
 //    ui->mainLayout->addWidget(mainpage);
 //    mainpage->show();
@@ -72,7 +69,6 @@ void MainWindow::Init() {
     //ui->mainLayout->addWidget(mainpage);
     //mainpage->show();
     //mainpage->raisePage();
-    //*
     connect(loginpage,
         &loginPage::logined,
         [=] {
@@ -81,7 +77,6 @@ void MainWindow::Init() {
             ui->mainLayout->addWidget(mainpage);
             mainpage->show();
     });
-    //*/
 }
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     if(event->button() == Qt::LeftButton) {

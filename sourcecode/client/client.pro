@@ -15,6 +15,7 @@ SOURCES += \
     connect.cpp \
     customScrollContainer.cpp \
     customWidgets.cpp \
+    classpage.cpp \
     graph_implement.cpp \
     graph_view.cpp \
     guidepage.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
 HEADERS += \
     activitypage.h \
     basicClass.h \
+    classpage.h \
     clock.h \
     connect.h \
     customScrollContainer.h \

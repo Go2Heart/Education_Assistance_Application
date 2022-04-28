@@ -48,6 +48,7 @@ public:
     void Print() {
         qDebug() << week << day << hour << minute;
     }
+
 };
 
 extern Timer ToTimer(int x);

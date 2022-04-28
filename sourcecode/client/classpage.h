@@ -1,5 +1,9 @@
-#ifndef ACTIVITYPAGE_H
-#define ACTIVITYPAGE_H
+//
+// Created by Go2Heart on 2022/4/27.
+//
+
+#ifndef CLIENT_CLASSPAGE_H
+#define CLIENT_CLASSPAGE_H
 
 #include <QWidget>
 #include <QVBoxLayout>
@@ -8,66 +12,47 @@
 #include "customScrollContainer.h"
 #include "slidepage.h"
 #include "clock.h"
-class activityInfoWidget : public QWidget{
+class classInfoWidget : public QWidget{
 Q_OBJECT
 private:
     int margin = 5, spacing = 5;
     QWidget* infoWidget;
     QLabel* descLabel;
     QLabel* detailLabel;
-    bigIconButton* activityType;
+    bigIconButton* classType;
     bool mousePressed = false;
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
     void resizeEvent(QResizeEvent*);
 public:
-    activityInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
+    classInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
     void modify(QVector<QString> info);
 signals:
     void clicked();
 };
 
-class activityAddPage : public SlidePage {
-Q_OBJECT
-private:
-    textInputItem* title;
-    textInputItem* description;
-    textInputItem* place;
-    textInputItem* time;
-    QWidget* activityBar;
-    textInputItem* frequency;
-    bool isPersonal = true;
-    bool alarm = true;
-    bool created = false;
-    QVector<QString> collectMsg();
-public:
-    activityAddPage(int radius, int type, int width, int height, QString name, QWidget *parent = nullptr, int posy = 0);
-signals:
-    void deliver(QVector<QString> msg);
-    void modify(QVector<QString> msg);
-};
 
-class ActivityPage : public QWidget{
+class ClassPage : public QWidget{
 Q_OBJECT
 private:
     QWidget* itemWidget = nullptr;
     QWidget* itemInfo = nullptr;
     QWidget* searchBar = nullptr;
-    SlidePage* addActivity;
+    SlidePage* addclass;
     ScrollAreaCustom* itemList = nullptr;
     QVector<SlidePage*> pageList;
-    activityInfoWidget* activityInfo = nullptr;
+    classInfoWidget* classInfo = nullptr;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
-    ActivityPage(QWidget* parent = nullptr);
+    ClassPage(QWidget* parent = nullptr);
 };
 
-class activityWidget : public QWidget {
+class classWidget : public QWidget {
 Q_OBJECT
 private:
     QWidget* bgWidget;
-    activityInfoWidget* infoWidget;
+    classInfoWidget* infoWidget;
     QString defaultColor = "#0a0078d4";
     QString hoverColor = "#1a0078d4";
     QString pressedColor = "#2a0078d4";
@@ -79,7 +64,7 @@ private:
     }
     void resizeEvent(QResizeEvent*);
 public:
-    activityWidget(QVector<QString> info, QWidget* parent = nullptr);
+    classWidget(QVector<QString> info, QWidget* parent = nullptr);
     void modify(QVector<QString> info) {
         infoWidget->modify(info);
     }
@@ -87,25 +72,25 @@ signals:
     void clicked();
 };
 
-class activityListWidget : public QWidget {
+class classListWidget : public QWidget {
 Q_OBJECT
 private:
     QWidget* slideParent;
     QWidget* titleWidget;
     QLabel* nameLabel;
-    QVector<activityAddPage*> pageList;
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
 
-    int overlap = 5, margin = 10, titleHeight = 40, spacing = 3;
-    void resizeEvent(QResizeEvent*);
+    int overlap = 5, margin = 10, titleHeight = 40, maxHeight, spacing = 3;
 public:
-    activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
+    classListWidget(QString name, int h, QWidget* p, QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
     }
+    void resizeEvent(QResizeEvent*);
 signals:
     void clicked(int id);
-    void addPage(activityAddPage*);
 };
-#endif // ACTIVITYPAGE_H
+
+
+#endif //CLIENT_CLASSPAGE_H
