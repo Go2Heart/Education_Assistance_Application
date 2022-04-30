@@ -1,5 +1,5 @@
 #include "activitypage.h"
-
+#include "loginpage.h"
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent),
         activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
@@ -15,7 +15,7 @@ activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont descFont = QFont("Corbel Light", 13);
     QFontMetrics descm(descFont);
     descFont.setStyleStrategy(QFont::PreferAntialias);
-    descLabel = new QLabel("#活动#" + info[0], infoWidget);
+    descLabel = new QLabel("[活动]" + info[0], infoWidget);
     descLabel->setFont(descFont);
     descLabel->setFixedHeight(descm.lineSpacing());
     descLabel->setStyleSheet("color: black");
@@ -24,7 +24,7 @@ activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont detailFont = QFont("Corbel Light", 10);
     QFontMetrics detailm(detailFont);
     detailFont.setStyleStrategy(QFont::PreferAntialias);
-    detailLabel = new QLabel("#内容#" + info[1] + "       #地点#" + info[2] + "     #时间#" + info[3], infoWidget);
+    detailLabel = new QLabel("[内容]" + info[1] + "       [地点]" + info[2] + "     [时间]" + info[3], infoWidget);
     detailLabel->setFont(detailFont);
     detailLabel->setFixedHeight(detailm.lineSpacing());
     detailLabel->setStyleSheet("color: gray");
@@ -134,14 +134,14 @@ QVector<QString> activityAddPage::collectMsg() {
     return tmp;
 }
 
-activityListWidget::activityListWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent) :
+activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent) :
         QWidget(parent),
-        maxHeight(h),
         extraIcons(icons),
         slideParent(p)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setFixedHeight(maxHeight - titleHeight + overlap);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding );
+//    setStyleSheet("Height:540");
+//    setFixedHeight(540);
     titleWidget = new QWidget(this);
     titleWidget->setStyleSheet("background-color:rgb(200, 200, 200); border-radius:0px;");
     QFont textFont = QFont("Corbel Light", 24);
@@ -170,6 +170,21 @@ activityListWidget::activityListWidget(QString name, int h, QVector<bigIconButto
             pageList.push_back(newPage);
         });
         newPage->slideIn();
+    });
+    connect(this, &activityListWidget::addReceived, this, [=](QVector<QString> s) {
+        activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", slideParent);
+        emit addPage(newPage);
+        emit newPage->deliver(s);
+        connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
+            activityWidget* newWidget = new activityWidget(s, this);
+            addContent(newWidget);
+            connect(newWidget, &activityWidget::clicked, newPage, &SlidePage::slideIn);
+            connect(newPage, &activityAddPage::modify, newWidget, [=](QVector<QString> s) {
+                newWidget->modify(s);
+            });
+            pageList.push_back(newPage);
+        });
+        //newPage->slideIn();
     });
 }
 
@@ -249,6 +264,12 @@ ActivityPage::ActivityPage(QWidget* parent):
     searchLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
+    QStringList selectList;
+    selectList<<"名称"<<"地点"<<"时间"<<"类型"<<"成员";
+    ComboBox* selections = new ComboBox(searchBar);
+    selections->setFixedWidth(100);
+//                        selections->setStyleSheet("border-radius: 3");
+    selections->addItems(selectList);
     textInputItem* activitySearch = new textInputItem("活动", searchBar);
     bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchActivity->setFixedSize(30,30);
@@ -256,6 +277,7 @@ ActivityPage::ActivityPage(QWidget* parent):
     /*TODO connect */
 
     searchLayout->addWidget(activitySearch);
+    searchLayout->addWidget(selections);
     searchLayout->addWidget(searchActivity);
     eventLayout->addWidget(searchBar);
 
@@ -265,12 +287,12 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     QVector<bigIconButton*> iconVec;
     iconVec.push_back(new bigIconButton(9, ":/icons/icons/add.svg"));
-    activityListWidget* activityWidget = new activityListWidget("activity", 500, iconVec, itemWidget, eventWidget);
-    connect(activityWidget, &activityListWidget::addPage, this, [=](activityAddPage* page){
+    activityListWidget* activityList = new activityListWidget("activity", iconVec, itemWidget, eventWidget);
+    connect(activityList, &activityListWidget::addPage, this, [=](activityAddPage* page){
         pageList.push_back(page);
     });
 
-    eventLayout->addWidget(activityWidget);
+    eventLayout->addWidget(activityList);
     QVector<QWidget*> items;
 //                    connect(iconVec[0], &bigIconButton::clicked, this, [=]{
 //                        activityAddPage* newPage = new activityAddPage(12,1,300,0,"Create an activity", slideParent);
@@ -293,6 +315,42 @@ ActivityPage::ActivityPage(QWidget* parent):
     itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
     itemLayout->addWidget(itemInfoTable);
     mainLayout->addWidget(itemWidget);
+    ActivityQuery* query = new ActivityQuery(studentId);
+    connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
+        QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+        for(int i = 0; i < activityResult.size(); i++){
+            QVector<QString> info;
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->place);
+            info.push_back(activityResult[i]->time);
+            info.push_back("true");
+            info.push_back("true");
+            info.push_back("1");
+
+            //info.push_back
+
+            //activityWidget* newAct = new activityWidget(info, itemWidget);
+            //activityList->addContent(newAct);
+            emit activityList->addReceived(info);
+            /*activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", itemWidget);
+            emit activityList->addPage(newPage);
+            emit newPage->deliver(info);
+            newAct->modify(info);
+            connect(newAct, &activityWidget::clicked, newPage, &SlidePage::slideIn);
+            connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
+                //activityWidget* newWidget = new activityWidget(s, this);
+                activityList->addContent(newAct);
+                connect(newAct, &activityWidget::clicked, newPage, &SlidePage::slideIn);
+                connect(newPage, &activityAddPage::modify, newAct, [=](QVector<QString> s) {
+                    newAct->modify(s);
+                });
+                pageList.push_back(newPage);
+            });
+            pageList.push_back(newPage);*/
+        }
+    });
+
 }
 void ActivityPage::resizeEvent(QResizeEvent*) {
     itemWidget->resize(this->size());

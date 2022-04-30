@@ -122,7 +122,20 @@ struct ClassResult {
     {}
 };
 Q_DECLARE_METATYPE(ClassResult*)
+//activityResult
+struct ActivityResult {
+    QString name;
+    QString place;
+    QString time;
 
+    ActivityResult() {}
+    ActivityResult(QString& name, QString& place, QString& time) :
+        name(name),
+        place(place),
+        time(time)
+    {}
+};
+Q_DECLARE_METATYPE(ActivityResult*)
 class DisQuery : public QObject {
     Q_OBJECT
 private:
@@ -180,6 +193,17 @@ private:
 
 public:
     ClassQuery(int id);
+signals:
+    void receive(QVariant varValue);
+};
+
+class ActivityQuery: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ActivityQuery(int id);
 signals:
     void receive(QVariant varValue);
 };

@@ -97,15 +97,16 @@ private:
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
 
-    int overlap = 5, margin = 10, titleHeight = 40, maxHeight, spacing = 3;
+    int overlap = 5, margin = 10, titleHeight = 40, spacing = 3;
     void resizeEvent(QResizeEvent*);
 public:
-    activityListWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
+    activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
     }
 signals:
     void clicked(int id);
     void addPage(activityAddPage*);
+    void addReceived(QVector<QString>);
 };
 #endif // ACTIVITYPAGE_H

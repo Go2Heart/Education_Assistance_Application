@@ -7,7 +7,7 @@
 
 classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent),
-        classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-class.svg"/*改成单人*/ : ":/icons/icons/group-class.svg"/*改成集体*/, "", 0, this))
+        classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
 {
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -66,8 +66,8 @@ classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* paren
         maxHeight(h),
         slideParent(p)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setFixedHeight(maxHeight - titleHeight + overlap);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    //setFixedHeight(maxHeight - titleHeight + overlap);
     titleWidget = new QWidget(this);
     titleWidget->setStyleSheet("background-color:rgb(200, 200, 200); border-radius:0px;");
     QFont textFont = QFont("Corbel Light", 24);
@@ -162,6 +162,11 @@ ClassPage::ClassPage(QWidget* parent):
     searchLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
+    QStringList selectList;
+    selectList<<"名称"<<"教师"<<"地点"<<"时间"<<"成员";
+    ComboBox* selections = new ComboBox(searchBar);
+    selections->setFixedWidth(100);
+    selections->addItems(selectList);
     textInputItem* classSearch = new textInputItem("课程", searchBar);
     bigIconButton* searchclass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchclass->setFixedSize(30,30);
@@ -169,6 +174,7 @@ ClassPage::ClassPage(QWidget* parent):
     /*TODO connect */
 
     searchLayout->addWidget(classSearch);
+    searchLayout->addWidget(selections);
     searchLayout->addWidget(searchclass);
     eventLayout->addWidget(searchBar);
 
