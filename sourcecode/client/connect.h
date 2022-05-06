@@ -207,4 +207,6 @@ public:
 signals:
     void receive(QVariant varValue);
 };
+
+
 #endif // CONNECT_H

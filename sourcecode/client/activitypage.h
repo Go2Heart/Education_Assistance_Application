@@ -20,8 +20,10 @@ private:
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
     void resizeEvent(QResizeEvent*);
+    QVector<QString> info;
 public:
     activityInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
+    QVector<QString> getInfo(){return info;}
     void modify(QVector<QString> info);
 signals:
     void clicked();
@@ -47,6 +49,37 @@ signals:
     void modify(QVector<QString> msg);
 };
 
+
+class activityDetailWidget: public QWidget{
+    Q_OBJECT
+private:
+    textInputItem* title;
+    textInputItem* description;
+    textInputItem* place;
+    textInputItem* time;
+    textInputItem* frequency;
+    bool isPersonal = true;
+    bool alarm = true;
+    QVector<QString> collectMsg();
+//    ScrollAreaCustom* materialList;
+//    ScrollAreaCustom* homeworkList;
+public:
+    activityDetailWidget(QWidget* parent);
+    void showDetail(QVector<QString> info);
+    QVector<QString> getLines() {
+        QVector<QString> lines;
+        lines.append(title->value());
+        lines.append(description->value());
+        lines.append(place->value());
+        lines.append(time->value());
+        return lines;
+    }
+signals:
+    void deliver(QVector<QString> msg);
+    void modify();
+
+};
+
 class ActivityPage : public QWidget{
 Q_OBJECT
 private:
@@ -57,6 +90,7 @@ private:
     ScrollAreaCustom* itemList = nullptr;
     QVector<SlidePage*> pageList;
     activityInfoWidget* activityInfo = nullptr;
+    activityDetailWidget* activityDtl = nullptr;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
@@ -83,6 +117,9 @@ public:
     void modify(QVector<QString> info) {
         infoWidget->modify(info);
     }
+    QVector<QString> getInfo() {
+        return infoWidget->getInfo();
+    }
 signals:
     void clicked();
 };
@@ -100,7 +137,7 @@ private:
     int overlap = 5, margin = 10, titleHeight = 40, spacing = 3;
     void resizeEvent(QResizeEvent*);
 public:
-    activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
+    activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
     }
