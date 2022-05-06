@@ -106,7 +106,36 @@ struct ResPackage {
 };
 
 Q_DECLARE_METATYPE(ResPackage)
+//classResult
+struct ClassResult {
+    QString name;
+    QString teacher;
+    QString place;
+    QString time;
 
+    ClassResult() {}
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time) :
+        name(name),
+        teacher(teacher),
+        place(place),
+        time(time)
+    {}
+};
+Q_DECLARE_METATYPE(ClassResult*)
+//activityResult
+struct ActivityResult {
+    QString name;
+    QString place;
+    QString time;
+
+    ActivityResult() {}
+    ActivityResult(QString& name, QString& place, QString& time) :
+        name(name),
+        place(place),
+        time(time)
+    {}
+};
+Q_DECLARE_METATYPE(ActivityResult*)
 class DisQuery : public QObject {
     Q_OBJECT
 private:
@@ -157,13 +186,24 @@ signals:
 
 };
 
-class classQuery: public QObject {
+class ClassQuery: public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
 
 public:
-    classQuery(int id);
+    ClassQuery(int id);
+signals:
+    void receive(QVariant varValue);
+};
+
+class ActivityQuery: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ActivityQuery(int id);
 signals:
     void receive(QVariant varValue);
 };

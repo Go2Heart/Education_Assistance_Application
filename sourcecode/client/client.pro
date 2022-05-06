@@ -11,11 +11,11 @@ CONFIG += c++11
 SOURCES += \
     activitypage.cpp \
     basicClass.cpp \
+    classpage.cpp \
     clock.cpp \
     connect.cpp \
     customScrollContainer.cpp \
     customWidgets.cpp \
-    classpage.cpp \
     graph_implement.cpp \
     graph_view.cpp \
     guidepage.cpp \

@@ -134,13 +134,36 @@ LoginQuery::LoginQuery(int type, QString name, QString password) {
 }
 
 
-classQuery::classQuery(int id) {
+ClassQuery::ClassQuery(int id) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(7));
     paras.push_back(new Parameter(id));
+    //qDebug() << id;
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
-       emit receive(parms[0]->number);
+       QVector<ClassResult*> v;
+       for(int i = 0; i < parms.size(); i += 4) {
+           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
+       }
+       //qDebug()<<"ClassQuery";
+       emit receive(QVariant::fromValue(v));
+    });
+}
+
+ActivityQuery::ActivityQuery(int id) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(8));
+    paras.push_back(new Parameter(id));
+    qDebug() << "activity id: " << id;
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+       QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+       QVector<ActivityResult*> v;
+       for(int i = 0; i < parms.size(); i += 3) {
+           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage));
+       }
+       qDebug() << "activity size: " << v.size();
+       emit receive(QVariant::fromValue(v));
     });
 }

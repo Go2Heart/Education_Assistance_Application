@@ -47,6 +47,28 @@ signals:
     void modify(QVector<QString> msg);
 };
 
+
+class activityDetailWidget: public QWidget{
+    Q_OBJECT
+private:
+    textInputItem* title;
+    textInputItem* description;
+    textInputItem* place;
+    textInputItem* time;
+    textInputItem* frequency;
+    bool isPersonal = true;
+    bool alarm = true;
+    QVector<QString> collectMsg();
+//    ScrollAreaCustom* materialList;
+//    ScrollAreaCustom* homeworkList;
+public:
+    activityDetailWidget(QWidget* parent);
+signals:
+    void deliver(QVector<QString> msg);
+    void modify(QVector<QString> msg);
+
+};
+
 class ActivityPage : public QWidget{
 Q_OBJECT
 private:
@@ -57,6 +79,7 @@ private:
     ScrollAreaCustom* itemList = nullptr;
     QVector<SlidePage*> pageList;
     activityInfoWidget* activityInfo = nullptr;
+    activityDetailWidget* activityDtl = nullptr;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
@@ -107,5 +130,7 @@ public:
 signals:
     void clicked(int id);
     void addPage(activityAddPage*);
+    void addReceived(QVector<QString>);
+    void showDetail(activityWidget*);
 };
 #endif // ACTIVITYPAGE_H

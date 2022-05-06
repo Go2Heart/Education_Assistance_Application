@@ -37,6 +37,8 @@ loginPage::loginPage(QWidget *parent) :
             textInputItem* password = new textInputItem("密码", checkWidget);
             textButton* login = new textButton("登录", checkWidget);
             connect(login, &textButton::clicked, [=]{
+                //for debugging
+                emit logined();
                 LoginQuery* loginQuery = new LoginQuery(identitySel->value(), username->value(), password->value());
                 connect(loginQuery, &LoginQuery::Id, this, [=](int id) {
                    if(id == 255) {

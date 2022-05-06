@@ -62,9 +62,7 @@ void MainWindow::Init() {
     loginpage = new loginPage(ui->mainWidget);
     ui->mainLayout->addWidget(loginpage);
     loginpage->show();
-    mainpage = new mainPage(ui->mainWidget);
-//    ui->mainLayout->addWidget(mainpage);
-//    mainpage->show();
+
     //mainpage->setGraphicsEffect(0);
     //ui->mainLayout->addWidget(mainpage);
     //mainpage->show();
@@ -72,6 +70,7 @@ void MainWindow::Init() {
     connect(loginpage,
         &loginPage::logined,
         [=] {
+            mainpage = new mainPage(ui->mainWidget);
             ui->mainLayout->removeWidget(loginpage);
             loginpage->hide();
             ui->mainLayout->addWidget(mainpage);

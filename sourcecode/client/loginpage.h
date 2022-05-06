@@ -31,5 +31,4 @@ signals:
 extern int type;
 extern int studentId;
 extern int teacherId;
-
 #endif // LOGINPAGE_H

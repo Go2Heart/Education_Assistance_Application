@@ -277,6 +277,7 @@ public:
     textButton(QString text, QString defC, QString hoverC, QString pressedC, QWidget* parent = nullptr, qreal ratio = 0.5);
     void setText(QString s) { btnText->setText(s); }
 
+
 signals:
     void clicked();
 };
