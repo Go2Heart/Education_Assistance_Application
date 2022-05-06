@@ -171,19 +171,25 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
         });
         newPage->slideIn();
     });
+    //for Server message
     connect(this, &activityListWidget::addReceived, this, [=](QVector<QString> s) {
-        activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", slideParent);
-        emit addPage(newPage);
-        emit newPage->deliver(s);
-        connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
-            activityWidget* newWidget = new activityWidget(s, this);
-            addContent(newWidget);
-            connect(newWidget, &activityWidget::clicked, newPage, &SlidePage::slideIn);
-            connect(newPage, &activityAddPage::modify, newWidget, [=](QVector<QString> s) {
-                newWidget->modify(s);
-            });
-            pageList.push_back(newPage);
+        /*@todo  How to create slidePage for Server message?*/
+        //activityAddPage* newPage = new activityAddPage(12, 1, 300, 500, "创建新活动", slideParent);
+        //emit addPage(newPage);
+        //QLabel *title = new QLabel("s[0]", newPage);
+        //newPage->AddContent(title);
+        //emit newPage->deliver(s);
+        //connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
+        activityWidget* newWidget = new activityWidget(s, this);
+        addContent(newWidget);
+        connect(newWidget, &activityWidget::clicked, this, [=]() {
+            emit showDetail(newWidget);
         });
+        //connect(newPage, &activityAddPage::modify, newWidget, [=](QVector<QString> s) {
+        //     newWidget->modify(s);
+        // });
+       //pageList.push_back(newPage);
+        //});
         //newPage->slideIn();
     });
 }
@@ -309,13 +315,40 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     itemList->addWidgets(items);
     itemLayout->addWidget(eventWidget);
-    //活动详情信息
-    QWidget* itemInfoTable = new QWidget(itemWidget);
-    itemInfoTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
-    itemLayout->addWidget(itemInfoTable);
     mainLayout->addWidget(itemWidget);
     ActivityQuery* query = new ActivityQuery(studentId);
+
+    /*Detail Widget*/
+
+    QWidget* detailWidget = new QWidget(itemWidget);
+    detailWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    detailWidget->setStyleSheet("border:1px solid gray;background-color:dark blue");
+    itemLayout->addWidget(detailWidget);
+    QVBoxLayout* detailLayout = new QVBoxLayout(detailWidget);
+    detailLayout->setAlignment(Qt::AlignTop);
+    detailLayout->setContentsMargins(0, 5, 0, 0);
+    detailLayout->setSpacing(5);
+        QWidget* detailTab = new QWidget(detailWidget);
+        detailTab->setStyleSheet("border:0px transparent gray;background-color:transparent");
+        detailTab->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        detailTab->setFixedHeight(50);
+        QHBoxLayout *tabLayout = new QHBoxLayout(detailTab);
+        tabLayout->setSpacing(0);
+        tabLayout->setAlignment(Qt::AlignTop);
+        tabLayout->setContentsMargins(5, 0, 5, 0);
+        textButton* detailTabButton1 = new textButton("活动详情", detailTab);
+        tabLayout->addWidget(detailTabButton1);
+
+        connect(detailTabButton1, &textButton::clicked, this, [=]{
+
+
+        });
+        textButton* detailTabButton2 = new textButton("材料提交", detailTab);
+        tabLayout->addWidget(detailTabButton2);
+
+        detailLayout->addWidget(detailTab);
+
+
     connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
         QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
         for(int i = 0; i < activityResult.size(); i++){
@@ -329,10 +362,14 @@ ActivityPage::ActivityPage(QWidget* parent):
             info.push_back("1");
 
             //info.push_back
+            activityWidget* newWidget = new activityWidget(info, this);
+            activityList->addContent(newWidget);
+            connect(newWidget, &activityWidget::clicked, this, [=](){
 
+            });
             //activityWidget* newAct = new activityWidget(info, itemWidget);
             //activityList->addContent(newAct);
-            emit activityList->addReceived(info);
+            //emit activityList->addReceived(info);
             /*activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", itemWidget);
             emit activityList->addPage(newPage);
             emit newPage->deliver(info);

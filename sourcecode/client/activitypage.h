@@ -108,5 +108,6 @@ signals:
     void clicked(int id);
     void addPage(activityAddPage*);
     void addReceived(QVector<QString>);
+    void showDetail(activityWidget*);
 };
 #endif // ACTIVITYPAGE_H
