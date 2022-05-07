@@ -336,6 +336,8 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     /*TODO connect */
 
+
+
     searchLayout->addWidget(activitySearch);
     searchLayout->addWidget(selections);
     searchLayout->addWidget(searchActivity);
@@ -424,7 +426,7 @@ ActivityPage::ActivityPage(QWidget* parent):
     ActivityQuery* query = new ActivityQuery(studentId);
     connect(activityList, &activityListWidget::newActivity, this, [=](activityWidget* activityWidget) {
         QVector<QString> info = activityWidget->getInfo();
-        activityUpload* upload = new activityUpload(info, studentId);
+        ActivityUpload* upload = new ActivityUpload(info, studentId);
     });
     /*Detail Widget*/
 
@@ -448,26 +450,33 @@ ActivityPage::ActivityPage(QWidget* parent):
             connect(newWidget, &activityWidget::clicked, this, [=](){
                 activityDtl->showDetail(info);
             });
-            //activityWidget* newAct = new activityWidget(info, itemWidget);
-            //activityList->addContent(newAct);
-            //emit activityList->addReceived(info);
-            /*activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", itemWidget);
-            emit activityList->addPage(newPage);
-            emit newPage->deliver(info);
-            newAct->modify(info);
-            connect(newAct, &activityWidget::clicked, newPage, &SlidePage::slideIn);
-            connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
-                //activityWidget* newWidget = new activityWidget(s, this);
-                activityList->addContent(newAct);
-                connect(newAct, &activityWidget::clicked, newPage, &SlidePage::slideIn);
-                connect(newPage, &activityAddPage::modify, newAct, [=](QVector<QString> s) {
-                    newAct->modify(s);
-                });
-                pageList.push_back(newPage);
-            });
-            pageList.push_back(newPage);*/
         }
     });
+    connect(searchActivity, &bigIconButton::clicked, this, [=] {
+        search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
+        connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
+            activityList->cleanContent();
+            QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+            for(int i = 0; i < activityResult.size(); i++){
+                QVector<QString> info;
+                info.push_back(activityResult[i]->name);
+                info.push_back(activityResult[i]->name);
+                info.push_back(activityResult[i]->place);
+                info.push_back(activityResult[i]->time);
+                info.push_back("true");
+                info.push_back("true");
+                info.push_back("1");
+
+                //info.push_back
+                activityWidget* newWidget = new activityWidget(info, this);
+                activityList->addContent(newWidget);
+                connect(newWidget, &activityWidget::clicked, this, [=](){
+                    activityDtl->showDetail(info);
+                });
+            }
+        });
+    });
+
 
 
 }

@@ -208,23 +208,23 @@ signals:
     void receive(QVariant varValue);
 };
 
-class activitySearch: public QObject {
+class ActivitySearch: public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
 
 public:
-    activitySearch(QString key, int type);
+    ActivitySearch(QString key, int type);
 signals:
     void receive(QVariant varValue);
 };
 
-class activityUpload: public QObject {
+class ActivityUpload: public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
 
 public:
-    activityUpload(QVector<QString> v, int id);
+    ActivityUpload(QVector<QString> v, int id);
 };
 #endif // CONNECT_H

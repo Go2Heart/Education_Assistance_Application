@@ -123,6 +123,7 @@ private:
     QVector<SlidePage*> pageList;
     activityInfoWidget* activityInfo = nullptr;
     activityDetailWidget* activityDtl = nullptr;
+    ActivitySearch* search;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
@@ -140,6 +141,7 @@ private:
     QVector<activityAddPage*> pageList;
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
+    QVector<QWidget*> itemList;
 
     int overlap = 5, margin = 10, titleHeight = 40, spacing = 3;
     void resizeEvent(QResizeEvent*);
@@ -147,6 +149,12 @@ public:
     activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
+        itemList.push_back(p);
+    }
+    void cleanContent(){
+        for(int i = 0; i < itemList.size(); i++){
+            container->removeWidget(itemList[i]);
+        }
     }
 signals:
     void clicked(int id);

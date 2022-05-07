@@ -309,6 +309,45 @@ void Server::run() {
                                 resultParms.push_back(Parameter(time, false));
                             }
                         }
+                        sendAll(i, resultParms, false);
+                        break;
+
+                    }
+                    case 0xA: {//检索活动
+                        Vector<Parameter> resultParms;
+                        int type = parms[2].number;
+                        switch(type) {
+                            case 0: {//活动名称
+                                for(int i = 0; i < activityGroup.size(); i++) {
+                                    if(activityGroup.GetActivity(i)->Name().find(parms[1].message)) {
+                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
+                                        //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
+                                        Duration d = activityGroup.GetActivity(i)->Dura();
+                                        String time;
+                                        time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
+                                        resultParms.push_back(Parameter(time, false));
+                                    }
+                                }
+
+                                break;
+                            }
+                            case 1: {//活动地点
+                                for(int i = 0; i < activityGroup.size(); i++) {
+
+                                }
+
+                                break;
+                            }
+                            case 2: {//活动时间
+                                for(int i = 0; i < activityGroup.size(); i++) {
+
+                                }
+
+                                break;
+                            }
+
+                        }
                         sendAll(i, resultParms, true);
                         break;
 
@@ -354,8 +393,9 @@ void Server::run() {
                         Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration,nowStudents);
                         int activityID = activityGroup.AddActivities(nowActivity);
                         studentGroup.GetStudent(parms[5].number)->Events()->AddActivity(activityID);
-
+                        break;
                     }
+
 
                         /*
                         case 'a' : {

@@ -9,7 +9,12 @@ int UnZip(std::string x) {
 TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
+#ifdef __WIN32__
+    socket->connectToHost("123.56.124.140", 8888);
+#endif
+#ifdef  __APPLE__
     socket->connectToHost("82.157.164.204", 43434);
+#endif
     connect(socket, SIGNAL(readyRead()), SLOT(readData()));
     connect(socket, SIGNAL(connected()), SLOT(connected()));
 }
@@ -163,16 +168,15 @@ ActivityQuery::ActivityQuery(int id) {
        for(int i = 0; i < parms.size(); i += 3) {
            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage));
        }
-       qDebug() << "activity size: " << v.size();
        emit receive(QVariant::fromValue(v));
     });
 }
 
-activitySearch::activitySearch(QString name, int type) {
+ActivitySearch::ActivitySearch(QString name, int type) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(10));
-    paras.push_back(new Parameter(type));
     paras.push_back(new Parameter(name));
+    paras.push_back(new Parameter(type));
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
@@ -185,14 +189,14 @@ activitySearch::activitySearch(QString name, int type) {
 
 }
 
-activityUpload::activityUpload(QVector<QString> v, int id) {
+ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(11));
     paras.push_back(new Parameter(v[2])); //place
     paras.push_back(new Parameter(v[0])); //name
     paras.push_back(new Parameter(1)); //type
     paras.push_back(new Parameter(v[3])); //time
-    qDebug() << "activity time: " << v[3];
+    //qDebug() << "activity time: " << v[3];
     paras.push_back(new Parameter(id)); //content
     connector = new TcpConnector(paras);
 }
