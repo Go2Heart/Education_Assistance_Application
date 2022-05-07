@@ -10,7 +10,7 @@
 #include "huffman/decoder.h"
 #include "huffman/encoder.h"
 #include "clock.h"
-
+//server at TencentCloud
 Timer beg[20];
 Timer fin[20];
 Students studentGroup;
