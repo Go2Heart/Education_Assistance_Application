@@ -15,8 +15,8 @@ private:
     unsigned long long hash;
 public:
     File(String path, unsigned long long hash) :
-        savePath(path),
-        hash(hash)
+            savePath(path),
+            hash(hash)
     {}
 };
 
@@ -30,22 +30,25 @@ private:
     Vector<Student*> students;
 public:
     Lesson(
-        String classPlace,
-        String teacher,
-        String name,
-        String QQnumber,
-        Vector<Duration> classdurations,
-        Vector<Student*> students
+            String classPlace,
+            String teacher,
+            String name,
+            String QQnumber,
+            Vector<Duration> classdurations,
+            Vector<Student*> students
     ) :
-        classPlace(classPlace),
-        teacher(teacher),
-        name(name),
-        QQnumber(QQnumber),
-        classDurations(classdurations),
-        students(students)
+            classPlace(classPlace),
+            teacher(teacher),
+            name(name),
+            QQnumber(QQnumber),
+            classDurations(classdurations),
+            students(students)
     {}
     String Name() { return name; }
+    String Teacher() { return teacher; }
+    String Place() { return classPlace; }
     Vector<Duration> ClassDurations() { return classDurations; }
+
     bool cross(Vector<Duration> durations) {
         for(int i = 0; i < durations.size(); i++)
             for(int j = 0; j < classDurations.size(); j++)
@@ -55,6 +58,12 @@ public:
     int AddHomework(String info) {
         homeworkInfos.push_back(info);
         return homeworkInfos.size() - 1;
+    }
+    bool isStudentTake(String id) {
+        for(int i = 0; i < students.size(); i++) {
+            if(students[i]->Number() == id) return true;
+        }
+        return false;
     }
     void AddFile(File* file) { files.push_back(file); }
     void SetExamPlace(String place) { examPlace = place; }
@@ -71,6 +80,7 @@ public:
         lessons.push_back(lesson);
         return lessons.size() - 1;
     }
+    int size() {return lessons.size(); }
     Lesson* GetLesson(String name) {
         for(int i = 0; i < lessons.size(); i++)
             if(name == lessons[i]->Name())
@@ -81,6 +91,7 @@ public:
         if(id >= lessons.size()) return nullptr;
         return lessons[id];
     }
+
 };
 
 class Activity {
@@ -91,13 +102,21 @@ private:
     Vector<Student*> students;
 public:
     Activity(String place, String name, int type, Duration duration, Vector<Student*> students) :
-        place(place),
-        name(name),
-        type(type),
-        duration(duration),
-        students(students)
+            place(place),
+            name(name),
+            type(type),
+            duration(duration),
+            students(students)
     {}
+    String Name() { return name; }
+    String Place() { return place; }
     Duration Dura() { return duration; }
+    bool isStudentTake(String id) {
+        for(int i = 0; i < students.size(); i++) {
+            if(students[i]->Number() == id) return true;
+        }
+        return false;
+    }
 };
 
 class Activities {
@@ -108,6 +127,7 @@ public:
         activities.push_back(activity);
         return activities.size() - 1;
     }
+    int size() {return activities.size(); }
     Activity* GetActivity(int id) {
         return activities[id];
     }

@@ -218,4 +218,13 @@ public:
 signals:
     void receive(QVariant varValue);
 };
+
+class activityUpload: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    activityUpload(QVector<QString> v, int id);
+};
 #endif // CONNECT_H

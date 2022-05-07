@@ -153,6 +153,7 @@ signals:
     void addPage(activityAddPage*);
     void addReceived(QVector<QString>);
     void showDetail(activityWidget*);
+    void newActivity(activityWidget*);
 };
 
 

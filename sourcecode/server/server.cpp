@@ -24,9 +24,9 @@ void setSockNonBlock(int sock) {
 }
 
 Vector<Parameter> GetParms(String message) {
-	int idx = 0, tot = 0, parmid = 0;
-	Vector<Parameter> parms;
-	while(idx < message.length()) {
+    int idx = 0, tot = 0, parmid = 0;
+    Vector<Parameter> parms;
+    while(idx < message.length()) {
         String parm;
         int len = 0;
         int type = (unsigned char)message[idx];
@@ -49,20 +49,20 @@ Vector<Parameter> GetParms(String message) {
                 break;
         }
     }
-	return parms;
+    return parms;
 }
 
 unsigned long long GetHash(String s) {
-	unsigned long long tmp = 0;
-	for(int i = 0; i < s.length(); i++)
-		tmp = tmp * 10007 + s[i];
-	return tmp;
+    unsigned long long tmp = 0;
+    for(int i = 0; i < s.length(); i++)
+        tmp = tmp * 10007 + s[i];
+    return tmp;
 }
 
 void WriteFile(String path, String file) {
-	FILE* out = fopen(path.c_str(), "wb");
-	fwrite(file.c_str(), file.length() - 1, 1, out);
-	fclose(out);
+    FILE* out = fopen(path.c_str(), "wb");
+    fwrite(file.c_str(), file.length() - 1, 1, out);
+    fclose(out);
 }
 
 ssize_t socket_send(int sockfd, const char* buffer, size_t buflen) {
@@ -124,16 +124,16 @@ Server::Server() {
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(43434);
 
     int on = 1;
     setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     setSockNonBlock(server_sock);
     if(bind(server_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) == -1)
         puts("bind error");
-	if(listen(server_sock, 5) == -1)
+    if(listen(server_sock, 5) == -1)
         puts("listen error");
-	puts("listen success");
+    puts("listen success");
 }
 
 void Server::run() {
@@ -151,7 +151,7 @@ void Server::run() {
     int recv_size;
 
     while(1) {
-        
+
         readfds = readfds_bak;
         int new_maxfd = 0;
         for(int i = 0; i <= maxfd; i++) {
@@ -167,7 +167,7 @@ void Server::run() {
             //fprintf(stderr, "no socket ready for read");
             continue;
         }
-        
+
         for(int i = 0; i <= maxfd; i++) {
             if(!FD_ISSET(i, &readfds)) continue;
             if(i == server_sock) {
@@ -189,7 +189,7 @@ void Server::run() {
                 recv(i, buffer, 4, 0);
                 int Size = 0;
                 for(int i = 0; i < 4; i++) {
-                    Size = (Size << 8) + (unsigned char)buffer[i]; 
+                    Size = (Size << 8) + (unsigned char)buffer[i];
                 }
                 //printf("Size: %d\n", Size);
                 String message;
@@ -199,15 +199,16 @@ void Server::run() {
                         usleep(1000);
                         continue;
                     }
-                    
+
                     //printf("left recv_size: %d\n", Size);
                     for(int i = 0; i < min(recv_size, Size); i++) message.push_back(buffer[i])/*, printf("%d ", (unsigned char)buffer[i])*/;
                     Size -= recv_size;
                 }
                 //puts("finish recv");
                 Vector<Parameter> parms = GetParms(message);
+                if(parms.size() == 0) continue;
                 switch (parms[0].number) {
-                    case 0x01 : {// 上传课程资料				
+                    case 0x01 : {// 上传课程资料
                         // lessonname filename file
                         /*Lesson* nowLesson = lessonGroup.GetLesson(parms[0]);
                         String savePath = "data/lesson_files/" + nowLesson->Name() + '/' + parms[1];
@@ -270,13 +271,99 @@ void Server::run() {
                         sendAll(i, resultParms, true);
                         break;
                     }
-                    /*
-                    case 'a' : {
-                        puts("getmessage");
-                        sendAll(i, parms);
-                        //sleep(100);
-                        //break;
-                    }*/
+
+                    case 0x07 : {//查询课程
+                        Vector<Parameter> resultParms;
+                        for(int i = 0; i < lessonGroup.size(); i++){
+                            if(lessonGroup.GetLesson(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
+                                //resultParms.push_back(Parameter(i));
+                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Name(), false));
+                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Teacher(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Place(), false));
+                                Vector<Duration> d = lessonGroup.GetLesson(i)->ClassDurations();
+                                String time;
+                                for(int i = 0; i < d.size(); i++) {
+                                    time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
+                                }
+                                resultParms.push_back(Parameter(time, false));
+                            }
+                        }
+                        sendAll(i, resultParms, false);
+                        break;
+
+                    }
+
+                    case 0x08 : {//查询活动
+                        Vector<Parameter> resultParms;
+                        printf("activity phase");
+                        for(int i = 0; i < activityGroup.size(); i++){
+                            if(activityGroup.GetActivity(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
+                                //resultParms.push_back(Parameter(i));
+                                resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
+                                Duration d = activityGroup.GetActivity(i)->Dura();
+                                String time;
+                                time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
+                                resultParms.push_back(Parameter(time, false));
+                            }
+                        }
+                        sendAll(i, resultParms, true);
+                        break;
+
+                    }
+                    case 0xB :{//活动上传
+                        Student* nowStudent = studentGroup.GetStudent(parms[5].number);
+                        Vector<Student*> nowStudents;
+                        nowStudents.push_back(nowStudent);
+                        const char* time = parms[4].message.c_str();
+                        int index = 0;
+                        int beginHour = 0;
+                        int beginMin = 0;
+                        int endHour = 0;
+                        int endMin = 0;
+                        while(time[index] != ':') {
+                            int tmp = time[index] - '0';
+                            beginHour = beginHour * 10 + tmp;
+                            index++;
+                        }
+                        index++;
+                        while(time[index] != '-') {
+                            int tmp = time[index] - '0';
+                            beginMin = beginMin * 10 + tmp;
+                            index++;
+                        }
+                        index++;
+                        while(time[index] != ':') {
+                            int tmp = time[index] - '0';
+                            endHour = endHour * 10 + tmp;
+                            index++;
+                        }
+                        index++;
+                        while(time[index] != '\0') {
+                            int tmp = time[index] - '0';
+                            endMin = endMin * 10 + tmp;
+                            index++;
+                        }
+
+                        Duration tmpDuration = Duration(
+                                Timer(beginHour, beginMin),
+                                Timer(endHour,endMin)
+                        );
+                        Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration,nowStudents);
+                        int activityID = activityGroup.AddActivities(nowActivity);
+                        studentGroup.GetStudent(parms[5].number)->Events()->AddActivity(activityID);
+
+                    }
+
+                        /*
+                        case 'a' : {
+                            puts("getmessage");
+                            sendAll(i, parms);
+                            //sleep(100);
+                            //break;
+                        }*/
                 }
                 if(close(i) == -1) {
                     perror("close failed");

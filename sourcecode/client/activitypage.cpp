@@ -164,6 +164,7 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
         emit addPage(newPage);
         connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
             activityWidget* newWidget = new activityWidget(s, this);
+            emit newActivity(newWidget);
             addContent(newWidget);
             /* for details */
             connect(newWidget, &activityWidget::clicked, this, [=] {
@@ -421,7 +422,10 @@ ActivityPage::ActivityPage(QWidget* parent):
     itemLayout->addWidget(detailWidget);
     mainLayout->addWidget(itemWidget);
     ActivityQuery* query = new ActivityQuery(studentId);
-
+    connect(activityList, &activityListWidget::newActivity, this, [=](activityWidget* activityWidget) {
+        QVector<QString> info = activityWidget->getInfo();
+        activityUpload* upload = new activityUpload(info, studentId);
+    });
     /*Detail Widget*/
 
 
@@ -464,6 +468,7 @@ ActivityPage::ActivityPage(QWidget* parent):
             pageList.push_back(newPage);*/
         }
     });
+
 
 }
 void ActivityPage::resizeEvent(QResizeEvent*) {
