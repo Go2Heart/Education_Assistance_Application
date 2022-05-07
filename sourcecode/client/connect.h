@@ -208,5 +208,14 @@ signals:
     void receive(QVariant varValue);
 };
 
+class activitySearch: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
 
+public:
+    activitySearch(QString key, int type);
+signals:
+    void receive(QVariant varValue);
+};
 #endif // CONNECT_H

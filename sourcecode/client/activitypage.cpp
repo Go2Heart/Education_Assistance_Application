@@ -168,12 +168,13 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
             /* for details */
             connect(newWidget, &activityWidget::clicked, this, [=] {
                 QVector<QString> tmp = newWidget->getInfo();
+                detailWidget->setActivity(newWidget);
                 emit detailWidget->showDetail(tmp);
             });
             connect(detailWidget, &activityDetailWidget::modify, this, [=] {
                 qDebug() << "modify";
                 QVector<QString> tmp = detailWidget->getLines();
-                newWidget->modify(tmp);
+                detailWidget->getActivity()->modify(tmp);
             });
             pageList.push_back(newPage);
         });
@@ -228,7 +229,7 @@ activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
     time = new textInputItem("时间：", this);
     textButton* modifyBtn = new textButton("Modify!", this);
     connect(modifyBtn, &textButton::clicked, this, [=]{
-        emit modify();
+        emit modify(getActivity());
     });
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);

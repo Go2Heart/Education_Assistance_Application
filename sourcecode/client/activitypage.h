@@ -48,55 +48,6 @@ signals:
     void deliver(QVector<QString> msg);
     void modify(QVector<QString> msg);
 };
-
-
-class activityDetailWidget: public QWidget{
-    Q_OBJECT
-private:
-    textInputItem* title;
-    textInputItem* description;
-    textInputItem* place;
-    textInputItem* time;
-    textInputItem* frequency;
-    bool isPersonal = true;
-    bool alarm = true;
-    QVector<QString> collectMsg();
-//    ScrollAreaCustom* materialList;
-//    ScrollAreaCustom* homeworkList;
-public:
-    activityDetailWidget(QWidget* parent);
-    void showDetail(QVector<QString> info);
-    QVector<QString> getLines() {
-        QVector<QString> lines;
-        lines.append(title->value());
-        lines.append(description->value());
-        lines.append(place->value());
-        lines.append(time->value());
-        return lines;
-    }
-signals:
-    void deliver(QVector<QString> msg);
-    void modify();
-
-};
-
-class ActivityPage : public QWidget{
-Q_OBJECT
-private:
-    QWidget* itemWidget = nullptr;
-    QWidget* itemInfo = nullptr;
-    QWidget* searchBar = nullptr;
-    SlidePage* addActivity;
-    ScrollAreaCustom* itemList = nullptr;
-    QVector<SlidePage*> pageList;
-    activityInfoWidget* activityInfo = nullptr;
-    activityDetailWidget* activityDtl = nullptr;
-    int cornerRadius = 12;
-    void resizeEvent(QResizeEvent*);
-public:
-    ActivityPage(QWidget* parent = nullptr);
-};
-
 class activityWidget : public QWidget {
 Q_OBJECT
 private:
@@ -124,6 +75,62 @@ signals:
     void clicked();
 };
 
+class activityDetailWidget: public QWidget{
+Q_OBJECT
+private:
+    activityWidget* currentActivity;
+    textInputItem* title;
+    textInputItem* description;
+    textInputItem* place;
+    textInputItem* time;
+    textInputItem* frequency;
+    bool isPersonal = true;
+    bool alarm = true;
+    QVector<QString> collectMsg();
+//    ScrollAreaCustom* materialList;
+//    ScrollAreaCustom* homeworkList;
+public:
+    activityDetailWidget(QWidget* parent);
+    void showDetail(QVector<QString> info);
+    QVector<QString> getLines() {
+        QVector<QString> lines;
+        lines.append(title->value());
+        lines.append(description->value());
+        lines.append(place->value());
+        lines.append(time->value());
+        return lines;
+    }
+    void setActivity(activityWidget* activity) {
+        currentActivity = activity;
+    }
+    activityWidget* getActivity() {
+        return currentActivity;
+    }
+signals:
+    void deliver(QVector<QString> msg);
+    void modify(activityWidget* activity);
+
+};
+
+class ActivityPage : public QWidget{
+Q_OBJECT
+private:
+    QWidget* itemWidget = nullptr;
+    QWidget* itemInfo = nullptr;
+    QWidget* searchBar = nullptr;
+    SlidePage* addActivity;
+    ScrollAreaCustom* itemList = nullptr;
+    QVector<SlidePage*> pageList;
+    activityInfoWidget* activityInfo = nullptr;
+    activityDetailWidget* activityDtl = nullptr;
+    int cornerRadius = 12;
+    void resizeEvent(QResizeEvent*);
+public:
+    ActivityPage(QWidget* parent = nullptr);
+};
+
+
+
 class activityListWidget : public QWidget {
 Q_OBJECT
 private:
@@ -147,4 +154,6 @@ signals:
     void addReceived(QVector<QString>);
     void showDetail(activityWidget*);
 };
+
+
 #endif // ACTIVITYPAGE_H

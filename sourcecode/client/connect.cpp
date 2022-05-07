@@ -167,3 +167,16 @@ ActivityQuery::ActivityQuery(int id) {
        emit receive(QVariant::fromValue(v));
     });
 }
+/*
+activitySearch::activitySearch(QString name, int type) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(10));
+    paras.push_back(new Parameter(type));
+    paras.push_back(new Parameter(name));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+
+       emit receive(QVariant::fromValue());
+    });
+
+}*/
