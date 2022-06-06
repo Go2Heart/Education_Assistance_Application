@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QFileDialog>
 #include "customWidgets.h"
 #include "customScrollContainer.h"
 #include "slidepage.h"
@@ -16,6 +17,7 @@ private:
     QLabel* descLabel;
     QLabel* detailLabel;
     bigIconButton* activityType;
+    QString id;
     bool mousePressed = false;
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
@@ -24,6 +26,7 @@ private:
 public:
     activityInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
     QVector<QString> getInfo(){return info;}
+    QString getId(){return id;}
     void modify(QVector<QString> info);
 signals:
     void clicked();
@@ -112,6 +115,33 @@ signals:
 
 };
 
+class activityFileDeliver : public QWidget{
+    Q_OBJECT
+private:
+    activityWidget* currentActivity;
+    textButton* select=nullptr;
+    textButton* upload=nullptr;
+    ScrollListContainer* fileList=nullptr;
+    QVector<QString> fileNames;
+    QVector<std::string> filesToSubmit;
+    QString id;
+    FileUpload* fileUploader;
+public:
+    activityFileDeliver(QWidget* parent);
+    void setActivity(activityWidget* activity) {
+        currentActivity = activity;
+        id = activity->getInfo()[4];
+        if(id == "") {
+            id = "0";
+        }
+    }
+    QString getId() {
+        return id;
+    }
+signals:
+    void deliver(QVector<std::string> msg);
+};
+
 class ActivityPage : public QWidget{
 Q_OBJECT
 private:
@@ -123,6 +153,7 @@ private:
     QVector<SlidePage*> pageList;
     activityInfoWidget* activityInfo = nullptr;
     activityDetailWidget* activityDtl = nullptr;
+    activityFileDeliver* fileDlvr = nullptr;
     ActivitySearch* search;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
@@ -151,11 +182,11 @@ public:
         container->addWidget(p, true);
         itemList.push_back(p);
     }
-    void cleanContent(){
-        for(int i = 0; i < itemList.size(); i++){
-            container->removeWidget(itemList[i]);
-        }
+void cleanContent(){
+    for(int i = 0; i < itemList.size(); i++){
+        container->removeWidget(itemList[i]);
     }
+}
 signals:
     void clicked(int id);
     void addPage(activityAddPage*);

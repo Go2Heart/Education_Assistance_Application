@@ -10,6 +10,7 @@ TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
 #ifdef __WIN32__
+    //socket->connectToHost("82.157.164.204", 43434);
     socket->connectToHost("123.56.124.140", 8888);
 #endif
 #ifdef  __APPLE__
@@ -160,13 +161,12 @@ ActivityQuery::ActivityQuery(int id) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(8));
     paras.push_back(new Parameter(id));
-    qDebug() << "activity id: " << id;
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
        QVector<ActivityResult*> v;
-       for(int i = 0; i < parms.size(); i += 3) {
-           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage));
+       for(int i = 0; i < parms.size(); i += 4) {
+           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
        }
        emit receive(QVariant::fromValue(v));
     });
@@ -181,8 +181,8 @@ ActivitySearch::ActivitySearch(QString name, int type) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
         QVector<ActivityResult*> v;
-        for(int i = 0; i < parms.size(); i += 3) {
-            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage));
+        for(int i = 0; i < parms.size(); i += 4) {
+            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
         }
         emit receive(QVariant::fromValue(v));
     });
@@ -198,5 +198,19 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
     paras.push_back(new Parameter(v[3])); //time
     //qDebug() << "activity time: " << v[3];
     paras.push_back(new Parameter(id)); //content
+    connector = new TcpConnector(paras);
+}
+
+
+FileUpload::FileUpload(QString id, QString descripter,std::string info) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(12));
+    if (id == "")
+        paras.push_back(new Parameter(0));
+    else
+        paras.push_back(new Parameter(id.toInt()));
+    paras.push_back(new Parameter(descripter));
+    paras.push_back(new Parameter(info));
+
     connector = new TcpConnector(paras);
 }

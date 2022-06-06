@@ -127,12 +127,13 @@ struct ActivityResult {
     QString name;
     QString place;
     QString time;
-
+    QString id;
     ActivityResult() {}
-    ActivityResult(QString& name, QString& place, QString& time) :
+    ActivityResult(QString& name, QString& place, QString& time, QString& id) :
         name(name),
         place(place),
-        time(time)
+        time(time),
+        id(id)
     {}
 };
 Q_DECLARE_METATYPE(ActivityResult*)
@@ -227,4 +228,14 @@ private:
 public:
     ActivityUpload(QVector<QString> v, int id);
 };
+
+class FileUpload: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    FileUpload(QString id, QString descripter,std::string info);
+};
+
 #endif // CONNECT_H
