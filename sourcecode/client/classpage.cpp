@@ -11,7 +11,7 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
         classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
 {
     this->info = info;
-    id = info[4];
+    id = info[5];
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     infoWidget = new QWidget(this);
@@ -278,6 +278,7 @@ ClassPage::ClassPage(QWidget* parent):
             info.push_back(classResult[i]->teacher);
             info.push_back(classResult[i]->place);
             info.push_back(classResult[i]->time);
+            info.push_back(classResult[i]->QQ);
             info.push_back(classResult[i]->id);
             //info.push_back
 
@@ -344,7 +345,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
         emit deliver(filesToSubmit);
         for(int i = 0; i < fileNames.size(); i++) {
             qDebug() << fileNames[i];
-            fileUploader = new FileUpload(id,fileNames[i], filesToSubmit[i], 1);
+            fileUploader = new FileUpload(id,fileNames[i], filesToSubmit[i], studentId, 1);
         }
         fileNames.clear();
         fileList->clear();
@@ -368,10 +369,12 @@ classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
     description = new textInputItem("教师：", this);
     place = new textInputItem("地点：",this);
     time = new textInputItem("时间：", this);
+    qq = new textInputItem("QQ：", this);
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
     mainLayout->addWidget(time);
+    mainLayout->addWidget(qq);
 }
 QVector<QString> classDetailWidget::collectMsg() {
     QVector<QString> tmp;
@@ -390,6 +393,8 @@ void classDetailWidget::showDetail(QVector<QString> info) {
     description->setValue(info[1]);
     place->setValue(info[2]);
     time->setValue(info[3]);
+    qq->setValue(info[4]);
+
     //isPersonal = info[4].toInt();
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);

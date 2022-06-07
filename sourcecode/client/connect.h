@@ -113,13 +113,15 @@ struct ClassResult {
     QString place;
     QString time;
     QString id;
+    QString QQ;
 
     ClassResult() {}
-    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& id) :
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, QString& id) :
         name(name),
         teacher(teacher),
         place(place),
         time(time),
+        QQ(QQ),
         id(id)
     {}
 };
@@ -237,7 +239,7 @@ private:
     TcpConnector* connector = nullptr;
 
 public:
-    FileUpload(QString id, QString descripter,std::string info, int mode = 0); //0 for activity, 1 for class
+    FileUpload(QString id, QString descripter,std::string info, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
 };
 
 #endif // CONNECT_H

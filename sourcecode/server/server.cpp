@@ -275,6 +275,7 @@ void Server::run() {
                     case 0x07 : {//查询课程
                         Vector<Parameter> resultParms;
                         for(int i = 0; i < lessonGroup.size(); i++){
+                            printf("%d\n", parms[1].number);
                             if(lessonGroup.GetLesson(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
                                 //resultParms.push_back(Parameter(i));
                                 resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Name(), false));
@@ -287,6 +288,8 @@ void Server::run() {
                                     time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
+                                //get QQ
+                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
                                 //get id
                                 resultParms.push_back(Parameter(ToString(i), false));
                             }
@@ -454,7 +457,10 @@ void Server::run() {
                     case 0xC: {//活动文件上传
                         int id = parms[1].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String savePath = "./Activity/" + ToString(id) + "/" + parms[2].message;
+                        String s1;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        String savePath = "../Activity/" + s1 + "/" + parms[2].message;
                         unsigned long long tmpHash = GetHash(parms[3].message);
                         File* file = new File(savePath, tmpHash);
                         nowActivity->AddFile(file);
@@ -463,12 +469,19 @@ void Server::run() {
                     }
                     case 0xD: {//课程作业上传
                         int id = parms[1].number;
+                        int studentID = parms[2].number;
+                        String s1,s2;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        if (studentID == 0) s2 = "0";
+                        else s2 = ToString(studentID);
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "./Lesson/" + ToString(id) + "/" + parms[2].message;
-                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        printf("%s\n", savePath.c_str());
+                        unsigned long long tmpHash = GetHash(parms[4].message);
                         File* file = new File(savePath, tmpHash);
                         nowLesson->AddFile(file);
-                        WriteFile(savePath, parms[3].message);
+                        WriteFile(savePath, parms[4].message);
                         break;
 
                     }

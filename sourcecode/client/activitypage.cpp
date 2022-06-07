@@ -432,8 +432,8 @@ ActivityPage::ActivityPage(QWidget* parent):
     textButton* detailTabButton2 = new textButton("材料提交", detailTab);
     tabLayout->addWidget(detailTabButton2);
 
-    textButton* detailTabButton3 = new textButton("作业提交", detailTab);
-    tabLayout->addWidget(detailTabButton3);
+    //textButton* detailTabButton3 = new textButton("作业提交", detailTab);
+    //tabLayout->addWidget(detailTabButton3);
 
     detailLayout->addWidget(detailTab);
 

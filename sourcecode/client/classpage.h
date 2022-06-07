@@ -67,6 +67,7 @@ private:
     textInputItem* description;
     textInputItem* place;
     textInputItem* time;
+    textInputItem* qq;
     textInputItem* frequency;
     bool isPersonal = true;
     bool alarm = true;

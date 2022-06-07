@@ -149,8 +149,8 @@ ClassQuery::ClassQuery(int id) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
        QVector<ClassResult*> v;
-       for(int i = 0; i < parms.size(); i += 5) {
-           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage, parms[i + 4]->qsMessage));
+       for(int i = 0; i < parms.size(); i += 6) {
+           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage, parms[i + 4]->qsMessage, parms[i + 5]->qsMessage));
        }
        //qDebug()<<"ClassQuery";
        emit receive(QVariant::fromValue(v));
@@ -202,14 +202,18 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
 }
 
 
-FileUpload::FileUpload(QString id, QString descripter,std::string info, int mode) {
+FileUpload::FileUpload(QString id, QString descripter,std::string info, int studentId, int mode) {
     QVector<Parameter*> paras;
+
     if (mode == 0)paras.push_back(new Parameter(12));
     else paras.push_back(new Parameter(13));
+
+    qDebug() << "file upload student id: " << studentId;
     if (id == "")
         paras.push_back(new Parameter(0));
     else
         paras.push_back(new Parameter(id.toInt()));
+    if(mode != 0) paras.push_back(new Parameter(studentId));
     paras.push_back(new Parameter(descripter));
     paras.push_back(new Parameter(info));
     qDebug() << "id"<<  id<<"descripter" <<descripter;
