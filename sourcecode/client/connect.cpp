@@ -10,8 +10,8 @@ TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
 #ifdef __WIN32__
-    //socket->connectToHost("82.157.164.204", 43434);
-    socket->connectToHost("123.56.124.140", 8888);
+    socket->connectToHost("82.157.164.204", 43434);
+   // socket->connectToHost("123.56.124.140", 8888);
 #endif
 #ifdef  __APPLE__
     socket->connectToHost("82.157.164.204", 43434);
@@ -149,8 +149,8 @@ ClassQuery::ClassQuery(int id) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
        QVector<ClassResult*> v;
-       for(int i = 0; i < parms.size(); i += 4) {
-           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage));
+       for(int i = 0; i < parms.size(); i += 5) {
+           v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage, parms[i + 4]->qsMessage));
        }
        //qDebug()<<"ClassQuery";
        emit receive(QVariant::fromValue(v));
@@ -202,15 +202,16 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
 }
 
 
-FileUpload::FileUpload(QString id, QString descripter,std::string info) {
+FileUpload::FileUpload(QString id, QString descripter,std::string info, int mode) {
     QVector<Parameter*> paras;
-    paras.push_back(new Parameter(12));
+    if (mode == 0)paras.push_back(new Parameter(12));
+    else paras.push_back(new Parameter(13));
     if (id == "")
         paras.push_back(new Parameter(0));
     else
         paras.push_back(new Parameter(id.toInt()));
     paras.push_back(new Parameter(descripter));
     paras.push_back(new Parameter(info));
-
+    qDebug() << "id"<<  id<<"descripter" <<descripter;
     connector = new TcpConnector(paras);
 }

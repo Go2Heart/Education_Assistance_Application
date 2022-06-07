@@ -22,8 +22,9 @@ find_package(Qt6 COMPONENTS Svg)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Network)
 
-qt_add_executable(client WIN32 MACOSX_BUNDLE
+qt_add_executable(client MACOSX_BUNDLE
         activitypage.cpp activitypage.h
+        classpage.cpp classpage.h
         basicClass.cpp basicClass.h
         clock.cpp clock.h
         connect.cpp connect.h
@@ -38,7 +39,6 @@ qt_add_executable(client WIN32 MACOSX_BUNDLE
         mainwindow.cpp mainwindow.h mainwindow.ui
         mycanvas.cpp mycanvas.h
         slidepage.cpp slidepage.h
-        classpage.cpp classpage.h
         )
 target_link_libraries(client PUBLIC
         Qt::Core

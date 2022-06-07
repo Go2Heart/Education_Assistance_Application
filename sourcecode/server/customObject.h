@@ -47,6 +47,7 @@ public:
     String Name() { return name; }
     String Teacher() { return teacher; }
     String Place() { return classPlace; }
+    String QQ() { return QQnumber; }
     Vector<Duration> ClassDurations() { return classDurations; }
 
     bool cross(Vector<Duration> durations) {

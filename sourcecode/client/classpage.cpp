@@ -2,6 +2,7 @@
 // Created by Go2Heart on 2022/4/27.
 //
 
+#include <QFileDialog>
 #include "classpage.h"
 #include "loginpage.h"
 
@@ -9,6 +10,8 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent),
         classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
 {
+    this->info = info;
+    id = info[4];
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     infoWidget = new QWidget(this);
@@ -46,11 +49,6 @@ void classInfoWidget::mouseReleaseEvent(QMouseEvent *) {
     emit clicked();
 }
 
-void classInfoWidget::modify(QVector<QString> info) {
-    descLabel->setText("#内容#" + info[0]);
-    detailLabel->setText("#地点#" + info[1] + "       #时间#" + info[2]);
-    classType->setPixmap(info[3] == "true" ? ":/icons/icons/alarm_on.svg" : ":/icons/icons/alarm_off.svg");
-}
 
 void classInfoWidget::resizeEvent(QResizeEvent *event) {
     infoWidget->resize(this->width() - classType->width() - 2 * margin - spacing, this->height() - 2 * margin);
@@ -181,7 +179,72 @@ ClassPage::ClassPage(QWidget* parent):
     //itemList = new ScrollAreaCustom(false, eventWidget);
     //itemList->setFixedWidth(400);
     //eventLayout->addWidget(itemList);
+    // detail
+    QWidget* detailWidget = new QWidget(itemWidget);
+    detailWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    detailWidget->setStyleSheet("border:1px solid gray;background-color:dark blue");
 
+    QVBoxLayout* detailLayout = new QVBoxLayout(detailWidget);
+    detailLayout->setAlignment(Qt::AlignTop);
+    detailLayout->setContentsMargins(5, 5, 5, 5);
+    detailLayout->setSpacing(5);
+    QWidget* detailTab = new QWidget(detailWidget);
+    detailTab->setStyleSheet("border:0px transparent gray;background-color:transparent");
+    detailTab->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    detailTab->setFixedHeight(22);
+    QHBoxLayout *tabLayout = new QHBoxLayout(detailTab);
+    tabLayout->setSpacing(0);
+    tabLayout->setAlignment(Qt::AlignTop);
+    tabLayout->setContentsMargins(5, 0, 5, 0);
+    textButton* detailTabButton1 = new textButton("活动详情", detailTab);
+    tabLayout->addWidget(detailTabButton1);
+
+    textButton* detailTabButton2 = new textButton("材料提交", detailTab);
+    tabLayout->addWidget(detailTabButton2);
+
+    textButton* detailTabButton3 = new textButton("作业提交", detailTab);
+    tabLayout->addWidget(detailTabButton3);
+
+    detailLayout->addWidget(detailTab);
+
+    QWidget* detailArea = new QWidget(detailWidget);
+    detailArea->setStyleSheet("Height:400; Width:300; border: 5px transparent;background-color:#f6eef2");
+    detailArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* areaLayout = new QVBoxLayout(detailArea);
+    areaLayout->setAlignment(Qt::AlignTop);
+    areaLayout->setContentsMargins(5,0,5,0);
+
+    activityDtl = new classDetailWidget(detailArea);
+    areaLayout->addWidget(activityDtl);
+//        activityDtl->hide();
+
+    QWidget* materialDlvr = new QWidget(detailArea);
+    materialDlvr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    materialDlvr->setStyleSheet("Height:400; Width:400");
+    QVBoxLayout* MDlvrLayout = new QVBoxLayout(materialDlvr);
+    MDlvrLayout->setAlignment(Qt::AlignCenter);
+
+    fileDlvr = new classFileDeliver(materialDlvr);
+    MDlvrLayout->addWidget(fileDlvr);
+
+    areaLayout->addWidget(materialDlvr);
+    materialDlvr->hide();
+    connect(detailTabButton1, &textButton::clicked, this, [=]{
+        materialDlvr->hide();
+        activityDtl->show();
+        //fileDlvr->setActivity(activityDtl->getActivity());
+        qDebug() << fileDlvr->getId();
+        detailTabButton1->setEnabled(false);
+    });
+    connect(detailTabButton2, &textButton::clicked, this, [=]{
+        activityDtl->hide();
+        materialDlvr->show();
+        //fileDlvr->setActivity(activityDtl->getActivity());
+        qDebug() << fileDlvr->getId();
+        detailTabButton1->setEnabled(true);
+    });
+
+    detailLayout->addWidget(detailArea);
     classListWidget* classList = new classListWidget("class", 500, itemWidget, eventWidget);
 
 
@@ -202,11 +265,9 @@ ClassPage::ClassPage(QWidget* parent):
 
     itemList->addWidgets(items);
     itemLayout->addWidget(eventWidget);
+    itemLayout->addWidget(detailWidget);
     //活动详情信息
-    QWidget* itemInfoTable = new QWidget(itemWidget);
-    itemInfoTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
-    itemLayout->addWidget(itemInfoTable);
+
     mainLayout->addWidget(itemWidget);
     ClassQuery* query = new ClassQuery(studentId);
     connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
@@ -217,10 +278,14 @@ ClassPage::ClassPage(QWidget* parent):
             info.push_back(classResult[i]->teacher);
             info.push_back(classResult[i]->place);
             info.push_back(classResult[i]->time);
+            info.push_back(classResult[i]->id);
             //info.push_back
 
             classWidget * newClass = new classWidget(info, itemWidget);
             connect(newClass, &classWidget::clicked, this, [=]{
+                activityDtl->showDetail(info);
+                activityDtl->setActivity(newClass);
+                fileDlvr->setActivity(newClass);
             //TODO adding specific class page
             });
             classList->addContent(newClass);
@@ -236,3 +301,97 @@ void ClassPage::resizeEvent(QResizeEvent*) {
 }
 
 
+classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setAlignment(Qt::AlignCenter);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setStyleSheet("Height:400; Width:500; background-color:transparent");
+    this->setLayout(mainLayout);
+//    singleSelectGroupVertical* fileType = new singleSelectGroupVertical("请选择", this);
+//        fileType->setFixedHeight(60);
+//        selectionItem* material = new selectionItem("上传资料", "", this);
+//        selectionItem* homework = new selectionItem("上交作业", "", this);
+//        fileType->AddItem(material);
+//        fileType->AddItem(homework);
+    select = new textButton("选择文件", this);
+    upload = new textButton("上传文件", this);
+    QWidget* listWidget = new QWidget(this);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    setStyleSheet("Height:400; Width:400; background-color:transparent");
+    QVBoxLayout* listLayout = new QVBoxLayout(listWidget);
+    listLayout->setAlignment(Qt::AlignTop);
+    fileList = new ScrollListContainer(listWidget);
+    fileList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    fileList->setStyleSheet("Height:500; Width:600; ");
+//        fileList->AddWidget();
+    listLayout->addWidget(fileList);
+
+    connect(select, &textButton::clicked, this,[=]{
+        QString filePath = QFileDialog::getOpenFileName(this, QStringLiteral("选择文件"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
+        QFile file(filePath);
+        file.open(QIODevice::ReadOnly);
+        QByteArray filestring = file.readAll();
+        filesToSubmit.push_back(filestring.toStdString());
+        QFileInfo fileInfo(filePath);
+        QLabel* tmp = new QLabel(fileInfo.fileName(),fileList);
+        fileNames.push_back(fileInfo.fileName());
+        fileList->AddWidget(tmp,true);
+        file.close();
+
+    });
+
+    connect(upload, &textButton::clicked, this, [=]{
+        emit deliver(filesToSubmit);
+        for(int i = 0; i < fileNames.size(); i++) {
+            qDebug() << fileNames[i];
+            fileUploader = new FileUpload(id,fileNames[i], filesToSubmit[i], 1);
+        }
+        fileNames.clear();
+        fileList->clear();
+        filesToSubmit.clear();
+
+    });
+    mainLayout->addWidget(select);
+    mainLayout->addWidget(listWidget);
+    mainLayout->addWidget(upload);
+
+}
+
+classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+//    mainLayout->setContentsMargins(5,5,5,5);
+    mainLayout->setAlignment(Qt::AlignVCenter);
+    this->setLayout(mainLayout);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setStyleSheet("Height:300; Width:200;");
+    title=new textInputItem("课程：", this);
+    description = new textInputItem("教师：", this);
+    place = new textInputItem("地点：",this);
+    time = new textInputItem("时间：", this);
+    mainLayout->addWidget(title);
+    mainLayout->addWidget(description);
+    mainLayout->addWidget(place);
+    mainLayout->addWidget(time);
+}
+QVector<QString> classDetailWidget::collectMsg() {
+    QVector<QString> tmp;
+    tmp.push_back(title->value());
+    tmp.push_back(description->value());
+    tmp.push_back(place->value());
+    tmp.push_back(time->value());
+    tmp.push_back(isPersonal ? "true" : "false");
+    tmp.push_back(alarm ? "true" : "false");
+    tmp.push_back(frequency->value());
+    return tmp;
+}
+
+void classDetailWidget::showDetail(QVector<QString> info) {
+    title->setValue(info[0]);
+    description->setValue(info[1]);
+    place->setValue(info[2]);
+    time->setValue(info[3]);
+    //isPersonal = info[4].toInt();
+    //alarm = info[5].toInt();
+    //frequency->setValue(info[6]);
+
+}

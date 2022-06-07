@@ -287,6 +287,8 @@ void Server::run() {
                                     time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
+                                //get id
+                                resultParms.push_back(Parameter(ToString(i), false));
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -458,6 +460,17 @@ void Server::run() {
                         nowActivity->AddFile(file);
                         WriteFile(savePath, parms[3].message);
                         break;
+                    }
+                    case 0xD: {//课程作业上传
+                        int id = parms[1].number;
+                        Lesson* nowLesson = lessonGroup.GetLesson(id);
+                        String savePath = "./Lesson/" + ToString(id) + "/" + parms[2].message;
+                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        File* file = new File(savePath, tmpHash);
+                        nowLesson->AddFile(file);
+                        WriteFile(savePath, parms[3].message);
+                        break;
+
                     }
 
 

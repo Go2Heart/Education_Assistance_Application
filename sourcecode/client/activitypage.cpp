@@ -48,7 +48,7 @@ void activityInfoWidget::modify(QVector<QString> info) {
     this->info = info;
     descLabel->setText("[活动]" + info[0]);
     detailLabel->setText("[内容]" + info[1]+"     [地点]" + info[2] + "       [时间]" + info[3]);
-    activityType->setPixmap( info[4] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/);
+    //activityType->setPixmap( info[4] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/);
 }
 
 void activityInfoWidget::resizeEvent(QResizeEvent *event) {
@@ -530,7 +530,7 @@ ActivityPage::ActivityPage(QWidget* parent):
             activityWidget* newWidget = new activityWidget(info, this);
             activityList->addContent(newWidget);
             connect(newWidget, &activityWidget::clicked, this, [=](){
-                activityDtl->showDetail(info);
+                activityDtl->showDetail(newWidget->getInfo());
                 activityDtl->setActivity(newWidget);
                 fileDlvr->setActivity(newWidget);
             });
@@ -556,7 +556,7 @@ ActivityPage::ActivityPage(QWidget* parent):
                 activityWidget* newWidget = new activityWidget(info, this);
                 activityList->addContent(newWidget);
                 connect(newWidget, &activityWidget::clicked, this, [=](){
-                    activityDtl->showDetail(info);
+                    activityDtl->showDetail(newWidget->getInfo());
                     activityDtl->setActivity(newWidget);
                     fileDlvr->setActivity(newWidget);
                 });

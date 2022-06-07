@@ -74,6 +74,9 @@ public:
     QVector<QString> getInfo() {
         return infoWidget->getInfo();
     }
+    activityInfoWidget* getInfoWidget() {
+        return infoWidget;
+    }
 signals:
     void clicked();
 };
@@ -130,7 +133,7 @@ public:
     activityFileDeliver(QWidget* parent);
     void setActivity(activityWidget* activity) {
         currentActivity = activity;
-        id = activity->getInfo()[4];
+        id = activity->getInfoWidget()->getId();
         if(id == "") {
             id = "0";
         }
