@@ -48,7 +48,7 @@ public:
     String Teacher() { return teacher; }
     String Place() { return classPlace; }
     Vector<Duration> ClassDurations() { return classDurations; }
-
+    
     bool cross(Vector<Duration> durations) {
         for(int i = 0; i < durations.size(); i++)
             for(int j = 0; j < classDurations.size(); j++)
@@ -100,6 +100,7 @@ private:
     int type;
     Duration duration;
     Vector<Student*> students;
+    Vector<File*> files;
 public:
     Activity(String place, String name, int type, Duration duration, Vector<Student*> students) :
             place(place),
@@ -108,6 +109,7 @@ public:
             duration(duration),
             students(students)
     {}
+    void AddFile(File* file) { files.push_back(file); }
     String Name() { return name; }
     String Place() { return place; }
     Duration Dura() { return duration; }
@@ -126,6 +128,12 @@ public:
     int AddActivities(Activity* activity){
         activities.push_back(activity);
         return activities.size() - 1;
+    }
+    int GetActivityId(String name) {
+        for(int i = 0; i < activities.size(); i++)
+            if(name == activities[i]->Name())
+                return i;
+        return -1;
     }
     int size() {return activities.size(); }
     Activity* GetActivity(int id) {

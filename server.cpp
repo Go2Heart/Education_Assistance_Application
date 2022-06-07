@@ -244,7 +244,7 @@ void Server::run() {
                             resultParms.push_back(Parameter(result.v[j].id));
                             printf("%d %d\n", result.v[j].type, result.v[j].id);
                         }
-                        sendAll(i, resultParms, true);
+                        sendAll(i, resultParms, false);
                         break;
                     }
                     case 0x04 : {//查询时间
@@ -268,7 +268,7 @@ void Server::run() {
                         else
                             value = studentGroup.GetStudentCheck(parms[2].message, parms[3].message);
                         resultParms.push_back(Parameter(value));
-                        sendAll(i, resultParms, true);
+                        sendAll(i, resultParms, false);
                         break;
                     }
 
@@ -287,6 +287,8 @@ void Server::run() {
                                     time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
+                                //get id
+                                resultParms.push_back(Parameter(ToString(i), false));
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -307,11 +309,20 @@ void Server::run() {
                                 String time;
                                 time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
                                 resultParms.push_back(Parameter(time, false));
+                                //add ID
+                                resultParms.push_back(Parameter(ToString(i), false));
                             }
                         }
                         sendAll(i, resultParms, false);
                         break;
 
+                    }
+                    case 0x9: {//检索活动ID
+                        Vector<Parameter> resultParms;
+                        int id = activityGroup.GetActivityId(parms[1].message);
+                        resultParms.push_back(Parameter(id));
+                        sendAll(i, resultParms, false);
+                        break;
                     }
                     case 0xA: {//检索活动
                         Vector<Parameter> resultParms;
@@ -329,6 +340,8 @@ void Server::run() {
                                         String time;
                                         time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
                                         resultParms.push_back(Parameter(time, false));
+                                        //add ID
+                                        resultParms.push_back(Parameter(ToString(i), false));
                                     }
                                 }
 
@@ -344,6 +357,8 @@ void Server::run() {
                                         String time;
                                         time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
                                         resultParms.push_back(Parameter(time, false));
+                                        //add ID
+                                        resultParms.push_back(Parameter(ToString(i), false));
                                     }
                                 }
 
@@ -368,10 +383,10 @@ void Server::run() {
                                     index++;
                                 }
                                 Timer begin(beginHour, beginMin);
-                                
+
                                 for(int i = 0; i < activityGroup.size(); i++) {
-                                    if(activityGroup.GetActivity(i)->Dura().Begin() <= begin && 
-                                        begin <= activityGroup.GetActivity(i)->Dura().End()) {
+                                    if(activityGroup.GetActivity(i)->Dura().Begin() <= begin &&
+                                       begin <= activityGroup.GetActivity(i)->Dura().End()) {
                                         resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
                                         //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
                                         resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
@@ -379,6 +394,8 @@ void Server::run() {
                                         String time;
                                         time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
                                         resultParms.push_back(Parameter(time, false));
+                                        //add ID
+                                        resultParms.push_back(Parameter(ToString(i), false));
                                     }
                                 }
 
@@ -423,6 +440,7 @@ void Server::run() {
                             endMin = endMin * 10 + tmp;
                             index++;
                         }
+                        printf("%d %d %d %d\n", beginHour, beginMin, endHour, endMin);
 
                         Duration tmpDuration = Duration(
                                 Timer(beginHour, beginMin),
@@ -432,6 +450,34 @@ void Server::run() {
                         int activityID = activityGroup.AddActivities(nowActivity);
                         studentGroup.GetStudent(parms[5].number)->Events()->AddActivity(activityID);
                         break;
+                    }
+                    case 0xC: {//活动文件上传
+                        int id = parms[1].number;
+                        Activity* nowActivity = activityGroup.GetActivity(id);
+                        String mid;
+                        if (ToString(id) == "") mid = "0";
+                        else mid = ToString(id);
+                        String savePath = "../Activity/" + ToString(id) + "/" + parms[2].message;
+                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        File* file = new File(savePath, tmpHash);
+                        nowActivity->AddFile(file);
+                        WriteFile(savePath, parms[3].message);
+                        break;
+                    }
+                    case 0xD: {//课程作业上传
+                        int id = parms[1].number;
+                        Lesson* nowLesson = lessonGroup.GetLesson(id);
+                        String mid;
+                        if (ToString(id) == "") mid = "0";
+                        else mid = ToString(id);
+                        String savePath = "../Lesson/" + mid + "/" + parms[2].message;
+                        printf("%s\n", savePath.c_str());
+                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        File* file = new File(savePath, tmpHash);
+                        nowLesson->AddFile(file);
+                        WriteFile(savePath, parms[3].message);
+                        break;
+
                     }
 
 
