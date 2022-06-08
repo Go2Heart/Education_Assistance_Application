@@ -4,7 +4,6 @@
 #include "basicClass.h"
 #include "customObject.h"
 #include "identity.h"
-#include "connect.h"
 #include "graph.h"
 
 int UnZip(String x) {
@@ -274,101 +273,92 @@ void Server::run() {
 
                     case 0x07 : {//查询课程
                         Vector<Parameter> resultParms;
-                        for(int i = 0; i < lessonGroup.size(); i++){
-                            if(lessonGroup.GetLesson(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
-                                //resultParms.push_back(Parameter(i));
-                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Name(), false));
-                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Teacher(), false));
-                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Place(), false));
-                                Vector<Duration> d = lessonGroup.GetLesson(i)->ClassDurations();
-                                String time;
-                                for(int i = 0; i < d.size(); i++) {
-                                    time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
-                                }
-                                resultParms.push_back(Parameter(time, false));
-                                //get QQ
-                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
-                                //get id
-                                resultParms.push_back(Parameter(ToString(i), false));
-                                //get files
-                                Vector<File*> files = lessonGroup.GetLesson(i)->Files();
-                                Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
-                                resultParms.push_back(Parameter(files.size()));
-                                for(int j = 0; j < files.size(); j++) {
-                                    printf("%d\n", files.size());
-                                    resultParms.push_back(Parameter(fileNames[j], false));
-                                }
+                        Vector<Lesson_Student*> lessons = studentGroup.GetStudent(parms[1].number)->events->lessons;
+                        for(int j = 0; j < lessons.size(); j++) {
+                            Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]->lessonId);
+                            resultParms.push_back(Parameter(nowLesson->Name(), false));
+                            resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                            //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                            resultParms.push_back(Parameter(nowLesson->Place(), false));
+                            Vector<Duration> d = nowLesson->ClassDurations();
+                            String time;
+                            for(int i = 0; i < d.size(); i++) {
+                                time = time + " " + ToString(d[i].begin.hour) + ':' + ToString(d[i].begin.minute) + '-' + ToString(d[i].end.hour) + ':' + ToString(d[i].end.minute) + ' ';
+                            }
+                            resultParms.push_back(Parameter(time, false));
+                            resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
+                            resultParms.push_back(Parameter(ToString(i), false));// why not int?
+                            Vector<File*> files = lessonGroup.GetLesson(i)->Files();
+                            Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
+                            resultParms.push_back(Parameter(files.size()));
+                            for(int j = 0; j < files.size(); j++) {
+                                printf("%d\n", files.size());
+                                resultParms.push_back(Parameter(fileNames[j], false));
                             }
                         }
                         sendAll(i, resultParms, false);
                         break;
 
                     }
-
                     case 0x08 : {//查询活动
                         Vector<Parameter> resultParms;
+                        Vector<int> activities = studentGroup.GetStudent(parms[1].number)->events->activities;
                         printf("activity phase");
-                        for(int i = 0; i < activityGroup.size(); i++){
-                            if(activityGroup.GetActivity(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
-                                //resultParms.push_back(Parameter(i));
-                                resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
-                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
-                                Duration d = activityGroup.GetActivity(i)->Dura();
-                                String time;
-                                time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
-                                resultParms.push_back(Parameter(time, false));
-                                //add ID
-                                resultParms.push_back(Parameter(ToString(i), false));
-                            }
+                        for(int j = 0; j < activities.size(); j++) {
+                            Activity* nowActivity = activityGroup.GetActivity(activities[j]);
+                            //resultParms.push_back(Parameter(i));
+                            resultParms.push_back(Parameter(nowActivity->Name(), false));
+                            //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                            resultParms.push_back(Parameter(nowActivity->Place(), false));
+                            Duration d = nowActivity->Dura();
+                            String time;
+                            time = time + " " + ToString(d.begin.hour) + ':' + ToString(d.begin.minute) + '-' + ToString(d.end.hour) + ':' + ToString(d.end.minute) + ' ';
+                            resultParms.push_back(Parameter(time, false));
+                            resultParms.push_back(Parameter(ToString(activities[j]), false));
                         }
                         sendAll(i, resultParms, false);
                         break;
 
                     }
-                    case 0x9: {//检索活动ID
+                    case 0x09 : {//检索活动ID
                         Vector<Parameter> resultParms;
                         int id = activityGroup.GetActivityId(parms[1].message);
                         resultParms.push_back(Parameter(id));
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0xA: {//检索活动
+                    case 0x0A : {//检索活动
                         Vector<Parameter> resultParms;
                         int type = parms[2].number;
                         printf("%d\n", type);
                         printf("%s\n", parms[1].message.c_str());
                         switch(type) {
                             case 0: {//活动名称
-                                for(int i = 0; i < activityGroup.size(); i++) {
-                                    if(activityGroup.GetActivity(i)->Name()==(parms[1].message)) {
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
-                                        //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
-                                        Duration d = activityGroup.GetActivity(i)->Dura();
-                                        String time;
-                                        time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
-                                        resultParms.push_back(Parameter(time, false));
-                                        //add ID
-                                        resultParms.push_back(Parameter(ToString(i), false));
-                                    }
+                                Vector<Activity*> result = activityGroup.FromName(parms[1].message);
+                                for(int j = 0; j < result.size(); j++) {
+                                    resultParms.push_back(Parameter(result[j]->Name(), false));
+                                    //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                    resultParms.push_back(Parameter(result[j]->Place(), false));
+                                    Duration d = result[j]->Dura();
+                                    String time;
+                                    time = time + " " + ToString(d.begin.hour) + ':' + ToString(d.begin.minute) + '-' + ToString(d.end.hour) + ':' + ToString(d.end.minute) + ' ';
+                                    resultParms.push_back(Parameter(time, false));
+                                    resultParms.push_back(Parameter(ToString(result[j]->activityId), false));
                                 }
-
                                 break;
                             }
                             case 1: {//活动地点
-                                for(int i = 0; i < activityGroup.size(); i++) {
-                                    if(activityGroup.GetActivity(i)->Place()==(parms[1].message)) {
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
+                                for(int j = 0; j < activityGroup.size(); j++) {
+                                    Activity* nowActivity = activityGroup.GetActivity(j);
+                                    if(nowActivity->Place()==(parms[1].message)) {
+                                        resultParms.push_back(Parameter(nowActivity->Name(), false));
                                         //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
-                                        Duration d = activityGroup.GetActivity(i)->Dura();
+                                        resultParms.push_back(Parameter(nowActivity->Place(), false));
+                                        Duration d = nowActivity->Dura();
                                         String time;
-                                        time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
+                                        time = time + " " + ToString(d.begin.hour) + ':' + ToString(d.begin.minute) + '-' + ToString(d.end.hour) + ':' + ToString(d.end.minute) + ' ';
                                         resultParms.push_back(Parameter(time, false));
-                                        //add ID
-                                        resultParms.push_back(Parameter(ToString(i), false));
+                                        resultParms.push_back(Parameter(ToString(j), false));
                                     }
                                 }
 
@@ -394,18 +384,18 @@ void Server::run() {
                                 }
                                 Timer begin(beginHour, beginMin);
 
-                                for(int i = 0; i < activityGroup.size(); i++) {
-                                    if(activityGroup.GetActivity(i)->Dura().Begin() <= begin &&
-                                       begin <= activityGroup.GetActivity(i)->Dura().End()) {
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
+                                for(int j = 0; j < activityGroup.size(); j++) {
+                                    Activity* nowActivity = activityGroup.GetActivity(j);
+                                    if(nowActivity->Dura().begin.HMLessEqual(begin) &&
+                                       begin.HMLessEqual(activityGroup.GetActivity(j)->Dura().end)) {
+                                        resultParms.push_back(Parameter(nowActivity->Name(), false));
                                         //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                        resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Place(), false));
-                                        Duration d = activityGroup.GetActivity(i)->Dura();
+                                        resultParms.push_back(Parameter(nowActivity->Place(), false));
+                                        Duration d = nowActivity->Dura();
                                         String time;
-                                        time = time + " " + ToString(d.Begin().Hour()) + ':' + ToString(d.Begin().Min()) + '-' + ToString(d.End().Hour()) + ':' + ToString(d.End().Min()) + ' ';
+                                        time = time + " " + ToString(d.begin.hour) + ':' + ToString(d.begin.minute) + '-' + ToString(d.end.hour) + ':' + ToString(d.end.minute) + ' ';
                                         resultParms.push_back(Parameter(time, false));
-                                        //add ID
-                                        resultParms.push_back(Parameter(ToString(i), false));
+                                        resultParms.push_back(Parameter(ToString(j), false));
                                     }
                                 }
 
@@ -417,7 +407,7 @@ void Server::run() {
                         break;
 
                     }
-                    case 0xB :{//活动上传
+                    case 0x0B : {//活动上传
                         Student* nowStudent = studentGroup.GetStudent(parms[5].number);
                         Vector<Student*> nowStudents;
                         nowStudents.push_back(nowStudent);
@@ -458,16 +448,13 @@ void Server::run() {
                         );
                         Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration,nowStudents);
                         int activityID = activityGroup.AddActivities(nowActivity);
-                        studentGroup.GetStudent(parms[5].number)->Events()->AddActivity(activityID);
+                        studentGroup.GetStudent(parms[5].number)->events->AddActivity(activityID);
                         break;
                     }
-                    case 0xC: {//活动文件上传
+                    case 0x0C : {//活动文件上传
                         int id = parms[1].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String s1;
-                        if (id == 0) s1 = "0";
-                        else s1 = ToString(id);
-                        String savePath = "../Activity/" + s1 + "/" + parms[2].message;
+                        String savePath = "../Activity/" + ToString(id) + "/" + parms[2].message;
                         unsigned long long tmpHash = GetHash(parms[3].message);
                         File* file = new File(savePath, tmpHash);
                         nowActivity->AddFile(file);
@@ -523,16 +510,29 @@ void Server::run() {
                         sendAll(i, resultParms, true);
                         break;
                     }
+                    case 0x10 : {//课程作业上传 参数：学生ID 课程ID 作业下标 文件名 文件内容
+                        Homework_Student* nowHomework = studentGroup.
+                                GetStudent(parms[1].number)->
+                                events->
+                                GetLesson(parms[2].number)->
+                                GetHomework(parms[3].number);
 
-
-
-                        /*
-                        case 'a' : {
-                            puts("getmessage");
-                            sendAll(i, parms);
-                            //sleep(100);
-                            //break;
-                        }*/
+                        String savePath = "../Lesson/"
+                                          + ToString(parms[1].number) + "/"
+                                          + ToString(parms[2].number) + "/"
+                                          + ToString(parms[3].number) + "/"
+                                          + parms[4].message;
+                        printf("%s\n", savePath.c_str());
+                        unsigned long long tmpHash = GetHash(parms[5].message);
+                        File* file = new File(savePath, tmpHash);
+                        nowHomework->Upload(file);
+                        WriteFile(savePath, parms[5].message);
+                        break;
+                    }
+                    case 0x11 : { // 添加作业 参数： 课程ID 作业描述
+                        lessonGroup.GetLesson(parms[1].number)->AddHomework(new Homework(parms[2].message));
+                        break;
+                    }
                 }
                 if(close(i) == -1) {
                     perror("close failed");
