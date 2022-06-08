@@ -4,7 +4,6 @@
 #include "basicClass.h"
 #include "customObject.h"
 #include "identity.h"
-#include "connect.h"
 #include "graph.h"
 #include "server.h"
 #include "huffman/decoder.h"
@@ -31,7 +30,7 @@ String GetStr(FILE *fin) {
 }
 
 void InitStudent() {
-	FILE *in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
+	FILE *in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -41,7 +40,7 @@ void InitStudent() {
 }
 
 void InitTime() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/time.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/time.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -53,7 +52,7 @@ void InitTime() {
 }
 
 void InitLesson() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/class.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/class.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -79,13 +78,14 @@ void InitLesson() {
 		}
 		Lesson* tmpLesson = new Lesson(classPlace, teacher, name, QQnumber, tmpDurations, tmpStudents);
 		int lessonId = lessonGroup.AddLesson(tmpLesson);
+		tmpLesson->lessonId = lessonId;
 		for(int j = 0; j < m; j++)
-			tmpStudents[j]->Events()->AddLesson(lessonId);
+			tmpStudents[j]->events->AddLesson(lessonId);
 	}
 }
 
 void InitActivity() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/activity.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -107,8 +107,9 @@ void InitActivity() {
 		}
 		Activity* tmpActivity = new Activity(place, name, type, tmpDuration, tmpStudents);
 		int activityId = activityGroup.AddActivities(tmpActivity);
+		tmpActivity->activityId = activityId;
 		for(int j = 0; j < m; j++)
-			tmpStudents[j]->Events()->AddActivity(activityId);
+			tmpStudents[j]->events->AddActivity(activityId);
 	}
 }
 

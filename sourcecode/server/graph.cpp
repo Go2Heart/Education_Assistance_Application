@@ -49,12 +49,12 @@ void Graph::Dij(int x, int mode) {
 
 void Graph::GetCross(Timer t) {
 	crossTime = INF; crossType = -1;
-	for(int i = 0; i < bus.size(); i++) if(t <= bus[i]) {
+	for(int i = 0; i < bus.size(); i++) if(t.HMLessEqual(bus[i])) {
 		crossTime = ToInt(bus[i] - t) + busCost;
 		crossType = 0;
 		break;
 	}
-	for(int i = 0; i < shuttle.size(); i++) if(t <= shuttle[i]) {
+	for(int i = 0; i < shuttle.size(); i++) if(t.HMLessEqual(shuttle[i])) {
 		if(crossTime > ToInt(shuttle[i] - t) + shuttleCost) {
 			crossTime = ToInt(shuttle[i] - t) + shuttleCost;
 			crossType = 1;
@@ -119,7 +119,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 
 void Graph::Init() {
 	puts("graph init begin.");
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/graph.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/graph.in", "r");
 	fscanf(in, "%d %d", &n, &m);
 	for(int i = 0; i < n; i++) {
 		char name[45];
@@ -145,7 +145,7 @@ void Graph::Init() {
 	GetColor(rt[1], 1);
 	fclose(in);
 
-	in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/traffic.in", "r");
+	in = fopen("/home/ubuntu/Codefield/EduServer/server 2/default_settings/traffic.in", "r");
 	int x, y, z;
 	fscanf(in, "%d", &x);
 	for(int i = 0; i < x; i++)

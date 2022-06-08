@@ -6,7 +6,7 @@ Socket::Socket() {
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(43434);
 
     int on = 1;
     setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));

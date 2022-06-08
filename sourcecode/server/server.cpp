@@ -272,7 +272,7 @@ void Server::run() {
                     }
 
                     case 0x07 : {//查询课程
-                        Vector<Parameter> resultParms;
+                     Vector<Parameter> resultParms;
                         Vector<Lesson_Student*> lessons = studentGroup.GetStudent(parms[1].number)->events->lessons;
                         for(int j = 0; j < lessons.size(); j++) {
                             Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]->lessonId);
@@ -289,12 +289,12 @@ void Server::run() {
                             resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
                             resultParms.push_back(Parameter(ToString(i), false));// why not int?
                             Vector<File*> files = lessonGroup.GetLesson(i)->Files();
-                            Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
-                            resultParms.push_back(Parameter(files.size()));
-                            for(int j = 0; j < files.size(); j++) {
-                                printf("%d\n", files.size());
-                                resultParms.push_back(Parameter(fileNames[j], false));
-                            }
+                                Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int j = 0; j < files.size(); j++) {
+                                    printf("%d\n", files.size());
+                                    resultParms.push_back(Parameter(fileNames[j], false));
+                                }
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -387,7 +387,7 @@ void Server::run() {
                                 for(int j = 0; j < activityGroup.size(); j++) {
                                     Activity* nowActivity = activityGroup.GetActivity(j);
                                     if(nowActivity->Dura().begin.HMLessEqual(begin) &&
-                                       begin.HMLessEqual(activityGroup.GetActivity(j)->Dura().end)) {
+                                        begin.HMLessEqual(activityGroup.GetActivity(j)->Dura().end)) {
                                         resultParms.push_back(Parameter(nowActivity->Name(), false));
                                         //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
                                         resultParms.push_back(Parameter(nowActivity->Place(), false));
@@ -443,8 +443,8 @@ void Server::run() {
                         printf("%d %d %d %d\n", beginHour, beginMin, endHour, endMin);
 
                         Duration tmpDuration = Duration(
-                                Timer(beginHour, beginMin),
-                                Timer(endHour,endMin)
+                            Timer(beginHour, beginMin),
+                            Timer(endHour,endMin)
                         );
                         Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration,nowStudents);
                         int activityID = activityGroup.AddActivities(nowActivity);
@@ -512,16 +512,16 @@ void Server::run() {
                     }
                     case 0x10 : {//课程作业上传 参数：学生ID 课程ID 作业下标 文件名 文件内容
                         Homework_Student* nowHomework = studentGroup.
-                                GetStudent(parms[1].number)->
+                            GetStudent(parms[1].number)->
                                 events->
-                                GetLesson(parms[2].number)->
-                                GetHomework(parms[3].number);
-
+                                    GetLesson(parms[2].number)->
+                                        GetHomework(parms[3].number);
+                        
                         String savePath = "../Lesson/"
-                                          + ToString(parms[1].number) + "/"
-                                          + ToString(parms[2].number) + "/"
-                                          + ToString(parms[3].number) + "/"
-                                          + parms[4].message;
+                            + ToString(parms[1].number) + "/"
+                            + ToString(parms[2].number) + "/" 
+                            + ToString(parms[3].number) + "/"
+                            + parms[4].message;
                         printf("%s\n", savePath.c_str());
                         unsigned long long tmpHash = GetHash(parms[5].message);
                         File* file = new File(savePath, tmpHash);
