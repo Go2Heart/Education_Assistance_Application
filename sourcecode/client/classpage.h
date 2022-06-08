@@ -26,9 +26,12 @@ private:
     void mouseReleaseEvent(QMouseEvent*);
     void resizeEvent(QResizeEvent*);
     QVector<QString> info;
+    QVector<QString> downloadInfo;
 public:
     classInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
+
     QVector<QString> getInfo(){return info;}
+    QVector<QString> getDownloadInfo(){return downloadInfo;}
     QString getId(){return id;}
 signals:
     void clicked();
@@ -50,9 +53,6 @@ private:
     void resizeEvent(QResizeEvent*);
 public:
     classWidget(QVector<QString> info, QWidget* parent = nullptr);
-    QVector<QString> getInfo() {
-        return infoWidget->getInfo();
-    }
     classInfoWidget* getInfoWidget() {
         return infoWidget;
     }
@@ -102,11 +102,16 @@ private:
     classWidget* currentActivity;
     textButton* select=nullptr;
     textButton* upload=nullptr;
-    ScrollListContainer* fileList=nullptr;
+    textButton* downloadButton=nullptr;
+    ScrollAreaCustom* fileList=nullptr;
+    ScrollAreaCustom* downloadList=nullptr;
     QVector<QString> fileNames;
     QVector<std::string> filesToSubmit;
+    QVector<QString> fileToDownload;
+    QWidget * downloadElement;
     QString id;
     FileUpload* fileUploader;
+    FileDownload* fileDownloader;
 public:
     classFileDeliver(QWidget* parent);
     void setActivity(classWidget* activity) {
@@ -116,11 +121,15 @@ public:
             id = "0";
         }
     }
+    void setDownloadInfo(QVector<QString> info) {
+        fileToDownload = info;
+    }
     QString getId() {
         return id;
     }
 signals:
     void deliver(QVector<std::string> msg);
+    void download();
 };
 
 class ClassPage : public QWidget{

@@ -457,6 +457,7 @@ ActivityPage::ActivityPage(QWidget* parent):
         fileDlvr = new activityFileDeliver(materialDlvr);
         MDlvrLayout->addWidget(fileDlvr);
 
+
     areaLayout->addWidget(materialDlvr);
     materialDlvr->hide();
     connect(detailTabButton1, &textButton::clicked, this, [=]{
@@ -472,6 +473,7 @@ ActivityPage::ActivityPage(QWidget* parent):
         //fileDlvr->setActivity(activityDtl->getActivity());
         qDebug() << fileDlvr->getId();
         detailTabButton1->setEnabled(true);
+
     });
 
     detailLayout->addWidget(detailArea);

@@ -114,15 +114,17 @@ struct ClassResult {
     QString time;
     QString id;
     QString QQ;
+    QVector<QString> fileNames;
 
     ClassResult() {}
-    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, QString& id) :
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, QString& id, QVector<QString>& fileNames) :
         name(name),
         teacher(teacher),
         place(place),
         time(time),
         QQ(QQ),
-        id(id)
+        id(id),
+        fileNames(fileNames)
     {}
 };
 Q_DECLARE_METATYPE(ClassResult*)
@@ -141,6 +143,13 @@ struct ActivityResult {
     {}
 };
 Q_DECLARE_METATYPE(ActivityResult*)
+
+
+struct FileResult {
+    std::string str;
+    FileResult(std::string str): str(str) {}
+};
+Q_DECLARE_METATYPE(FileResult*)
 class DisQuery : public QObject {
     Q_OBJECT
 private:
@@ -241,5 +250,18 @@ private:
 public:
     FileUpload(QString id, QString descripter,std::string info, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
 };
+
+class FileDownload: public QObject {
+    Q_OBJECT
+private :
+    TcpConnector* connector = nullptr;
+
+public:
+    FileDownload(QString id, QString descripter, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
+
+signals:
+    void receive(QVariant varValue);
+};
+
 
 #endif // CONNECT_H

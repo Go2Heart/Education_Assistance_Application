@@ -225,6 +225,10 @@ void ScrollAreaCustom::addSpacing(int x) {
     container->AddWidget(space, false);
 }
 
+void ScrollAreaCustom::clear() {
+    container->clear();
+}
+
 ScrollListContainer::ScrollListContainer(QWidget *parent) :
     QWidget(parent)
 {

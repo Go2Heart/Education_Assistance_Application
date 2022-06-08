@@ -275,7 +275,6 @@ void Server::run() {
                     case 0x07 : {//查询课程
                         Vector<Parameter> resultParms;
                         for(int i = 0; i < lessonGroup.size(); i++){
-                            printf("%d\n", parms[1].number);
                             if(lessonGroup.GetLesson(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
                                 //resultParms.push_back(Parameter(i));
                                 resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->Name(), false));
@@ -292,6 +291,14 @@ void Server::run() {
                                 resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
                                 //get id
                                 resultParms.push_back(Parameter(ToString(i), false));
+                                //get files
+                                Vector<File*> files = lessonGroup.GetLesson(i)->Files();
+                                Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int j = 0; j < files.size(); j++) {
+                                    printf("%d\n", files.size());
+                                    resultParms.push_back(Parameter(fileNames[j], false));
+                                }
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -467,7 +474,7 @@ void Server::run() {
                         WriteFile(savePath, parms[3].message);
                         break;
                     }
-                    case 0xD: {//课程作业上传
+                    case 0xD: {//课程文件上传
                         int id = parms[1].number;
                         int studentID = parms[2].number;
                         String s1,s2;
@@ -480,11 +487,43 @@ void Server::run() {
                         printf("%s\n", savePath.c_str());
                         unsigned long long tmpHash = GetHash(parms[4].message);
                         File* file = new File(savePath, tmpHash);
+                        nowLesson->AddFileName(parms[3].message);
                         nowLesson->AddFile(file);
                         WriteFile(savePath, parms[4].message);
                         break;
+                    }
+                    case 0xE: {//活动文件下载
 
                     }
+                    case 0xF: {//课程文件下载
+                        printf("begin download\n");
+                        Vector<Parameter> resultParms;
+                        int id = parms[1].number;
+                        int studentID = parms[2].number;
+                        String s1,s2;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        if (studentID == 0) s2 = "0";
+                        else s2 = ToString(studentID);
+                        Lesson* nowLesson = lessonGroup.GetLesson(id);
+                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        FILE* file;
+                        if((file = fopen(savePath.c_str(), "r")) == NULL) {
+                            printf("file not found\n");
+                            break;
+                        }
+                        String download;
+                        while(!feof(file)) {
+                            char tmp[1024];
+                            fgets(tmp, 1024, file);
+                            download = download + tmp;
+                        }
+                        fclose(file);
+                        resultParms.push_back(Parameter(download, true));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+
 
 
                         /*

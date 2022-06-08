@@ -12,6 +12,13 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
 {
     this->info = info;
     id = info[5];
+    int num = info[6].toInt();
+    qDebug() << "num:" << num;
+    for (int j = 0; j < num; j++) {
+        qDebug() << info[7 + j];
+        downloadInfo.push_back(info[7 + j]);
+    }
+
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     infoWidget = new QWidget(this);
@@ -280,6 +287,10 @@ ClassPage::ClassPage(QWidget* parent):
             info.push_back(classResult[i]->time);
             info.push_back(classResult[i]->QQ);
             info.push_back(classResult[i]->id);
+            info.push_back(QString::number(classResult[i]->fileNames.size()));
+            for(int j = 0; j < classResult[i]->fileNames.size(); j++){
+                info.push_back(classResult[i]->fileNames[j]);
+            }
             //info.push_back
 
             classWidget * newClass = new classWidget(info, itemWidget);
@@ -287,6 +298,8 @@ ClassPage::ClassPage(QWidget* parent):
                 activityDtl->showDetail(info);
                 activityDtl->setActivity(newClass);
                 fileDlvr->setActivity(newClass);
+                fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                emit fileDlvr->download();
             //TODO adding specific class page
             });
             classList->addContent(newClass);
@@ -306,7 +319,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    setStyleSheet("Height:400; Width:500; background-color:transparent");
+    setStyleSheet("background-color:transparent");
     this->setLayout(mainLayout);
 //    singleSelectGroupVertical* fileType = new singleSelectGroupVertical("请选择", this);
 //        fileType->setFixedHeight(60);
@@ -316,16 +329,24 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
 //        fileType->AddItem(homework);
     select = new textButton("选择文件", this);
     upload = new textButton("上传文件", this);
+    downloadButton = new textButton("下载文件", this);
     QWidget* listWidget = new QWidget(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 //    setStyleSheet("Height:400; Width:400; background-color:transparent");
     QVBoxLayout* listLayout = new QVBoxLayout(listWidget);
     listLayout->setAlignment(Qt::AlignTop);
-    fileList = new ScrollListContainer(listWidget);
-    fileList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    fileList->setStyleSheet("Height:500; Width:600; ");
+    fileList = new ScrollAreaCustom(false, listWidget);
+    fileList->setFixedWidth(300);
 //        fileList->AddWidget();
     listLayout->addWidget(fileList);
+    QWidget* downloadWidget = new QWidget(this);
+    QVBoxLayout* downloadLayout = new QVBoxLayout(downloadWidget);
+    downloadLayout->setAlignment(Qt::AlignTop);
+    downloadList = new ScrollAreaCustom(false, downloadWidget);
+    downloadList->setFixedWidth(300);
+    downloadLayout->addWidget(downloadList);
+
+
 
     connect(select, &textButton::clicked, this,[=]{
         QString filePath = QFileDialog::getOpenFileName(this, QStringLiteral("选择文件"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
@@ -336,13 +357,12 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
         QFileInfo fileInfo(filePath);
         QLabel* tmp = new QLabel(fileInfo.fileName(),fileList);
         fileNames.push_back(fileInfo.fileName());
-        fileList->AddWidget(tmp,true);
+        fileList->addWidget(tmp,true);
         file.close();
 
     });
 
     connect(upload, &textButton::clicked, this, [=]{
-        emit deliver(filesToSubmit);
         for(int i = 0; i < fileNames.size(); i++) {
             qDebug() << fileNames[i];
             fileUploader = new FileUpload(id,fileNames[i], filesToSubmit[i], studentId, 1);
@@ -350,11 +370,67 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
         fileNames.clear();
         fileList->clear();
         filesToSubmit.clear();
+    });
+    connect(downloadButton, &textButton::clicked, this, [=]{
+        for(int i = 0; i < fileToDownload.size(); i ++) {
+            fileDownloader = new FileDownload(id, fileToDownload[i], studentId, 1);
+            connect(fileDownloader, &FileDownload::receive, this, [=](QVariant varValue){
+                FileResult* fileResult = varValue.value<FileResult*>();
+                QString filePath = QFileDialog::getSaveFileName(this, QStringLiteral("保存文件"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
+                QFile file(filePath);
+                file.open(QIODevice::WriteOnly);
+                QByteArray fileData = QByteArray::fromStdString(fileResult->str);
+                file.write(fileData);
+                file.close();
+            });
+        }
+    });
+    /*
+    QWidget* downWidget = new QWidget(this);
+    QVBoxLayout* downLayout = new QVBoxLayout(downWidget);
+    downLayout->setAlignment(Qt::AlignTop);
+    QLabel* downLabel = new QLabel("下载资料", downWidget);
+    downLabel->setStyleSheet("font-size:15px;");
+    downLayout->addWidget(downLabel);
+
+    QWidget* uploadWidget = new QWidget(this);
+    QVBoxLayout* uploadLayout = new QVBoxLayout(uploadWidget);
+    uploadLayout->setAlignment(Qt::AlignTop);
+    QLabel* uploadLabel = new QLabel("上传资料", uploadWidget);
+    uploadLabel->setStyleSheet("font-size:15px bold;");
+    uploadLayout->addWidget(uploadLabel);*/
+    QWidget * splitter = new QWidget(this);
+    splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    splitter->setStyleSheet("background-color:black");
+    splitter->setFixedHeight(3);
+
+
+    connect(this, &classFileDeliver::download, this, [=]{
+        downloadList->clear();
+        for(int i = 0; i < fileToDownload.size(); i++) {
+            /*downloadElement = new QWidget(downloadList);
+            QHBoxLayout* downloadLayout = new QHBoxLayout(downloadElement);
+            downloadElement->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            QLabel* fileName = new QLabel(fileToDownload[i], downloadElement);
+            QPushButton* downloadButton = new QPushButton("下载", downloadElement);
+            downloadLayout->addWidget(fileName);
+            downloadLayout->addWidget(downloadButton);
+            downloadList->AddWidget(downloadElement, true);*/
+            QLabel* tmp = new QLabel(fileToDownload[i], downloadList);
+            downloadList->addWidget(tmp, true);
+        }
 
     });
+    //mainLayout->addWidget(downWidget);
+    mainLayout->addWidget(downloadWidget);
+    mainLayout->addWidget(downloadButton);
+    mainLayout->addWidget(splitter);
+    //mainLayout->addWidget(uploadWidget);
     mainLayout->addWidget(select);
     mainLayout->addWidget(listWidget);
     mainLayout->addWidget(upload);
+
+
 
 }
 

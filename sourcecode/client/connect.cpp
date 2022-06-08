@@ -149,8 +149,29 @@ ClassQuery::ClassQuery(int id) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
        QVector<ClassResult*> v;
-       for(int i = 0; i < parms.size(); i += 6) {
+       /*for(int i = 0; i < parms.size(); i += 6) {
            v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage, parms[i + 4]->qsMessage, parms[i + 5]->qsMessage));
+       }*/
+       int i = 0;
+       while(i < parms.size()) {
+           QString name = parms[i]->qsMessage;
+           QString teacher = parms[i + 1]->qsMessage;
+           QString place = parms[i + 3]->qsMessage;
+           QString time = parms[i + 2]->qsMessage;
+           QString QQ = parms[i + 4]->qsMessage;
+           QString id = parms[i + 5]->qsMessage;
+           if(id == "") id = "0";
+           QVector<QString> files;
+           int fileNum = parms[i + 6]->number;
+           qDebug() <<"parms[i + 6]->qsMessage: " <<parms[i + 6]->qsMessage << "parms[i + 6]->number: "<< parms[i + 6]->number;
+           qDebug() << name << teacher << place << time << QQ << id << fileNum;
+              for(int j = 0; j < fileNum; j++) {
+                files.push_back(parms[i + 7 + j]->qsMessage);
+                qDebug() << "fileNum:" << fileNum;
+                qDebug() << "filename:" << parms[i + 7 + j]->qsMessage;
+              }
+              i += 7 + fileNum;
+           v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files));
        }
        //qDebug()<<"ClassQuery";
        emit receive(QVariant::fromValue(v));
@@ -218,4 +239,23 @@ FileUpload::FileUpload(QString id, QString descripter,std::string info, int stud
     paras.push_back(new Parameter(info));
     qDebug() << "id"<<  id<<"descripter" <<descripter;
     connector = new TcpConnector(paras);
+}
+
+FileDownload::FileDownload(QString id, QString descripter, int studentId, int mode) {
+    QVector<Parameter*> paras;
+    if (mode == 0)paras.push_back(new Parameter(14));
+    else paras.push_back(new Parameter(15));
+    qDebug() << "file download student id: " << studentId;
+    if (id == "")
+        paras.push_back(new Parameter(0));
+    else
+        paras.push_back(new Parameter(id.toInt()));
+    if(mode != 0) paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(descripter));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        FileResult* v = new FileResult(parms[0]->sMessage);
+        emit receive(QVariant::fromValue(v));
+    });
 }

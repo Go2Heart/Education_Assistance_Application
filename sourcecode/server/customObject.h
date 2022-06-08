@@ -26,6 +26,7 @@ private:
     Vector<Duration> classDurations;
     Duration examDuration;
     Vector<String> homeworkInfos;
+    Vector<String> fileNames;
     Vector<File*> files;
     Vector<Student*> students;
 public:
@@ -49,7 +50,8 @@ public:
     String Place() { return classPlace; }
     String QQ() { return QQnumber; }
     Vector<Duration> ClassDurations() { return classDurations; }
-
+    Vector<File*> Files() { return files; }
+    Vector<String> FileNames() { return fileNames; }
     bool cross(Vector<Duration> durations) {
         for(int i = 0; i < durations.size(); i++)
             for(int j = 0; j < classDurations.size(); j++)
@@ -66,6 +68,7 @@ public:
         }
         return false;
     }
+    void AddFileName(String name) {fileNames.push_back(name);}
     void AddFile(File* file) { files.push_back(file); }
     void SetExamPlace(String place) { examPlace = place; }
     void SetExamDura(Duration duration) { examDuration = duration; }

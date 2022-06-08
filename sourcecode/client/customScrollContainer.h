@@ -75,6 +75,7 @@ public:
     void removeWidget(QWidget *widget = nullptr);
     void ScrollToTop();
     void updateHeight();
+    void clear();
 private slots:
     void scrollContainer();
     void updateSpd();
