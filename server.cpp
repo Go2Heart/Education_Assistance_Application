@@ -176,7 +176,7 @@ void Server::run() {
                     perror("accept failed");
                 }
                 if(!inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip_str, sizeof(client_ip_str))) {
-                    perror("inet_ntop failed");//å°†IPè½¬æ¢ä¸ºç‚¹æ•°ç±»å‹
+                    perror("inet_ntop failed");//½«IP×ª»»ÎªµãÊıÀàĞÍ
                 }
                 //printf("accept a client from: %s\n", client_ip_str);
                 setSockNonBlock(new_sock);
@@ -208,7 +208,7 @@ void Server::run() {
                 Vector<Parameter> parms = GetParms(message);
                 if(parms.size() == 0) continue;
                 switch (parms[0].number) {
-                    case 0x01 : {// ä¸Šä¼ è¯¾ç¨‹èµ„æ–™
+                    case 0x01 : {// ÉÏ´«¿Î³Ì×ÊÁÏ
                         // lessonname filename file
                         /*Lesson* nowLesson = lessonGroup.GetLesson(parms[0]);
                         String savePath = "data/lesson_files/" + nowLesson->Name() + '/' + parms[1];
@@ -219,7 +219,7 @@ void Server::run() {
                         break;*/
                         break;
                     }
-                    case 0x02 : {//æäº¤ä½œä¸š
+                    case 0x02 : {//Ìá½»×÷Òµ
                         //studentId lessonid homeworkid filename file
                         /*Homework_Student* nowHomework = studentGroup.GetStudent(atoi(parms[0].c_str()))->Events()->GetLesson(atoi(parms[1].c_str()))->GetHomework(atoi(parms[2].c_str()));
                         String savePath = "data/student_files/" + parms[0] + "/lessons/" + parms[1] + '/' + parms[2] + '/' + ToString(nowHomework->Ver()) + '/' + parms[3];
@@ -228,7 +228,7 @@ void Server::run() {
                         break;*/
                         break;
                     }
-                    case 0x03 : {//æŸ¥è¯¢è·¯å¾„
+                    case 0x03 : {//²éÑ¯Â·¾¶
                         Vector<int> v;
                         int vectorSize = parms[1].number;
                         for(int j = 2; j < 2 + vectorSize; j++)
@@ -247,13 +247,13 @@ void Server::run() {
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x04 : {//æŸ¥è¯¢æ—¶é—´
+                    case 0x04 : {//²éÑ¯Ê±¼ä
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(timeTracker.NowTimer().Zip()));
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x05 : {//ä¿®æ”¹é€Ÿåº¦
+                    case 0x05 : {//ĞŞ¸ÄËÙ¶È
                         timeTracker.ChgSpd(parms[1].number / 10.0);
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
@@ -272,7 +272,7 @@ void Server::run() {
                         break;
                     }
 
-                    case 0x07 : {//æŸ¥è¯¢è¯¾ç¨‹
+                    case 0x07 : {//²éÑ¯¿Î³Ì
                         Vector<Parameter> resultParms;
                         for(int i = 0; i < lessonGroup.size(); i++){
                             if(lessonGroup.GetLesson(i)->isStudentTake(studentGroup.GetStudent(parms[1].number)->Number())) {
@@ -287,8 +287,18 @@ void Server::run() {
                                     time = time + " " + ToString(d[i].Begin().Hour()) + ':' + ToString(d[i].Begin().Min()) + '-' + ToString(d[i].End().Hour()) + ':' + ToString(d[i].End().Min()) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
+                                //get QQ
+                                resultParms.push_back(Parameter(lessonGroup.GetLesson(i)->QQ(), false));
                                 //get id
                                 resultParms.push_back(Parameter(ToString(i), false));
+                                //get files
+                                Vector<File*> files = lessonGroup.GetLesson(i)->Files();
+                                Vector<String> fileNames = lessonGroup.GetLesson(i)->FileNames();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int j = 0; j < files.size(); j++) {
+                                    printf("%d\n", files.size());
+                                    resultParms.push_back(Parameter(fileNames[j], false));
+                                }
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -296,7 +306,7 @@ void Server::run() {
 
                     }
 
-                    case 0x08 : {//æŸ¥è¯¢æ´»åŠ¨
+                    case 0x08 : {//²éÑ¯»î¶¯
                         Vector<Parameter> resultParms;
                         printf("activity phase");
                         for(int i = 0; i < activityGroup.size(); i++){
@@ -317,20 +327,20 @@ void Server::run() {
                         break;
 
                     }
-                    case 0x9: {//æ£€ç´¢æ´»åŠ¨ID
+                    case 0x9: {//¼ìË÷»î¶¯ID
                         Vector<Parameter> resultParms;
                         int id = activityGroup.GetActivityId(parms[1].message);
                         resultParms.push_back(Parameter(id));
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0xA: {//æ£€ç´¢æ´»åŠ¨
+                    case 0xA: {//¼ìË÷»î¶¯
                         Vector<Parameter> resultParms;
                         int type = parms[2].number;
                         printf("%d\n", type);
                         printf("%s\n", parms[1].message.c_str());
                         switch(type) {
-                            case 0: {//æ´»åŠ¨åç§°
+                            case 0: {//»î¶¯Ãû³Æ
                                 for(int i = 0; i < activityGroup.size(); i++) {
                                     if(activityGroup.GetActivity(i)->Name()==(parms[1].message)) {
                                         resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
@@ -347,7 +357,7 @@ void Server::run() {
 
                                 break;
                             }
-                            case 1: {//æ´»åŠ¨åœ°ç‚¹
+                            case 1: {//»î¶¯µØµã
                                 for(int i = 0; i < activityGroup.size(); i++) {
                                     if(activityGroup.GetActivity(i)->Place()==(parms[1].message)) {
                                         resultParms.push_back(Parameter(activityGroup.GetActivity(i)->Name(), false));
@@ -364,7 +374,7 @@ void Server::run() {
 
                                 break;
                             }
-                            case 2: {//æ´»åŠ¨æ—¶é—´
+                            case 2: {//»î¶¯Ê±¼ä
                                 const char* time = parms[1].message.c_str();
                                 int index = 0;
                                 int beginHour = 0;
@@ -407,7 +417,7 @@ void Server::run() {
                         break;
 
                     }
-                    case 0xB :{//æ´»åŠ¨ä¸Šä¼ 
+                    case 0xB :{//»î¶¯ÉÏ´«
                         Student* nowStudent = studentGroup.GetStudent(parms[5].number);
                         Vector<Student*> nowStudents;
                         nowStudents.push_back(nowStudent);
@@ -451,34 +461,69 @@ void Server::run() {
                         studentGroup.GetStudent(parms[5].number)->Events()->AddActivity(activityID);
                         break;
                     }
-                    case 0xC: {//æ´»åŠ¨æ–‡ä»¶ä¸Šä¼ 
+                    case 0xC: {//»î¶¯ÎÄ¼şÉÏ´«
                         int id = parms[1].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String mid;
-                        if (ToString(id) == "") mid = "0";
-                        else mid = ToString(id);
-                        String savePath = "../Activity/" + ToString(id) + "/" + parms[2].message;
+                        String s1;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        String savePath = "../Activity/" + s1 + "/" + parms[2].message;
                         unsigned long long tmpHash = GetHash(parms[3].message);
                         File* file = new File(savePath, tmpHash);
                         nowActivity->AddFile(file);
                         WriteFile(savePath, parms[3].message);
                         break;
                     }
-                    case 0xD: {//è¯¾ç¨‹ä½œä¸šä¸Šä¼ 
+                    case 0xD: {//¿Î³ÌÎÄ¼şÉÏ´«
                         int id = parms[1].number;
+                        int studentID = parms[2].number;
+                        String s1,s2;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        if (studentID == 0) s2 = "0";
+                        else s2 = ToString(studentID);
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String mid;
-                        if (ToString(id) == "") mid = "0";
-                        else mid = ToString(id);
-                        String savePath = "../Lesson/" + mid + "/" + parms[2].message;
+                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
                         printf("%s\n", savePath.c_str());
-                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        unsigned long long tmpHash = GetHash(parms[4].message);
                         File* file = new File(savePath, tmpHash);
+                        nowLesson->AddFileName(parms[3].message);
                         nowLesson->AddFile(file);
-                        WriteFile(savePath, parms[3].message);
+                        WriteFile(savePath, parms[4].message);
                         break;
+                    }
+                    case 0xE: {//»î¶¯ÎÄ¼şÏÂÔØ
 
                     }
+                    case 0xF: {//¿Î³ÌÎÄ¼şÏÂÔØ
+                        printf("begin download\n");
+                        Vector<Parameter> resultParms;
+                        int id = parms[1].number;
+                        int studentID = parms[2].number;
+                        String s1,s2;
+                        if (id == 0) s1 = "0";
+                        else s1 = ToString(id);
+                        if (studentID == 0) s2 = "0";
+                        else s2 = ToString(studentID);
+                        Lesson* nowLesson = lessonGroup.GetLesson(id);
+                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        FILE* file;
+                        if((file = fopen(savePath.c_str(), "r")) == NULL) {
+                            printf("file not found\n");
+                            break;
+                        }
+                        String download;
+                        while(!feof(file)) {
+                            char tmp[1024];
+                            fgets(tmp, 1024, file);
+                            download = download + tmp;
+                        }
+                        fclose(file);
+                        resultParms.push_back(Parameter(download, true));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+
 
 
                         /*
