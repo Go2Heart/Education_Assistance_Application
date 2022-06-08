@@ -10,9 +10,9 @@ int ToInt(Timer x) {
 
 bool Duration::cross(Duration duration) {
     if (
-        begin.Day() == duration.begin.Day() &&
-        !(end.Week() < duration.begin.Week() || duration.end.Week() < begin.Week()) &&
-        !(end < duration.begin || duration.end < begin)
+        begin.day == duration.begin.day &&
+        !(end.week < duration.begin.week || duration.end.week < begin.week) &&
+        !(end.HMLess(duration.begin) || duration.end.HMLess(begin))
     ) return true;
     else return false;
 }

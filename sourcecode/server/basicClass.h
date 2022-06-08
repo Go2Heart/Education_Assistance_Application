@@ -4,9 +4,8 @@
 #include <cstdio>
 
 class Timer {
-private:
-    int week = 0, day = 0, hour = 0, minute = 0;
 public:
+    int week = 0, day = 0, hour = 0, minute = 0;
     /*enum {
         Mon = 1, Tue = 2, Wed = 3, Thu = 4, Fri = 5, Sat = 6, Sun = 7
     };*/
@@ -18,10 +17,22 @@ public:
     {}
     Timer() {}
     bool operator < (const Timer &t) {
-        return (hour < t.hour || (hour == t.hour && minute < t.minute));
+        return (week < t.week ||
+            (week == t.week && day < t.day) ||
+            (week == t.week && day == t.day && hour < t.hour) ||
+            (week == t.week && day == t.day && hour == t.hour && minute < t.minute));
     }
     bool operator <= (const Timer &t) {
-        return (hour < t.hour || (hour == t.hour && minute <= t.minute));
+        return (week < t.week ||
+            (week == t.week && day < t.day) ||
+            (week == t.week && day == t.day && hour < t.hour) ||
+            (week == t.week && day == t.day && hour == t.hour && minute <= t.minute));
+    }
+    bool HMLess(const Timer &t) {
+        return hour < t.hour || (hour == t.hour && minute < t.minute);
+    }
+    bool HMLessEqual(const Timer &t) {
+        return hour < t.hour || (hour == t.hour && minute <= t.minute);
     }
     Timer operator + (const Timer &t) {
         return Timer(hour + t.hour + (minute + t.minute >= 60), (minute + t.minute) % 60, day + t.day, week + t.week);
@@ -43,9 +54,8 @@ extern Timer ToTimer(int x);
 extern int ToInt(Timer x);
 
 class Duration {
-private:
-    Timer begin, end;
 public:
+    Timer begin, end;
     Duration(Timer begin, Timer end) :
         begin(begin),
         end(end)
@@ -55,7 +65,5 @@ public:
         end(Timer(0, 0))
     {}
     bool cross(Duration duration);
-    Timer Begin() { return begin; }
-    Timer End() { return end; }
 };
 #endif // BASICCLASS_H

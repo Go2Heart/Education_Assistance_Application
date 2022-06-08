@@ -1,0 +1,42 @@
+[
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/data_structure/heap.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/data_structure/heap.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/data_structure/heap.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/data_structure/string.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/data_structure/string.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/data_structure/string.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/basicClass.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/basicClass.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/basicClass.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/clock.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/clock.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/clock.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/customEvent.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/customEvent.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/customEvent.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/graph.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/graph.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/graph.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/main.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/main.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/main.cpp"
+},
+{
+  "directory": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/build",
+  "command": "/usr/bin/g++     -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all  -g   -o CMakeFiles/test.dir/server.cpp.o -c /root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/server.cpp",
+  "file": "/root/trans_test/homework_version/Education_Assistance_Application/sourcecode/server/server.cpp"
+}
+]

@@ -4,7 +4,6 @@
 #include "basicClass.h"
 #include "customObject.h"
 #include "identity.h"
-#include "connect.h"
 #include "graph.h"
 #include "server.h"
 #include "huffman/decoder.h"
@@ -79,8 +78,9 @@ void InitLesson() {
 		}
 		Lesson* tmpLesson = new Lesson(classPlace, teacher, name, QQnumber, tmpDurations, tmpStudents);
 		int lessonId = lessonGroup.AddLesson(tmpLesson);
+		tmpLesson->lessonId = lessonId;
 		for(int j = 0; j < m; j++)
-			tmpStudents[j]->Events()->AddLesson(lessonId);
+			tmpStudents[j]->events->AddLesson(lessonId);
 	}
 }
 
@@ -107,8 +107,9 @@ void InitActivity() {
 		}
 		Activity* tmpActivity = new Activity(place, name, type, tmpDuration, tmpStudents);
 		int activityId = activityGroup.AddActivities(tmpActivity);
+		tmpActivity->activityId = activityId;
 		for(int j = 0; j < m; j++)
-			tmpStudents[j]->Events()->AddActivity(activityId);
+			tmpStudents[j]->events->AddActivity(activityId);
 	}
 }
 

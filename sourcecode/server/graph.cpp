@@ -49,12 +49,12 @@ void Graph::Dij(int x, int mode) {
 
 void Graph::GetCross(Timer t) {
 	crossTime = INF; crossType = -1;
-	for(int i = 0; i < bus.size(); i++) if(t <= bus[i]) {
+	for(int i = 0; i < bus.size(); i++) if(t.HMLessEqual(bus[i])) {
 		crossTime = ToInt(bus[i] - t) + busCost;
 		crossType = 0;
 		break;
 	}
-	for(int i = 0; i < shuttle.size(); i++) if(t <= shuttle[i]) {
+	for(int i = 0; i < shuttle.size(); i++) if(t.HMLessEqual(shuttle[i])) {
 		if(crossTime > ToInt(shuttle[i] - t) + shuttleCost) {
 			crossTime = ToInt(shuttle[i] - t) + shuttleCost;
 			crossType = 1;

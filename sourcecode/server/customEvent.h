@@ -8,44 +8,43 @@
 #include "basicClass.h"
 
 using namespace std;
-
+class File;
 class Homework_Student {
-private:
-    Vector<String> savePath;
-    bool finished = false;
-    int version = 0;
 public:
-    Homework_Student(){}
-    void Upload(String path) {
-        finished = true;
-        savePath.push_back(path);
-        version++;
-    }
-    int Ver() { return version; }
+    File* file;
+    int id;
+    bool finished = false;
+    Homework_Student(int id) : id(id) {}
+    ~Homework_Student();
+    void Upload(File* file);
 };
 
 class Lesson_Student {
 private:
-    int id;
     Vector<Homework_Student*> homeworkStates;
 public:
-    Lesson_Student(int id) : id(id) {}
-    int Id() { return id; }
-    void AddHomework() { homeworkStates.push_back(new Homework_Student()); }
+    int lessonId;
+    Lesson_Student(int id) : lessonId(id) {}
+    ~Lesson_Student() {
+        for(int i = 0; i < homeworkStates.size(); i++) delete(homeworkStates[i]);
+    }
+    void AddHomework(int id) { homeworkStates.push_back(new Homework_Student(id)); }
     Homework_Student* GetHomework(int id) { return homeworkStates[id]; }
 };
 
 class EventGroup {
-private:
+public:
     Vector<Lesson_Student*> lessons;
     Vector<int> activities;
-public:
+    ~EventGroup() {
+        for(int i = 0; i < lessons.size(); i++) delete(lessons[i]);
+    }
     void AddLesson(int lessonId);
     void AddActivity(int ActivityId);
     bool VerifyDuration(Vector<Duration> durations);
     Lesson_Student* GetLesson(int lessonId) {
         for(int i = 0; i < lessons.size(); i++)
-            if(lessons[i]->Id() == lessonId) return lessons[i];
+            if(lessons[i]->lessonId == lessonId) return lessons[i];
         return nullptr;
     }
 };
