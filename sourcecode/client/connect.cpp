@@ -10,8 +10,8 @@ TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
 #ifdef __WIN32__
-    socket->connectToHost("82.157.164.204", 43434);
-   // socket->connectToHost("123.56.124.140", 8888);
+    //socket->connectToHost("82.157.164.204", 43434);
+    socket->connectToHost("123.56.124.140", 8888);
 #endif
 #ifdef  __APPLE__
     socket->connectToHost("82.157.164.204", 43434);
@@ -258,4 +258,68 @@ FileDownload::FileDownload(QString id, QString descripter, int studentId, int mo
         FileResult* v = new FileResult(parms[0]->sMessage);
         emit receive(QVariant::fromValue(v));
     });
+}
+
+ClassSearch::ClassSearch(QString key, int type) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(9));
+    paras.push_back(new Parameter(key));
+    //paras.push_back(new Parameter(type));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<ClassResult*> v;
+        /*for(int i = 0; i < parms.size(); i += 6) {
+            v.push_back(new ClassResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->qsMessage, parms[i + 4]->qsMessage, parms[i + 5]->qsMessage));
+        }*/
+        int i = 0;
+        while(i < parms.size()) {
+            QString name = parms[i]->qsMessage;
+            QString teacher = parms[i + 1]->qsMessage;
+            QString place = parms[i + 3]->qsMessage;
+            QString time = parms[i + 2]->qsMessage;
+            QString QQ = parms[i + 4]->qsMessage;
+            QString id = parms[i + 5]->qsMessage;
+            if(id == "") id = "0";
+            QVector<QString> files;
+            int fileNum = parms[i + 6]->number;
+            qDebug() <<"parms[i + 6]->qsMessage: " <<parms[i + 6]->qsMessage << "parms[i + 6]->number: "<< parms[i + 6]->number;
+            qDebug() << name << teacher << place << time << QQ << id << fileNum;
+            for(int j = 0; j < fileNum; j++) {
+                files.push_back(parms[i + 7 + j]->qsMessage);
+                qDebug() << "fileNum:" << fileNum;
+                qDebug() << "filename:" << parms[i + 7 + j]->qsMessage;
+            }
+            i += 7 + fileNum;
+            v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files));
+        }
+        //qDebug()<<"ClassQuery";
+        emit receive(QVariant::fromValue(v));
+    });
+
+}
+
+HomeworkPost::HomeworkPost(int id, QString desc) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x11));
+    paras.push_back(new Parameter(id));
+    paras.push_back(new Parameter(desc));
+    connector = new TcpConnector(paras);
+}
+
+HomeworkQuery::HomeworkQuery(int studentId, int classId) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x12));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(classId));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<HomeworkResult*> v;
+        for(int i = 0; i < parms.size(); i += 3) {
+            v.push_back(new HomeworkResult( parms[i]->number, parms[i + 1]->number, parms[i + 2]->qsMessage));
+        }
+        emit receive(QVariant::fromValue(v));
+    });
+
 }

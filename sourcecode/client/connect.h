@@ -143,8 +143,19 @@ struct ActivityResult {
     {}
 };
 Q_DECLARE_METATYPE(ActivityResult*)
+struct HomeworkResult {
+    int id;
+    bool finished;
+    QString desc;
 
-
+    HomeworkResult() {}
+    HomeworkResult(int id, bool finished, QString& desc) :
+        id(id),
+        finished(finished),
+        desc(desc)
+    {}
+};
+Q_DECLARE_METATYPE(HomeworkResult*)
 struct FileResult {
     std::string str;
     FileResult(std::string str): str(str) {}
@@ -232,6 +243,16 @@ public:
 signals:
     void receive(QVariant varValue);
 };
+class ClassSearch: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ClassSearch(QString key, int type = 0);
+signals:
+    void receive(QVariant varValue);
+};
 
 class ActivityUpload: public QObject {
     Q_OBJECT
@@ -262,6 +283,27 @@ public:
 signals:
     void receive(QVariant varValue);
 };
+class HomeworkQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkQuery(int studentId, int classId);
+signals:
+    void receive(QVariant varValue);
+};
+class HomeworkPost: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkPost(int id, QString desc);
+signals:
+    void receive(QVariant varValue);
+};
+
 
 
 #endif // CONNECT_H

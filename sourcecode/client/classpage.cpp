@@ -173,14 +173,14 @@ ClassPage::ClassPage(QWidget* parent):
     selections->setFixedWidth(100);
     selections->addItems(selectList);
     textInputItem* classSearch = new textInputItem("课程", searchBar);
-    bigIconButton* searchclass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
-    searchclass->setFixedSize(30,30);
+    bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
+    searchClass->setFixedSize(30, 30);
 
     /*TODO connect */
 
     searchLayout->addWidget(classSearch);
     searchLayout->addWidget(selections);
-    searchLayout->addWidget(searchclass);
+    searchLayout->addWidget(searchClass);
     eventLayout->addWidget(searchBar);
 
     //itemList = new ScrollAreaCustom(false, eventWidget);
@@ -236,20 +236,61 @@ ClassPage::ClassPage(QWidget* parent):
 
     areaLayout->addWidget(materialDlvr);
     materialDlvr->hide();
+
+    QWidget* homeworkDlvr = new QWidget(detailArea);
+    homeworkDlvr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    homeworkDlvr->setStyleSheet("Height:400; Width:400");
+    QVBoxLayout* HDlvrLayout = new QVBoxLayout(homeworkDlvr);
+    HDlvrLayout->setAlignment(Qt::AlignCenter);
+
+    homework = new classHomeworkWidget(homeworkDlvr);
+    HDlvrLayout->addWidget(homework);
+
+    areaLayout->addWidget(homeworkDlvr);
+    homeworkDlvr->hide();
+
+
     connect(detailTabButton1, &textButton::clicked, this, [=]{
         materialDlvr->hide();
+        homeworkDlvr->hide();
         activityDtl->show();
         //fileDlvr->setActivity(activityDtl->getActivity());
-        qDebug() << fileDlvr->getId();
-        detailTabButton1->setEnabled(false);
+        //detailTabButton1->setEnabled(false);
+
     });
     connect(detailTabButton2, &textButton::clicked, this, [=]{
         activityDtl->hide();
+        homeworkDlvr->hide();
         materialDlvr->show();
         //fileDlvr->setActivity(activityDtl->getActivity());
-        qDebug() << fileDlvr->getId();
-        detailTabButton1->setEnabled(true);
+        //detailTabButton1->setEnabled(true);
     });
+    connect(detailTabButton3, &textButton::clicked, this, [=]{
+        homework->cleanContent();
+        emit checkHomework(studentId, activityDtl->getActivity()->getInfoWidget()->getId().toInt());
+        homework->homeworkPost = new HomeworkPost(7, "作业1");
+        qDebug() << studentId << "class id"<< activityDtl->getActivity()->getInfoWidget()->getId();
+        activityDtl->hide();
+        materialDlvr->hide();
+        homeworkDlvr->show();
+
+    });
+    connect(this, &ClassPage::checkHomework, this, [=](int studentId, int classId) {
+        homework->homeworkQuery = new HomeworkQuery(studentId, classId);
+        connect(homework->homeworkQuery, &HomeworkQuery::receive, this, [=](QVariant varValue){
+            QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
+            for(int i = 0; i < result.size(); i++){
+                QVector<QString> info;
+                info.push_back(QString::number(result[i]->id));
+                info.push_back(QString::number(result[i]->finished));
+                info.push_back(result[i]->desc);
+
+                homeworkWidget *infoWidget = new homeworkWidget(info, homework);
+                homework->addContent(infoWidget);
+            }
+        });
+    });
+
 
     detailLayout->addWidget(detailArea);
     classListWidget* classList = new classListWidget("class", 500, itemWidget, eventWidget);
@@ -304,6 +345,69 @@ ClassPage::ClassPage(QWidget* parent):
             });
             classList->addContent(newClass);
         }
+    });
+    connect(searchClass, &bigIconButton::clicked, this, [=]{
+        if(classSearch->value() == ""){
+            classList->cleanContent();
+            ClassQuery* query = new ClassQuery(studentId);
+            connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
+                QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
+                for(int i = 0; i < classResult.size(); i++){
+                    QVector<QString> info;
+                    info.push_back(classResult[i]->name);
+                    info.push_back(classResult[i]->teacher);
+                    info.push_back(classResult[i]->place);
+                    info.push_back(classResult[i]->time);
+                    info.push_back(classResult[i]->QQ);
+                    info.push_back(classResult[i]->id);
+                    info.push_back(QString::number(classResult[i]->fileNames.size()));
+                    for(int j = 0; j < classResult[i]->fileNames.size(); j++){
+                        info.push_back(classResult[i]->fileNames[j]);
+                    }
+                    //info.push_back
+
+                    classWidget * newClass = new classWidget(info, itemWidget);
+                    connect(newClass, &classWidget::clicked, this, [=]{
+                        activityDtl->showDetail(info);
+                        activityDtl->setActivity(newClass);
+                        fileDlvr->setActivity(newClass);
+                        fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                        emit fileDlvr->download();
+                    });
+                    classList->addContent(newClass);
+                }
+            });
+            return;
+        }
+        search = new ClassSearch(classSearch->value(), selections->currentIndex());
+        connect(search, &ClassSearch::receive, this, [=](QVariant varValue){
+            classList->cleanContent();
+            QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
+            for(int i = 0; i < classResult.size(); i++){
+                QVector<QString> info;
+                info.push_back(classResult[i]->name);
+                info.push_back(classResult[i]->teacher);
+                info.push_back(classResult[i]->place);
+                info.push_back(classResult[i]->time);
+                info.push_back(classResult[i]->QQ);
+                info.push_back(classResult[i]->id);
+                info.push_back(QString::number(classResult[i]->fileNames.size()));
+                for(int j = 0; j < classResult[i]->fileNames.size(); j++){
+                    info.push_back(classResult[i]->fileNames[j]);
+                }
+                //info.push_back
+
+                classWidget * newClass = new classWidget(info, itemWidget);
+                connect(newClass, &classWidget::clicked, this, [=]{
+                    activityDtl->showDetail(info);
+                    activityDtl->setActivity(newClass);
+                    fileDlvr->setActivity(newClass);
+                    fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                    emit fileDlvr->download();
+                });
+                classList->addContent(newClass);
+            }
+        });
     });
 }
 void ClassPage::resizeEvent(QResizeEvent*) {
@@ -475,4 +579,99 @@ void classDetailWidget::showDetail(QVector<QString> info) {
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);
 
+}
+classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+        searchBar = new QWidget(this);
+        QHBoxLayout *searchLayout = new QHBoxLayout(searchBar);
+        searchLayout->setContentsMargins(0,0,0,0);
+        searchBar->setLayout(searchLayout);
+        searchBar->setFixedHeight(40);
+        searchBar->setStyleSheet("background-color:rgb(255,255,255);");
+        searchBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        searchLayout->setAlignment(Qt::AlignLeft);
+        textInputItem* search = new textInputItem("搜索作业", searchBar);
+        search->setStyleSheet("background-color:rgb(255,255,255);");
+        bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
+        searchButton->setFixedSize(30, 30);
+        searchButton->setStyleSheet("background-color:rgb(255,255,255);");
+        searchLayout->addWidget(search);
+        searchLayout->addWidget(searchButton);
+    mainLayout->addWidget(searchBar);
+
+    container = new ScrollAreaCustom(false, this);
+    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    mainLayout->addWidget(container);
+    textButton* add = new textButton("提交作业", this);
+    add->setFixedHeight(40);
+    mainLayout->addWidget(add);
+
+
+}
+void classHomeworkInfoWidget::mousePressEvent(QMouseEvent *) {
+    mousePressed = true;
+}
+
+void classHomeworkInfoWidget::mouseReleaseEvent(QMouseEvent *) {
+    mousePressed = false;
+    emit clicked();
+}
+
+
+void classHomeworkInfoWidget::resizeEvent(QResizeEvent *event) {
+    infoWidget->resize(this->width() -2 * margin - spacing, this->height() - 2 * margin);
+    infoWidget->move(margin, margin);
+}
+classHomeworkInfoWidget::classHomeworkInfoWidget(QVector<QString> info, QWidget* parent) :
+        QWidget(parent)
+{
+    this->info = info;
+    id = info[0].toInt();
+    finished = info[1].toInt();
+    setStyleSheet("background-color:transparent;");
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    infoWidget = new QWidget(this);
+    infoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* infoLayout = new QVBoxLayout(infoWidget);
+    infoLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    infoLayout->setContentsMargins(0, 0, 0, 0);
+    infoLayout->setSpacing(15);
+    QFont descFont = QFont("Corbel Light", 13);
+    QFontMetrics descm(descFont);
+    descFont.setStyleStrategy(QFont::PreferAntialias);
+    QString isFinished = finished == 1 ? "已完成" : "未完成";
+    titleLabel = new QLabel("[作业ID]" + info[0], infoWidget);
+    titleLabel->setFont(descFont);
+    titleLabel->setFixedHeight(descm.lineSpacing());
+    titleLabel->setStyleSheet("color: black");
+    infoLayout->addWidget(titleLabel);
+
+    QFont detailFont = QFont("Corbel Light", 10);
+    QFontMetrics detailm(detailFont);
+    detailFont.setStyleStrategy(QFont::PreferAntialias);
+    descriptionLabel = new QLabel("[状态]" + isFinished + "[内容]" + info[2], infoWidget);
+    descriptionLabel->setFont(detailFont);
+    descriptionLabel->setFixedHeight(detailm.lineSpacing());
+    descriptionLabel->setStyleSheet("color: gray");
+    infoLayout->addWidget(descriptionLabel);
+
+}
+
+homeworkWidget::homeworkWidget(QVector<QString> info, QWidget *parent): QWidget(parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    setFixedHeight(100);
+    bgWidget = new QWidget(this);
+    bgWidget->resize(this->size());
+    bgWidget->setStyleSheet("background-color:" + defaultColor + ";border-radius:12px;");
+    QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    layout->setContentsMargins(10, 10, 10, 10);
+    layout->setSpacing(10);
+    infoWidget = new classHomeworkInfoWidget(info, this);
+    layout->addWidget(infoWidget);
+    connect(infoWidget, &classHomeworkInfoWidget::clicked, this, [=] {emit clicked();});
+}
+void homeworkWidget::resizeEvent(QResizeEvent*) {
+    bgWidget->resize(this->size());
 }

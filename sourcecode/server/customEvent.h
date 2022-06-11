@@ -11,10 +11,11 @@ using namespace std;
 class File;
 class Homework_Student {
 public:
+    String desc;
     File* file;
     int id;
     bool finished = false;
-    Homework_Student(int id) : id(id) {}
+    Homework_Student(int id, String desc) : id(id), desc(desc) {}
     ~Homework_Student();
     void Upload(File* file);
 };
@@ -28,8 +29,9 @@ public:
     ~Lesson_Student() {
         for(int i = 0; i < homeworkStates.size(); i++) delete(homeworkStates[i]);
     }
-    void AddHomework(int id) { homeworkStates.push_back(new Homework_Student(id)); }
+    void AddHomework(int id, String desc) { homeworkStates.push_back(new Homework_Student(id, desc)); }
     Homework_Student* GetHomework(int id) { return homeworkStates[id]; }
+    Vector<Homework_Student*> HomeworkStates() { return homeworkStates; }
 };
 
 class EventGroup {

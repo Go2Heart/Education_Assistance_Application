@@ -93,5 +93,6 @@ public:
 };
 
 extern String ToString(const int x);
-
+// TODO: ADDING TIME TO STRING, etc. padding 00
+extern String ToString_Time(const int x);
 #endif

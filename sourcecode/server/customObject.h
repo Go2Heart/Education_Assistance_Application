@@ -75,7 +75,7 @@ public:
         homeworks.push_back(homework);
         int id = homeworks.size() - 1;
         for(int i = 0; i < students.size(); i++) {
-            students[i]->events->GetLesson(lessonId)->AddHomework(id);
+            students[i]->events->GetLesson(lessonId)->AddHomework(id, homework->desc);
         }
     }
     void AddFile(File* file) { files.push_back(file); }
@@ -106,6 +106,13 @@ public:
     Lesson* GetLesson(int id) {
         if(id >= lessons.size()) return nullptr;
         return lessons[id];
+    }
+    Vector<Lesson*> FromName(String name) {
+        Vector<Lesson*> tmp;
+        for(int i = 0; i < lessons.size(); i++)
+            if(name == lessons[i]->Name())
+                tmp.push_back(lessons[i]);
+        return tmp;
     }
 
 };

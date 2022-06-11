@@ -131,7 +131,7 @@ signals:
     void deliver(QVector<std::string> msg);
     void download();
 };
-
+class classHomeworkWidget;
 class ClassPage : public QWidget{
 Q_OBJECT
 private:
@@ -144,10 +144,16 @@ private:
     classInfoWidget* classInfo = nullptr;
     classDetailWidget* activityDtl = nullptr;
     classFileDeliver* fileDlvr = nullptr;
+    classHomeworkWidget* homework = nullptr;
+    ClassSearch* search = nullptr;
+
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
     ClassPage(QWidget* parent = nullptr);
+signals:
+    void checkHomework(int studentId, int classId);
+
 };
 
 
@@ -160,16 +166,99 @@ private:
     QLabel* nameLabel;
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
+    QVector<QWidget*> itemList;
 
     int overlap = 5, margin = 10, titleHeight = 40, maxHeight, spacing = 3;
 public:
     classListWidget(QString name, int h, QWidget* p, QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
+        itemList.push_back(p);
+    }
+     void cleanContent(){
+        for(int i = 0; i < itemList.size(); i++){
+            container->removeWidget(itemList[i]);
+
+        }
+        itemList.clear();
     }
     void resizeEvent(QResizeEvent*);
 signals:
     void clicked(int id);
+};
+
+class classHomeworkInfoWidget : public QWidget{
+Q_OBJECT
+private:
+    int margin = 5, spacing = 5;
+    QWidget* infoWidget;
+    QLabel* titleLabel;
+    QLabel* descriptionLabel;
+    QVector<QString> info;
+    int id;
+    bool finished = false;
+    bool mousePressed = false;
+    void mousePressEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    void resizeEvent(QResizeEvent*);
+public:
+    classHomeworkInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
+    QVector<QString> getInfo(){return info;}
+    bool getFinished(){return finished;}
+signals:
+    void clicked();
+
+};
+
+class homeworkWidget : public QWidget {
+Q_OBJECT
+private:
+    QWidget* bgWidget;
+    classHomeworkInfoWidget* infoWidget;
+    QString defaultColor = "#0a0078d4";
+    QString hoverColor = "#1a0078d4";
+    QString pressedColor = "#2a0078d4";
+    void enterEvent(QEvent*) {
+        bgWidget->setStyleSheet("background-color:" + hoverColor + ";border-radius:12px;");
+    }
+    void leaveEvent(QEvent*) {
+        bgWidget->setStyleSheet("background-color:" + defaultColor + ";border-radius:12px;");
+    }
+    void resizeEvent(QResizeEvent*);
+public:
+    homeworkWidget(QVector<QString> info, QWidget* parent = nullptr);
+    classHomeworkInfoWidget* getInfoWidget() {
+        return infoWidget;
+    }
+signals:
+    void clicked();
+};
+
+class classHomeworkWidget : public QWidget{
+Q_OBJECT
+private:
+    QWidget* searchBar;
+    ScrollAreaCustom* container;
+    QVector<QWidget*> itemList;
+
+
+public:
+    HomeworkQuery* homeworkQuery = nullptr;
+    HomeworkPost* homeworkPost = nullptr;
+    bool received = false;
+    classHomeworkWidget(QWidget* parent = nullptr);
+    void addContent(QWidget* p){
+        container->addWidget(p, true);
+        itemList.push_back(p);
+    }
+    void cleanContent(){
+        for(int i = 0; i < itemList.size(); i++){
+            container->removeWidget(itemList[i]);
+        }
+        itemList.clear();
+    }
+
+
 };
 
 
