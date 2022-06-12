@@ -176,8 +176,6 @@ ClassPage::ClassPage(QWidget* parent):
     bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchClass->setFixedSize(30, 30);
 
-    /*TODO connect */
-
     searchLayout->addWidget(classSearch);
     searchLayout->addWidget(selections);
     searchLayout->addWidget(searchClass);
@@ -651,7 +649,6 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
                 info.push_back(QString::number(result[i]->id));
                 info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
-
                 homeworkWidget *infoWidget = new homeworkWidget(info, this);
                 this->addContent(infoWidget);
                 connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){

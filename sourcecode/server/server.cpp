@@ -351,6 +351,8 @@ void Server::run() {
                                 }
                             }
                         }
+                        sendAll(i, resultParms, false);
+                        break;
 
                     }
                     case 0x0A : {//检索活动
