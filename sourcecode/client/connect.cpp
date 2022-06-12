@@ -10,8 +10,8 @@ TcpConnector::TcpConnector(QVector<Parameter*> message) : m(message)
 {
     socket = new QTcpSocket(this);
 #ifdef __WIN32__
-    //socket->connectToHost("82.157.164.204", 43434);
-    socket->connectToHost("123.56.124.140", 8888);
+    socket->connectToHost("82.157.164.204", 43434);
+    //socket->connectToHost("123.56.124.140", 8888);
 #endif
 #ifdef  __APPLE__
     socket->connectToHost("82.157.164.204", 43434);
@@ -321,5 +321,40 @@ HomeworkQuery::HomeworkQuery(int studentId, int classId) {
         }
         emit receive(QVariant::fromValue(v));
     });
+
+}
+
+
+HomeworkUpload::HomeworkUpload(int studentId, int classId, int homeworkId, int count, QVector<QString> fileNames,
+                               QVector<std::string> fileData) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x10));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(classId));
+    paras.push_back(new Parameter(homeworkId));
+    //paras.push_back(new Parameter(count));
+    for(int i = 0; i < fileNames.size(); i++) {
+        paras.push_back(new Parameter(fileNames[i]));
+        paras.push_back(new Parameter(fileData[i]));
+    }
+    connector = new TcpConnector(paras);
+}
+
+HomeworkSearch::HomeworkSearch(int studentId, int classId, QString key) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x20));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(classId));
+    paras.push_back(new Parameter(key));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<HomeworkResult*> v;
+        for(int i = 0; i < parms.size(); i += 3) {
+            v.push_back(new HomeworkResult( parms[i]->number, parms[i + 1]->number, parms[i + 2]->qsMessage));
+        }
+        emit receive(QVariant::fromValue(v));
+    });
+
 
 }

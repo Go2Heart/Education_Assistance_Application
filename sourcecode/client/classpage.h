@@ -188,6 +188,7 @@ signals:
 };
 
 class classHomeworkInfoWidget : public QWidget{
+    //homework info the widget inside the scroll container
 Q_OBJECT
 private:
     int margin = 5, spacing = 5;
@@ -206,11 +207,12 @@ public:
     QVector<QString> getInfo(){return info;}
     bool getFinished(){return finished;}
 signals:
-    void clicked();
+    void clicked(int homeworkId);
 
 };
 
 class homeworkWidget : public QWidget {
+    //homework in the page of delivering
 Q_OBJECT
 private:
     QWidget* bgWidget;
@@ -218,6 +220,7 @@ private:
     QString defaultColor = "#0a0078d4";
     QString hoverColor = "#1a0078d4";
     QString pressedColor = "#2a0078d4";
+    //SlidePage* deliverPage = nullptr;
     void enterEvent(QEvent*) {
         bgWidget->setStyleSheet("background-color:" + hoverColor + ";border-radius:12px;");
     }
@@ -231,7 +234,7 @@ public:
         return infoWidget;
     }
 signals:
-    void clicked();
+    void clicked(int homeworkId);
 };
 
 class classHomeworkWidget : public QWidget{
@@ -240,12 +243,25 @@ private:
     QWidget* searchBar;
     ScrollAreaCustom* container;
     QVector<QWidget*> itemList;
+    ScrollAreaCustom* tempHomework;
 
+    QVector<QString> fileNames;
+    QVector<std::string> filesToSubmit;
+    QVector<QString> fileToDownload;
+    HomeworkUpload* homeworkUploader;
+    //void mousePressEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    //void resizeEvent(QResizeEvent*);
 
 public:
     HomeworkQuery* homeworkQuery = nullptr;
     HomeworkPost* homeworkPost = nullptr;
     bool received = false;
+    int chooseId;
+    int classId;
+    void setClassId(classWidget* activity) {
+        classId = activity->getInfoWidget()->getId().toInt();
+    }
     classHomeworkWidget(QWidget* parent = nullptr);
     void addContent(QWidget* p){
         container->addWidget(p, true);
@@ -257,6 +273,9 @@ public:
         }
         itemList.clear();
     }
+
+signals:
+    void clicked();
 
 
 };

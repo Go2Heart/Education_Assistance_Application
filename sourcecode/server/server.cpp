@@ -581,6 +581,26 @@ void Server::run() {
                         sendAll(i, resultParms, false);
                         break;
                     }
+                    case 0x20: {
+                        /**
+                         * @brief 搜索作业
+                         * params: 学生id
+                         * params: 课程id
+                         * params: 作业名称
+                         */
+                        Vector<Homework_Student*> homework = studentGroup.
+                                GetStudent(parms[1].number)->events->GetLesson(parms[2].number)->HomeworkStates();
+                        Vector<Parameter> resultParms;
+                        for (int i = 0; i < homework.size(); i++) {
+                            if(homework[i]->desc == parms[3].message){
+                                resultParms.push_back(Parameter(homework[i]->id));
+                                resultParms.push_back(Parameter(homework[i]->finished));
+                                resultParms.push_back(Parameter(homework[i]->desc, false));
+                            }
+                        }
+                        sendAll(i, resultParms, false);
+                        break;
+                    }
                 }
                 if(close(i) == -1) {
                     perror("close failed");

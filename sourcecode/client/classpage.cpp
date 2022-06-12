@@ -287,6 +287,9 @@ ClassPage::ClassPage(QWidget* parent):
 
                 homeworkWidget *infoWidget = new homeworkWidget(info, homework);
                 homework->addContent(infoWidget);
+                connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
+                   homework->chooseId = homeworkId;
+                });
             }
         });
     });
@@ -341,6 +344,7 @@ ClassPage::ClassPage(QWidget* parent):
                 fileDlvr->setActivity(newClass);
                 fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
                 emit fileDlvr->download();
+                homework->setClassId(newClass);
             //TODO adding specific class page
             });
             classList->addContent(newClass);
@@ -373,6 +377,7 @@ ClassPage::ClassPage(QWidget* parent):
                         fileDlvr->setActivity(newClass);
                         fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
                         emit fileDlvr->download();
+                        homework->setClassId(newClass);
                     });
                     classList->addContent(newClass);
                 }
@@ -404,6 +409,7 @@ ClassPage::ClassPage(QWidget* parent):
                     fileDlvr->setActivity(newClass);
                     fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
                     emit fileDlvr->download();
+                    homework->setClassId(newClass);
                 });
                 classList->addContent(newClass);
             }
@@ -601,21 +607,73 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
 
     container = new ScrollAreaCustom(false, this);
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     mainLayout->addWidget(container);
-    textButton* add = new textButton("提交作业", this);
-    add->setFixedHeight(40);
-    mainLayout->addWidget(add);
 
+
+    textButton* choose = new textButton("添加待提交作业", this);
+    choose->setFixedHeight(40);
+    mainLayout->addWidget(choose);
+    tempHomework = new ScrollAreaCustom(false, this);
+    tempHomework->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    tempHomework->setFixedHeight(100);
+    mainLayout->addWidget(tempHomework);
+    textButton* deliver = new textButton("提交作业", this);
+    deliver->setFixedHeight(40);
+    mainLayout->addWidget(deliver);
+
+    connect(choose, &textButton::clicked, this,[=]{
+        QString filePath = QFileDialog::getOpenFileName(this, QStringLiteral("添加待提交"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
+        QFile file(filePath);
+        file.open(QIODevice::ReadOnly);
+        QByteArray filestring = file.readAll();
+        filesToSubmit.push_back(filestring.toStdString());
+        QFileInfo fileInfo(filePath);
+        QLabel* tmp = new QLabel(fileInfo.fileName(),tempHomework);
+        fileNames.push_back(fileInfo.fileName());
+        tempHomework->addWidget(tmp,true);
+        file.close();
+    });
+
+    connect(deliver, &textButton::clicked, this, [=] {
+        homeworkUploader = new HomeworkUpload(studentId, classId, chooseId, fileNames.size(), fileNames, filesToSubmit);
+        fileNames.clear();
+        filesToSubmit.clear();
+        tempHomework->clear();
+    });
+
+    connect(searchButton, &bigIconButton::clicked, this, [=]{
+        this->cleanContent();
+        HomeworkSearch *searchEvent = new HomeworkSearch(studentId, classId, search->value());
+        connect(searchEvent, &HomeworkSearch::receive, this, [=](QVariant varValue) {
+            QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
+            for(int i = 0; i < result.size(); i++){
+                QVector<QString> info;
+                info.push_back(QString::number(result[i]->id));
+                info.push_back(QString::number(result[i]->finished));
+                info.push_back(result[i]->desc);
+
+                homeworkWidget *infoWidget = new homeworkWidget(info, this);
+                this->addContent(infoWidget);
+                connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
+                    this->chooseId = homeworkId;
+                });
+            }
+        });
+    });
 
 }
+
+void classHomeworkWidget::mouseReleaseEvent(QMouseEvent *) {
+    emit clicked();
+}
+
 void classHomeworkInfoWidget::mousePressEvent(QMouseEvent *) {
     mousePressed = true;
 }
 
 void classHomeworkInfoWidget::mouseReleaseEvent(QMouseEvent *) {
     mousePressed = false;
-    emit clicked();
+    emit clicked(id);
 }
 
 
@@ -670,7 +728,7 @@ homeworkWidget::homeworkWidget(QVector<QString> info, QWidget *parent): QWidget(
     layout->setSpacing(10);
     infoWidget = new classHomeworkInfoWidget(info, this);
     layout->addWidget(infoWidget);
-    connect(infoWidget, &classHomeworkInfoWidget::clicked, this, [=] {emit clicked();});
+    connect(infoWidget, &classHomeworkInfoWidget::clicked, this, [=](int homeworkId) {emit clicked(homeworkId);});
 }
 void homeworkWidget::resizeEvent(QResizeEvent*) {
     bgWidget->resize(this->size());

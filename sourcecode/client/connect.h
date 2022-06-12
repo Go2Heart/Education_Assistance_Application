@@ -304,6 +304,29 @@ signals:
     void receive(QVariant varValue);
 };
 
+class HomeworkUpload: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkUpload(int studentId, int classId, int homeworkId, int count, QVector<QString> fileNames,
+                   QVector<std::string> fileData);
+signals:
+    void receive(QVariant varValue);
+};
+
+class HomeworkSearch: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkSearch(int studentId, int classId, QString key);
+signals:
+    void receive(QVariant varValue);
+};
+
 
 
 #endif // CONNECT_H
