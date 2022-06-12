@@ -20,7 +20,7 @@ SlidePage::SlidePage(int radius, int type, int Width, int Height, QString name, 
     if(!(type & HEIGHT_FIXED)) {
         Height = parent->height();
     }
-    //qDebug()<<Width<<Height;
+    qDebug()<<Width<<Height;
     this->resize(Width, Height);
     if(type & FROM_RIGHT)
         this->move(QPoint(parentWidget()->width() + 30, posy));

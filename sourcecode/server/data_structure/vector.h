@@ -46,6 +46,7 @@ public:
         if(&mv != this) {
             siz = mv.siz;
             capacity = mv.capacity;
+            if(buf) delete [] buf;
             buf = new T[capacity];
             for(int i = 0; i < siz; i++) buf[i] = mv.buf[i];
             //memcpy(buf, mv.buf, siz * sizeof(T));
@@ -70,6 +71,15 @@ public:
             delete [] buf;
             buf = NULL;
         }
+    }
+    void del(int idx) {
+        T* newbuf = new T[capacity - 1];
+        for(int i = 0; i < idx; i++) newbuf[i] = buf[i];
+        for(int i = idx + 1; i < siz; i++) newbuf[i - 1] = buf[i];
+        if(buf) delete [] buf;
+        buf = newbuf;
+        capacity--;
+        siz--;
     }
     int size() const { return siz; }
     //int capacity() { return capacity; }

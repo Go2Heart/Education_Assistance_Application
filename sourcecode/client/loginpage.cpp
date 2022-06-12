@@ -1,4 +1,5 @@
 #include "loginpage.h"
+#include "global.h"
 
 loginPage::loginPage(QWidget *parent) :
     QWidget(parent)
@@ -25,18 +26,20 @@ loginPage::loginPage(QWidget *parent) :
         checkWidget->setStyleSheet("background:transparent;");
         QVBoxLayout* checkLayout = new QVBoxLayout(checkWidget);
         checkWidget->setLayout(checkLayout);
-        checkLayout->setContentsMargins(0, 50, 0, 50);
+        checkLayout->setContentsMargins(50, 50, 50, 50);
         checkLayout->setSpacing(5);
         checkLayout->setAlignment(Qt::AlignCenter);
             singleSelectGroupVertical* identitySel = new singleSelectGroupVertical("请选择身份", checkWidget);
-                selectionItem* student = new selectionItem("我是学生", "", checkWidget);
-                selectionItem* teacher = new selectionItem("我是老师", "", checkWidget);
+                selectionItemVertical* student = new selectionItemVertical("我是学生", checkWidget);
+                selectionItemVertical* teacher = new selectionItemVertical("我是老师", checkWidget);
                 identitySel->AddItem(student);
                 identitySel->AddItem(teacher);
             textInputItem* username = new textInputItem("用户名", checkWidget);
             textInputItem* password = new textInputItem("密码", checkWidget);
             textButton* login = new textButton("登录", checkWidget);
             connect(login, &textButton::clicked, [=]{
+                //for debugging
+                //emit logined();
                 LoginQuery* loginQuery = new LoginQuery(identitySel->value(), username->value(), password->value());
                 connect(loginQuery, &LoginQuery::Id, this, [=](int id) {
                    if(id == 255) {

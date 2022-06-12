@@ -95,23 +95,23 @@ bool Encoder::Encode(FILE *fin,FILE *fout, bool InTy, bool OuTy){//加密主程�
 			Temp >>= 8;
 		}
 	}		
-	Heap Hp;//小根堆 
+	Heap<HuffmanNode> Hp;//小根堆 
 	int NodeCount = 0;//统计叶子节点个数 
 	for(int i = 0; i < 256; i++)
 		if(Cnt[i] != 0)
 		{
-			Hp.Push(Cnt[i], i);//小根堆插入明文节点 
+			Hp.Push(HuffmanNode(Cnt[i], i));//小根堆插入明文节点 
 			NodeCount ++;
 		}
 	N = 256;
 	while(Hp.Size() > 1)//小根堆根节点个数大于1个
 	{
-		HeapNode Tmp1, Tmp2;
-		if(!Hp.Pop(Tmp1) || !Hp.Pop(Tmp2))
-			return false;
+		HuffmanNode Tmp1, Tmp2;
+		Tmp1 = Hp.Top(); Hp.Pop();
+		Tmp2 = Hp.Top(); Hp.Pop();
 		//从小根堆中取出两个出现次数权值和最小的两个节点
-		Son[N][0] = Tmp1.Id, Son[N][1] = Tmp2.Id;//新建节点作为这两个节点的新根  
-		Hp.Push(Tmp1.Val + Tmp2.Val, N);//将新根插入小根堆中 
+		Son[N][0] = Tmp1.id, Son[N][1] = Tmp2.id;//新建节点作为这两个节点的新根  
+		Hp.Push(HuffmanNode(Tmp1.x + Tmp2.x, N));//将新根插入小根堆中 
 		++N;
 	}
 	Code[N - 1] = CodeLen[N - 1] = 0;//根节点的编码为空 

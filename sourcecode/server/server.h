@@ -10,6 +10,9 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>   
 #include "data_structure/string.h"
 #include "data_structure/vector.h"
 using namespace std;
@@ -30,7 +33,6 @@ struct Parameter {
         s.push_back(type);
         for(int i = 0; i <= 3; i++) s.push_back(len[i]);
         s = s + message;
-        puts("create parameter finished.");
     }
     Parameter(int x) : type(3), number(x) {
         if(x != 0) {

@@ -119,6 +119,11 @@ public:
 	void Init();
 };
 
-extern Heap pq;
+struct DisStruct {
+	int val, id;
+	friend bool operator<(DisStruct x, DisStruct y) { return x.val < y.val; }
+	DisStruct() {}
+	DisStruct(int val, int id) : val(val), id(id) {}
+};
 
 #endif

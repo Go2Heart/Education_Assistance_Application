@@ -5,36 +5,43 @@
 using namespace std;
 
 class Student {
-//private:
-private:
+public:
 	String name, studentNumber, password;
 	EventGroup* events;
-public:
+	Vector<int> alarms;
+	Vector<int> triggerAlarms;
 	Student(String number, String name, String password) : 
 		name(name),
 		studentNumber(number),
 		password(password),
 		events(new EventGroup) 
 	{}
-	String Name() { return name; }
-	String Number() { return studentNumber; }
-	String Password() { return password; }
-	EventGroup* Events() { return events; }
+	~Student() { delete(events); }
+	void AddAlarm(int id) { alarms.push_back(id); }
+	void DeleteAlarm(int id) { 
+		for(int i = 0; i < alarms.size(); i++)
+			if(alarms[i] == id) alarms.del(i);
+	}
+	void TriggerAlarm(int id) { triggerAlarms.push_back(id); }
+	void ClearTrigger() { triggerAlarms.clear(); }
 };
 
 class Students {
 private:
 	Vector<Student*> students;
 public:
+	~Students() {
+		for(int i = 0; i < students.size(); i++) delete(students[i]);
+	}
 	void AddStudent(Student *student) { students.push_back(student); }
 	Student* GetStudent(String number) {
 		for(int i = 0; i < students.size(); i++)
-			if(students[i]->Number() == number) return students[i];
+			if(students[i]->studentNumber == number) return students[i];
 		return nullptr;
 	}
 	int GetStudentCheck(String number, String password) {
 		for(int i = 0; i < students.size(); i++)
-			if(students[i]->Number() == number && students[i]->Password() == password) return i;
+			if(students[i]->studentNumber == number && students[i]->password == password) return i;
 		return 255;
 	}
 	Student* GetStudent(int id) {
@@ -43,26 +50,27 @@ public:
 };
 
 class Teacher {
-//private:
-private:
-	String name, password;
 public:
+	String name, password;
+	Vector<int> lessons;
 	Teacher(String name, String password) : 
 		name(name),
 		password(password)
 	{}
-	String Name() { return name; }
-	String Password() { return password; }
+	void AddLesson(int id) { lessons.push_back(id); }
 };
 
 class Teachers {
 private:
 	Vector<Teacher*> teachers;
 public:
+	~Teachers() {
+		for(int i = 0; i < teachers.size(); i++) delete(teachers[i]);
+	}
 	void AddTeacher(Teacher* teacher) { teachers.push_back(teacher); }
 	int GetTeacherCheck(String name, String password) {
 		for(int i = 0; i < teachers.size(); i++)
-			if(teachers[i]->Name() == name && teachers[i]->Password() == password) return i;
+			if(teachers[i]->name == name && teachers[i]->password == password) return i;
 		return 255;
 	}
 	Teacher* GetTeacher(int id) {

@@ -1,3 +1,5 @@
+#ifndef DECODER_H
+#define DECODER_H
 struct Decoder
 {
 	long long FileSize;//存储明文长度 
@@ -16,3 +18,5 @@ struct Decoder
     bool Decoding(int x);//从根节点出发，解密一个字符 
     bool Decode(FILE *fin, FILE *fout, bool InTy, bool OuTy);//解码主程序 
 };
+
+#endif

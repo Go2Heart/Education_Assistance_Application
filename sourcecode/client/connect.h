@@ -81,6 +81,63 @@ public slots:
     void readData();
 };
 
+class HomeworkPost: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    HomeworkPost(int id, QString desc);
+signals:
+    void receive(QVariant varValue);
+};
+
+class HomeworkUpload: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkUpload(int studentId, int classId, int homeworkId, int count, QVector<QString> fileNames,
+                   QVector<std::string> fileData);
+signals:
+    void receive(QVariant varValue);
+};
+
+struct HomeworkResult {
+    int id;
+    bool finished;
+    QString desc;
+
+    HomeworkResult() {}
+    HomeworkResult(int id, bool finished, QString& desc) :
+        id(id),
+        finished(finished),
+        desc(desc)
+    {}
+};
+Q_DECLARE_METATYPE(HomeworkResult*)
+class HomeworkQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkQuery(int studentId, int classId);
+signals:
+    void receive(QVariant varValue);
+};
+
+class HomeworkSearch: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    HomeworkSearch(int studentId, int classId, QString key);
+signals:
+    void receive(QVariant varValue);
+};
+
 struct Result {
 // type: 0: x -> y 1: y -> x 2: point 3: start 4: end
 // tool: 对于校区内的路:0: foot 1: bicycle
@@ -106,22 +163,6 @@ struct ResPackage {
 };
 
 Q_DECLARE_METATYPE(ResPackage)
-//classResult
-struct ClassResult {
-    QString name;
-    QString teacher;
-    QString place;
-    QString time;
-
-    ClassResult() {}
-    ClassResult(QString& name, QString& teacher, QString& place, QString& time) :
-        name(name),
-        teacher(teacher),
-        place(place),
-        time(time)
-    {}
-};
-Q_DECLARE_METATYPE(ClassResult*)
 
 class DisQuery : public QObject {
     Q_OBJECT
@@ -161,19 +202,29 @@ signals:
     void Id(int);
 };
 
-class ClockQuery: public QObject {
-    Q_OBJECT
-private:
-    TcpConnector* connector = nullptr;
+//classResult
+struct ClassResult {
+    QString name;
+    QString teacher;
+    QString place;
+    QString time;
+    int id;
+    QString QQ;
+    QVector<QString> fileNames;
 
-public:
-    ClockQuery(int id);
-signals:
-    void receive(QVariant varValue);
-
+    ClassResult() {}
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, int& id, QVector<QString>& fileNames) :
+        name(name),
+        teacher(teacher),
+        place(place),
+        time(time),
+        QQ(QQ),
+        id(id),
+        fileNames(fileNames)
+    {}
 };
-
-class ClassQuery: public QObject {
+Q_DECLARE_METATYPE(ClassResult*)
+class ClassQuery : public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
@@ -183,4 +234,179 @@ public:
 signals:
     void receive(QVariant varValue);
 };
+
+class ClassSearch: public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ClassSearch(QString key, int type = 0);
+signals:
+    void receive(QVariant varValue);
+};
+
+//activityResult
+struct ActivityResult {
+    QString name;
+    QString place;
+    QString time;
+    int id;
+    ActivityResult() {}
+    ActivityResult(QString& name, QString& place, QString& time, int& id) :
+        name(name),
+        place(place),
+        time(time),
+        id(id)
+    {}
+};
+Q_DECLARE_METATYPE(ActivityResult*)
+
+class ActivityQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ActivityQuery(int id);
+signals:
+    void receive(QVariant varValue);
+};
+
+class ActivitySearch : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ActivitySearch(QString key, int type);
+signals:
+    void receive(QVariant varValue);
+};
+
+class ActivityUpload : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ActivityUpload(QVector<QString> v, int id);
+};
+
+class FileUpload : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    FileUpload(QString id, QString descripter,std::string info, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
+};
+
+struct FileResult {
+    std::string str;
+    FileResult(std::string str): str(str) {}
+};
+Q_DECLARE_METATYPE(FileResult*)
+class FileDownload: public QObject {
+    Q_OBJECT
+private :
+    TcpConnector* connector = nullptr;
+
+public:
+    FileDownload(QString id, QString descripter, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
+
+signals:
+    void receive(QVariant varValue);
+};
+
+class Alarm {
+public:
+    enum TYPE { ONCE = 0, EVERYDAY, WEEKLY };
+    Timer t;
+    int frequency, id, enabled;
+    QString desc, place;
+    Alarm() {}
+    Alarm(Timer t, int frequency, QString desc, QString place, int id, int enabled) :
+        t(t), frequency(frequency), desc(desc), place(place), id(id), enabled(enabled) {}
+};
+Q_DECLARE_METATYPE(Alarm)
+
+class TriggersQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TriggersQuery();
+signals:
+    void receive(QVariant varValue);
+};
+
+class AlarmsQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    AlarmsQuery();
+signals:
+    void receive(QVariant varValue);
+};
+
+class AlarmModify : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    AlarmModify(int id, int timer, int frequency, QString desc, QString place, int enabled);
+signals:
+    void receive();
+};
+
+class AlarmAdd : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    AlarmAdd(int timer, int frequency, QString desc, QString place, int enabled);
+signals:
+    void receive();
+};
+
+class AlarmDel : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    AlarmDel(int id);
+signals:
+    void receive();
+};
+
+class Student {
+public:
+    QString name, studentNumber;
+    Student() {}
+    Student(QString name, QString number) :
+        name(name),
+        studentNumber(number)
+    {}
+};
+Q_DECLARE_METATYPE(Student)
+class StudentInfoQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    StudentInfoQuery();
+signals:
+    void receive(QVariant x);
+};
+
+class PasswordUpd : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    PasswordUpd(QString passwd);
+};
+
 #endif // CONNECT_H

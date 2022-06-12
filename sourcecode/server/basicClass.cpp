@@ -5,14 +5,26 @@ Timer ToTimer(int x) {
 }
 
 int ToInt(Timer x) {
-    return x.Hour() * 60 + x.Min();
+    return x.hour * 60 + x.minute;
+}
+
+Timer UnzipTimer(int x) {
+    int week, day, hour, minute;
+    minute = x % 256;
+    x >>= 8;
+    hour = x % 256;
+    x >>= 8;
+    day = x % 256;
+    x >>= 8;
+    week = x % 256;
+    return Timer(hour, minute, day, week);
 }
 
 bool Duration::cross(Duration duration) {
     if (
-        begin.Day() == duration.begin.Day() &&
-        !(end.Week() < duration.begin.Week() || duration.end.Week() < begin.Week()) &&
-        !(end < duration.begin || duration.end < begin)
+        begin.day == duration.begin.day &&
+        !(end.week < duration.begin.week || duration.end.week < begin.week) &&
+        !(end.HMLess(duration.begin) || duration.end.HMLess(begin))
     ) return true;
     else return false;
 }

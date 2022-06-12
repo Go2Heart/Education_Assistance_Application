@@ -1,9 +1,13 @@
 #include "activitypage.h"
-
+#include "loginpage.h"
+#include "global.h"
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
-        QWidget(parent),
-        activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
+    QWidget(parent),
+    activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
 {
+    this->info = info;
+    id = info[4];
+    qDebug() << "id" << id;
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     infoWidget = new QWidget(this);
@@ -15,7 +19,7 @@ activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont descFont = QFont("Corbel Light", 13);
     QFontMetrics descm(descFont);
     descFont.setStyleStrategy(QFont::PreferAntialias);
-    descLabel = new QLabel("#活动#" + info[0], infoWidget);
+    descLabel = new QLabel("[活动]" + info[0], infoWidget);
     descLabel->setFont(descFont);
     descLabel->setFixedHeight(descm.lineSpacing());
     descLabel->setStyleSheet("color: black");
@@ -24,7 +28,7 @@ activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont detailFont = QFont("Corbel Light", 10);
     QFontMetrics detailm(detailFont);
     detailFont.setStyleStrategy(QFont::PreferAntialias);
-    detailLabel = new QLabel("#内容#" + info[1] + "       #地点#" + info[2] + "     #时间#" + info[3], infoWidget);
+    detailLabel = new QLabel("[内容]" + info[1] + "     [地点]" + info[2] + "     [时间]" + info[3], infoWidget);
     detailLabel->setFont(detailFont);
     detailLabel->setFixedHeight(detailm.lineSpacing());
     detailLabel->setStyleSheet("color: gray");
@@ -42,9 +46,10 @@ void activityInfoWidget::mouseReleaseEvent(QMouseEvent *) {
 }
 
 void activityInfoWidget::modify(QVector<QString> info) {
-    descLabel->setText("#内容#" + info[0]);
-    detailLabel->setText("#地点#" + info[1] + "       #时间#" + info[2]);
-    activityType->setPixmap(info[3] == "true" ? ":/icons/icons/alarm_on.svg" : ":/icons/icons/alarm_off.svg");
+    this->info = info;
+    descLabel->setText("[活动]" + info[0]);
+    detailLabel->setText("[内容]" + info[1]+"     [地点]" + info[2] + "       [时间]" + info[3]);
+    //activityType->setPixmap( info[4] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/);
 }
 
 void activityInfoWidget::resizeEvent(QResizeEvent *event) {
@@ -67,15 +72,15 @@ activityAddPage::activityAddPage(int radius, int type, int width, int height, QS
     activityLayout->setSpacing(10);
     activityLayout->setContentsMargins(0, 0, 0, 0);
 
-    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, activityBar);
+    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
     alarmOn->setFixedSize(30, 30);
     activityLayout->addWidget(alarmOn);
-    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", 0, activityBar);
+    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
     alarmOff->setFixedSize(30, 30);
     frequency = new textInputItem("频率：", activityBar);
     activityLayout->addWidget(frequency);
 
-    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", 0, activityBar);
+    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
     TypeBtn->setFixedSize(30, 30);
     activityLayout->addWidget(TypeBtn);
     connect(TypeBtn, &bigIconButton::clicked, this, [=] {
@@ -134,14 +139,14 @@ QVector<QString> activityAddPage::collectMsg() {
     return tmp;
 }
 
-activityListWidget::activityListWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent) :
-        QWidget(parent),
-        maxHeight(h),
-        extraIcons(icons),
-        slideParent(p)
+activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent) :
+    QWidget(parent),
+    extraIcons(icons),
+    slideParent(p)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setFixedHeight(maxHeight - titleHeight + overlap);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding );
+//    setStyleSheet("Height:540");
+//    setFixedHeight(540);
     titleWidget = new QWidget(this);
     titleWidget->setStyleSheet("background-color:rgb(200, 200, 200); border-radius:0px;");
     QFont textFont = QFont("Corbel Light", 24);
@@ -162,14 +167,44 @@ activityListWidget::activityListWidget(QString name, int h, QVector<bigIconButto
         emit addPage(newPage);
         connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
             activityWidget* newWidget = new activityWidget(s, this);
+            emit newActivity(newWidget);
             addContent(newWidget);
-            connect(newWidget, &activityWidget::clicked, newPage, &SlidePage::slideIn);
-            connect(newPage, &activityAddPage::modify, newWidget, [=](QVector<QString> s) {
-                newWidget->modify(s);
+            /* for details */
+            connect(newWidget, &activityWidget::clicked, this, [=] {
+                QVector<QString> tmp = newWidget->getInfo();
+                detailWidget->setActivity(newWidget);
+                emit detailWidget->showDetail(tmp);
+            });
+            connect(detailWidget, &activityDetailWidget::modify, this, [=](activityWidget* activity) {
+                qDebug() << "modify";
+                QVector<QString> tmp = detailWidget->getLines();
+                detailWidget->getActivity()->modify(tmp);
             });
             pageList.push_back(newPage);
         });
         newPage->slideIn();
+    });
+    //for Server message
+    connect(this, &activityListWidget::addReceived, this, [=](QVector<QString> s) {
+        /*@todo  How to create slidePage for Server message?*/
+        //activityAddPage* newPage = new activityAddPage(12, 1, 300, 500, "创建新活动", slideParent);
+        //emit addPage(newPage);
+        //QLabel *title = new QLabel("s[0]", newPage);
+        //newPage->AddContent(title);
+        //emit newPage->(s);
+        //connect(newPage, &activityAddPage::, this, [=](QVector<QString> s) {
+        activityWidget* newWidget = new activityWidget(s, this);
+        addContent(newWidget);
+        connect(newWidget, &activityWidget::clicked, this, [=]() {
+            emit showDetail(newWidget);
+
+        });
+        //connect(newPage, &activityAddPage::modify, newWidget, [=](QVector<QString> s) {
+        //     newWidget->modify(s);
+        // });
+       //pageList.push_back(newPage);
+        //});
+        //newPage->slideIn();
     });
 }
 
@@ -184,6 +219,107 @@ void activityListWidget::resizeEvent(QResizeEvent*){
     }
     container->resize(width(), height() - titleHeight + overlap);
     container->move(0, titleHeight - overlap);
+}
+
+activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+//    mainLayout->setContentsMargins(5,5,5,5);
+    mainLayout->setAlignment(Qt::AlignVCenter);
+    this->setLayout(mainLayout);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setStyleSheet("Height:300; Width:200;");
+    title=new textInputItem("标题：", this);
+    description = new textInputItem("内容：", this);
+    place = new textInputItem("地点：",this);
+    time = new textInputItem("时间：", this);
+    textButton* modifyBtn = new textButton("Modify!", this);
+    connect(modifyBtn, &textButton::clicked, this, [=]{
+        qDebug() << "modify1";
+        currentActivity->modify(getLines());
+        //emit modify(getActivity());
+    });
+    mainLayout->addWidget(title);
+    mainLayout->addWidget(description);
+    mainLayout->addWidget(place);
+    mainLayout->addWidget(time);
+    mainLayout->addWidget(modifyBtn);
+}
+QVector<QString> activityDetailWidget::collectMsg() {
+    QVector<QString> tmp;
+    tmp.push_back(title->value());
+    tmp.push_back(description->value());
+    tmp.push_back(place->value());
+    tmp.push_back(time->value());
+    tmp.push_back(isPersonal ? "true" : "false");
+    tmp.push_back(alarm ? "true" : "false");
+    tmp.push_back(frequency->value());
+    return tmp;
+}
+
+void activityDetailWidget::showDetail(QVector<QString> info) {
+    title->setValue(info[0]);
+    description->setValue(info[1]);
+    place->setValue(info[2]);
+    time->setValue(info[3]);
+    //isPersonal = info[4].toInt();
+    //alarm = info[5].toInt();
+    //frequency->setValue(info[6]);
+
+}
+
+activityFileDeliver::activityFileDeliver(QWidget* parent) : QWidget(parent){
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setAlignment(Qt::AlignCenter);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setStyleSheet("Height:400; Width:500; background-color:transparent");
+    this->setLayout(mainLayout);
+//    singleSelectGroupVertical* fileType = new singleSelectGroupVertical("请选择", this);
+//        fileType->setFixedHeight(60);
+//        selectionItem* material = new selectionItem("上传资料", "", this);
+//        selectionItem* homework = new selectionItem("上交作业", "", this);
+//        fileType->AddItem(material);
+//        fileType->AddItem(homework);
+    select = new textButton("选择文件", this);
+    upload = new textButton("上传文件", this);
+    QWidget* listWidget = new QWidget(this);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    setStyleSheet("Height:400; Width:400; background-color:transparent");
+    QVBoxLayout* listLayout = new QVBoxLayout(listWidget);
+    listLayout->setAlignment(Qt::AlignTop);
+        fileList = new ScrollListContainer(listWidget);
+        fileList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        fileList->setStyleSheet("Height:500; Width:600; ");
+//        fileList->AddWidget();
+    listLayout->addWidget(fileList);
+
+    connect(select, &textButton::clicked, this,[=]{
+        QString filePath = QFileDialog::getOpenFileName(this, QStringLiteral("选择文件"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
+        QFile file(filePath);
+        file.open(QIODevice::ReadOnly);
+        QByteArray filestring = file.readAll();
+        filesToSubmit.push_back(filestring.toStdString());
+        QFileInfo fileInfo(filePath);
+        QLabel* tmp = new QLabel(fileInfo.fileName(),fileList);
+        fileNames.push_back(fileInfo.fileName());
+        fileList->AddWidget(tmp,true);
+        file.close();
+
+    });
+
+    connect(upload, &textButton::clicked, this, [=]{
+        emit deliver(filesToSubmit);
+        for(int i = 0; i < fileNames.size(); i++) {
+            qDebug() << fileNames[i];
+            fileUploader = new FileUpload(id,fileNames[i], filesToSubmit[i]);
+        }
+        fileNames.clear();
+        fileList->clear();
+        filesToSubmit.clear();
+
+    });
+    mainLayout->addWidget(select);
+    mainLayout->addWidget(listWidget);
+    mainLayout->addWidget(upload);
 }
 
 activityWidget::activityWidget(QVector<QString> info, QWidget* parent) :
@@ -249,13 +385,20 @@ ActivityPage::ActivityPage(QWidget* parent):
     searchLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
+    QStringList selectList;
+    selectList<<"名称"<<"地点"<<"时间"<<"类型"<<"成员";
+    ComboBox* selections = new ComboBox(searchBar);
+    selections->setFixedWidth(100);
+//                        selections->setStyleSheet("border-radius: 3");
+    selections->addItems(selectList);
     textInputItem* activitySearch = new textInputItem("活动", searchBar);
-    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
+    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
     searchActivity->setFixedSize(30,30);
 
     /*TODO connect */
 
     searchLayout->addWidget(activitySearch);
+    searchLayout->addWidget(selections);
     searchLayout->addWidget(searchActivity);
     eventLayout->addWidget(searchBar);
 
@@ -265,12 +408,85 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     QVector<bigIconButton*> iconVec;
     iconVec.push_back(new bigIconButton(9, ":/icons/icons/add.svg"));
-    activityListWidget* activityWidget = new activityListWidget("activity", 500, iconVec, itemWidget, eventWidget);
-    connect(activityWidget, &activityListWidget::addPage, this, [=](activityAddPage* page){
+
+    /* detail layout*/
+
+    QWidget* detailWidget = new QWidget(itemWidget);
+    detailWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    detailWidget->setStyleSheet("border:1px solid gray;background-color:dark blue");
+
+    QVBoxLayout* detailLayout = new QVBoxLayout(detailWidget);
+    detailLayout->setAlignment(Qt::AlignTop);
+    detailLayout->setContentsMargins(5, 5, 5, 5);
+    detailLayout->setSpacing(5);
+    QWidget* detailTab = new QWidget(detailWidget);
+    detailTab->setStyleSheet("border:0px transparent gray;background-color:transparent");
+    detailTab->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    detailTab->setFixedHeight(22);
+    QHBoxLayout *tabLayout = new QHBoxLayout(detailTab);
+    tabLayout->setSpacing(0);
+    tabLayout->setAlignment(Qt::AlignTop);
+    tabLayout->setContentsMargins(5, 0, 5, 0);
+    textButton* detailTabButton1 = new textButton("活动详情", detailTab);
+    tabLayout->addWidget(detailTabButton1);
+
+    textButton* detailTabButton2 = new textButton("材料提交", detailTab);
+    tabLayout->addWidget(detailTabButton2);
+
+    //textButton* detailTabButton3 = new textButton("作业提交", detailTab);
+    //tabLayout->addWidget(detailTabButton3);
+
+    detailLayout->addWidget(detailTab);
+
+    QWidget* detailArea = new QWidget(detailWidget);
+    detailArea->setStyleSheet("Height:400; Width:300; border: 5px transparent;background-color:#f6eef2");
+    detailArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* areaLayout = new QVBoxLayout(detailArea);
+    areaLayout->setAlignment(Qt::AlignTop);
+    areaLayout->setContentsMargins(5,0,5,0);
+
+    activityDtl = new activityDetailWidget(detailArea);
+    areaLayout->addWidget(activityDtl);
+//        activityDtl->hide();
+
+    QWidget* materialDlvr = new QWidget(detailArea);
+    materialDlvr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    materialDlvr->setStyleSheet("Height:400; Width:400");
+    QVBoxLayout* MDlvrLayout = new QVBoxLayout(materialDlvr);
+    MDlvrLayout->setAlignment(Qt::AlignCenter);
+
+        fileDlvr = new activityFileDeliver(materialDlvr);
+        MDlvrLayout->addWidget(fileDlvr);
+
+
+    areaLayout->addWidget(materialDlvr);
+    materialDlvr->hide();
+    connect(detailTabButton1, &textButton::clicked, this, [=]{
+        materialDlvr->hide();
+        activityDtl->show();
+        //fileDlvr->setActivity(activityDtl->getActivity());
+        qDebug() << fileDlvr->getId();
+        detailTabButton1->setEnabled(false);
+    });
+    connect(detailTabButton2, &textButton::clicked, this, [=]{
+        activityDtl->hide();
+        materialDlvr->show();
+        //fileDlvr->setActivity(activityDtl->getActivity());
+        qDebug() << fileDlvr->getId();
+        detailTabButton1->setEnabled(true);
+
+    });
+
+    detailLayout->addWidget(detailArea);
+
+    /*end of detail layout*/
+
+    activityListWidget* activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
+    connect(activityList, &activityListWidget::addPage, this, [=](activityAddPage* page){
         pageList.push_back(page);
     });
 
-    eventLayout->addWidget(activityWidget);
+    eventLayout->addWidget(activityList);
     QVector<QWidget*> items;
 //                    connect(iconVec[0], &bigIconButton::clicked, this, [=]{
 //                        activityAddPage* newPage = new activityAddPage(12,1,300,0,"Create an activity", slideParent);
@@ -287,12 +503,70 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     itemList->addWidgets(items);
     itemLayout->addWidget(eventWidget);
-    //活动详情信息
-    QWidget* itemInfoTable = new QWidget(itemWidget);
-    itemInfoTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    itemInfoTable->setStyleSheet("border:1px solid gray;background-color:dark blue");
-    itemLayout->addWidget(itemInfoTable);
+    itemLayout->addWidget(detailWidget);
     mainLayout->addWidget(itemWidget);
+    ActivityQuery* query = new ActivityQuery(studentId);
+    connect(activityList, &activityListWidget::newActivity, this, [=](activityWidget* activityWidget) {
+        QVector<QString> info = activityWidget->getInfo();
+        //activityUpload* upload = new activityUpload(info, studentId);
+        ActivityUpload* upload = new ActivityUpload(info, studentId);
+    });
+
+    /*Detail Widget*/
+
+
+
+    connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
+        QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+        for(int i = 0; i < activityResult.size(); i++){
+            QVector<QString> info;
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->place);
+            info.push_back(activityResult[i]->time);
+            info.push_back(QString::asprintf("%d", activityResult[i]->id));
+            info.push_back("true");
+            info.push_back("true");
+            info.push_back("1");
+
+            //info.push_back
+            activityWidget* newWidget = new activityWidget(info, this);
+            activityList->addContent(newWidget);
+            connect(newWidget, &activityWidget::clicked, this, [=](){
+                activityDtl->showDetail(newWidget->getInfo());
+                activityDtl->setActivity(newWidget);
+                fileDlvr->setActivity(newWidget);
+            });
+        }
+    });
+    connect(searchActivity, &bigIconButton::clicked, this, [=] {
+        search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
+        connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
+            activityList->cleanContent();
+            QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+            for(int i = 0; i < activityResult.size(); i++){
+                QVector<QString> info;
+                info.push_back(activityResult[i]->name);
+                info.push_back(activityResult[i]->name);
+                info.push_back(activityResult[i]->place);
+                info.push_back(activityResult[i]->time);
+                info.push_back(QString::asprintf("%d", activityResult[i]->id));
+                info.push_back("true");
+                info.push_back("true");
+                info.push_back("1");
+
+                //info.push_back
+                activityWidget* newWidget = new activityWidget(info, this);
+                activityList->addContent(newWidget);
+                connect(newWidget, &activityWidget::clicked, this, [=](){
+                    activityDtl->showDetail(newWidget->getInfo());
+                    activityDtl->setActivity(newWidget);
+                    fileDlvr->setActivity(newWidget);
+                });
+            }
+        });
+    });
+
 }
 void ActivityPage::resizeEvent(QResizeEvent*) {
     itemWidget->resize(this->size());
@@ -301,4 +575,3 @@ void ActivityPage::resizeEvent(QResizeEvent*) {
         pageList[i]->resize(pageList[i]->width() + 1, pageList[i]->height());
     }
 }
-

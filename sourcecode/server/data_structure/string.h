@@ -81,8 +81,18 @@ public:
     }
     int length() const { return siz - 1; }
     const char* c_str() const { return buf; }
+    bool find(String str) const {
+        const char* toFind = str.c_str();
+        for(int i = 0; i < siz; i++) if(buf[i] == toFind[0]) {
+            bool flag = true;
+            for(int j = 0; j < str.siz; j++) if(buf[i + j] != toFind[j]) flag = false;
+            if(flag) return true;
+        }
+        return false;
+    }
 };
 
 extern String ToString(const int x);
+extern String ToString_Time(const int x);
 
 #endif

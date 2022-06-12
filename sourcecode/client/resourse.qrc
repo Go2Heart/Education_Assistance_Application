@@ -12,6 +12,10 @@
         <file>icons/left-square.svg</file>
         <file>icons/right-square.svg</file>
         <file>icons/search.svg</file>
+        <file>icons/student.svg</file>
+        <file>icons/teacher.svg</file>
+        <file>icons/student-id.svg</file>
+        <file>icons/logout.svg</file>
     </qresource>
     <qresource prefix="/style">
         <file>combostyle.qss</file>
