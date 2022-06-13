@@ -61,7 +61,8 @@ public:
     String QQ() { return QQnumber; }
     Vector<Duration> ClassDurations() { return classDurations; }
     Vector<File*> Files() { return files; }
-
+    String ExamPlace() { return examPlace; }
+    Duration ExamDuration() { return examDuration; }
     bool cross(Vector<Duration> durations) {
         for(int i = 0; i < durations.size(); i++)
             for(int j = 0; j < classDurations.size(); j++)

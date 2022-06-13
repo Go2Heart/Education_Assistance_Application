@@ -1,15 +1,20 @@
 //
+// Created by Go2Heart on 2022/6/13.
+//
+
+#include "teacherpage.h"
+//
 // Created by Go2Heart on 2022/4/27.
 //
 
 #include <QFileDialog>
-#include "classpage.h"
+#include "teacherpage.h"
 #include "loginpage.h"
 #include "global.h"
 
-classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
-    QWidget(parent),
-    classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
+teacherClassInfoWidget::teacherClassInfoWidget(QVector<QString> info, QWidget* parent) :
+        QWidget(parent),
+        teacherClassType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
 {
     this->info = info;
     id = info[5];
@@ -40,33 +45,40 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont detailFont = QFont("Corbel Light", 10);
     QFontMetrics detailm(detailFont);
     detailFont.setStyleStrategy(QFont::PreferAntialias);
-    detailLabel = new QLabel("[教师]" + info[1] + "       [时间]" + info[2] + "     [地点]" + info[3], infoWidget);
+    detailLabel = new QLabel("[教师]" + info[1] + "       [地点]" + info[2] + "     [时间]" + info[3], infoWidget);
     detailLabel->setFont(detailFont);
     detailLabel->setFixedHeight(detailm.lineSpacing());
     detailLabel->setStyleSheet("color: gray");
     infoLayout->addWidget(detailLabel);
-    classType->setFixedSize(30, 30);
+    teacherClassType->setFixedSize(30, 30);
 }
 
-void classInfoWidget::mousePressEvent(QMouseEvent *) {
+void teacherClassInfoWidget::mousePressEvent(QMouseEvent *) {
     mousePressed = true;
 }
 
-void classInfoWidget::mouseReleaseEvent(QMouseEvent *) {
+void teacherClassInfoWidget::mouseReleaseEvent(QMouseEvent *) {
     mousePressed = false;
     emit clicked();
 }
 
-void classInfoWidget::resizeEvent(QResizeEvent *event) {
-    infoWidget->resize(this->width() - classType->width() - 2 * margin - spacing, this->height() - 2 * margin);
+void teacherClassInfoWidget::resizeEvent(QResizeEvent *event) {
+    infoWidget->resize(this->width() - teacherClassType->width() - 2 * margin - spacing, this->height() - 2 * margin);
     infoWidget->move(margin, margin);
-    classType->move(this->width() - classType->width() - margin, this->height() / 2 - classType->height() / 2);
+    teacherClassType->move(this->width() - teacherClassType->width() - margin, this->height() / 2 - teacherClassType->height() / 2);
 }
 
-classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* parent) :
-    QWidget(parent),
-    maxHeight(h),
-    slideParent(p)
+void teacherClassInfoWidget::modify(QVector<QString> info) {
+    this->info = info;
+    descLabel->setText("[课程]" + info[0]);
+    detailLabel->setText("[教师]" + info[1]+"     [时间]" + info[2] + "       [地点]" + info[3]);
+    //activityType->setPixmap( info[4] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/);
+}
+
+teacherClassListWidget::teacherClassListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, teacherClassDetailWidget *detailWidget, QWidget* parent) :
+        QWidget(parent),
+        extraIcons(icons),
+        slideParent(p)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     //setFixedHeight(maxHeight - titleHeight + overlap);
@@ -78,15 +90,37 @@ classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* paren
     textFont.setStyleStrategy(QFont::PreferAntialias);
     nameLabel->setFont(textFont);
     nameLabel->setFixedHeight(fm.lineSpacing());
-    for(int i = 0; i < extraIcons.size(); i++) {
+    /*for(int i = 0; i < extraIcons.size(); i++) {
         extraIcons[i]->setParent(titleWidget);
         extraIcons[i]->setFixedSize(titleHeight - 10, titleHeight - 10);
         connect(extraIcons[i], &bigIconButton::clicked, this, [=] {emit clicked(i);});
-    }
+    }*/
     container = new ScrollAreaCustom(false, this);
+    connect(icons[0], &bigIconButton::clicked, this, [=] {
+        teacherQuizAddPage* newPage = new teacherQuizAddPage(12, 1, 300, 0, "创建新活动", slideParent);
+        emit addPage(newPage);
+        connect(newPage, &teacherQuizAddPage::deliver, this, [=](QVector<QString> s) {
+            teacherClassWidget* newWidget = new teacherClassWidget(s, this);
+            emit newActivity(newWidget);
+            addContent(newWidget);
+            /* for details */
+            connect(newWidget, &teacherClassWidget::clicked, this, [=] {
+                QVector<QString> tmp = newWidget->getInfo();
+                detailWidget->setActivity(newWidget);
+                emit detailWidget->showDetail(tmp);
+            });
+            connect(detailWidget, &teacherClassDetailWidget::modify, this, [=](teacherClassWidget* activity) {
+                qDebug() << "modify";
+                QVector<QString> tmp = detailWidget->getLines();
+                detailWidget->getActivity()->modify(tmp);
+            });
+            pageList.push_back(newPage);
+        });
+        newPage->slideIn();
+    });
 }
 
-void classListWidget::resizeEvent(QResizeEvent*){
+void teacherClassListWidget::resizeEvent(QResizeEvent*){
     titleWidget->resize(width(), titleHeight);
     titleWidget->move(0, 0);
     nameLabel->move(margin, titleHeight / 2 - nameLabel->height() / 2);
@@ -99,7 +133,7 @@ void classListWidget::resizeEvent(QResizeEvent*){
     container->move(0, titleHeight - overlap);
 }
 
-classWidget::classWidget(QVector<QString> info, QWidget* parent) :
+teacherClassWidget::teacherClassWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -111,16 +145,16 @@ classWidget::classWidget(QVector<QString> info, QWidget* parent) :
     layout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     layout->setContentsMargins(10, 10, 10, 10);
     layout->setSpacing(10);
-    infoWidget = new classInfoWidget(info, this);
+    infoWidget = new teacherClassInfoWidget(info, this);
     layout->addWidget(infoWidget);
-    connect(infoWidget, &classInfoWidget::clicked, this, [=] {emit clicked();});
+    connect(infoWidget, &teacherClassInfoWidget::clicked, this, [=] {emit clicked();});
 }
 
-void classWidget::resizeEvent(QResizeEvent*) {
+void teacherClassWidget::resizeEvent(QResizeEvent*) {
     bgWidget->resize(this->size());
 }
 
-ClassPage::ClassPage(QWidget* parent):
+TeacherPage::TeacherPage(QWidget* parent):
         QWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -167,13 +201,13 @@ ClassPage::ClassPage(QWidget* parent):
     ComboBox* selections = new ComboBox(searchBar);
     selections->setFixedWidth(100);
     selections->addItems(selectList);
-    textInputItem* classSearch = new textInputItem("课程", searchBar);
-    bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
-    searchClass->setFixedSize(30, 30);
+    textInputItem* teacherClassSearch = new textInputItem("课程", searchBar);
+    bigIconButton* searchteacherClass = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
+    searchteacherClass->setFixedSize(30, 30);
 
-    searchLayout->addWidget(classSearch);
+    searchLayout->addWidget(teacherClassSearch);
     searchLayout->addWidget(selections);
-    searchLayout->addWidget(searchClass);
+    searchLayout->addWidget(searchteacherClass);
     eventLayout->addWidget(searchBar);
 
     //itemList = new ScrollAreaCustom(false, eventWidget);
@@ -196,7 +230,7 @@ ClassPage::ClassPage(QWidget* parent):
     tabLayout->setSpacing(0);
     tabLayout->setAlignment(Qt::AlignTop);
     tabLayout->setContentsMargins(5, 0, 5, 0);
-    textButton* detailTabButton1 = new textButton("活动详情", detailTab);
+    textButton* detailTabButton1 = new textButton("课程详情", detailTab);
     tabLayout->addWidget(detailTabButton1);
 
     textButton* detailTabButton2 = new textButton("材料提交", detailTab);
@@ -214,7 +248,7 @@ ClassPage::ClassPage(QWidget* parent):
     areaLayout->setAlignment(Qt::AlignTop);
     areaLayout->setContentsMargins(5,0,5,0);
 
-    activityDtl = new classDetailWidget(detailArea);
+    activityDtl = new teacherClassDetailWidget(detailArea);
     areaLayout->addWidget(activityDtl);
 //        activityDtl->hide();
 
@@ -224,7 +258,7 @@ ClassPage::ClassPage(QWidget* parent):
     QVBoxLayout* MDlvrLayout = new QVBoxLayout(materialDlvr);
     MDlvrLayout->setAlignment(Qt::AlignCenter);
 
-    fileDlvr = new classFileDeliver(materialDlvr);
+    fileDlvr = new teacherClassFileDeliver(materialDlvr);
     MDlvrLayout->addWidget(fileDlvr);
 
     areaLayout->addWidget(materialDlvr);
@@ -236,7 +270,7 @@ ClassPage::ClassPage(QWidget* parent):
     QVBoxLayout* HDlvrLayout = new QVBoxLayout(homeworkDlvr);
     HDlvrLayout->setAlignment(Qt::AlignCenter);
 
-    homework = new classHomeworkWidget(homeworkDlvr);
+    homework = new teacherClassHomeworkWidget(homeworkDlvr);
     HDlvrLayout->addWidget(homework);
 
     areaLayout->addWidget(homeworkDlvr);
@@ -262,14 +296,14 @@ ClassPage::ClassPage(QWidget* parent):
         homework->cleanContent();
         emit checkHomework(studentId, activityDtl->getActivity()->getInfoWidget()->getId().toInt());
         homework->homeworkPost = new HomeworkPost(7, "作业1");
-        qDebug() << studentId << "class id"<< activityDtl->getActivity()->getInfoWidget()->getId();
+        qDebug() << studentId << "teacherClass id"<< activityDtl->getActivity()->getInfoWidget()->getId();
         activityDtl->hide();
         materialDlvr->hide();
         homeworkDlvr->show();
 
     });
-    connect(this, &ClassPage::checkHomework, this, [=](int studentId, int classId) {
-        homework->homeworkQuery = new HomeworkQuery(studentId, classId);
+    connect(this, &TeacherPage::checkHomework, this, [=](int studentId, int teacherClassId) {
+        homework->homeworkQuery = new HomeworkQuery(studentId, teacherClassId);
         connect(homework->homeworkQuery, &HomeworkQuery::receive, this, [=](QVariant varValue){
             QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
             for(int i = 0; i < result.size(); i++){
@@ -278,30 +312,31 @@ ClassPage::ClassPage(QWidget* parent):
                 info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
 
-                homeworkWidget *infoWidget = new homeworkWidget(info, homework);
+                teacherHomeworkWidget *infoWidget = new teacherHomeworkWidget(info, homework);
                 homework->addContent(infoWidget);
-                connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
-                   homework->chooseId = homeworkId;
+                connect(infoWidget, &teacherHomeworkWidget::clicked, this, [=](int homeworkId){
+                    homework->chooseId = homeworkId;
                 });
             }
         });
     });
 
-
+    QVector<bigIconButton*> iconVec;
+    iconVec.push_back(new bigIconButton(9, ":/icons/icons/add.svg"));
     detailLayout->addWidget(detailArea);
-    classListWidget* classList = new classListWidget("class", 500, itemWidget, eventWidget);
+    teacherClassListWidget* teacherClassList = new teacherClassListWidget("teacherClass", iconVec, itemWidget, activityDtl,eventWidget);
 
 
-    eventLayout->addWidget(classList);
+    eventLayout->addWidget(teacherClassList);
     QVector<QWidget*> items;
 //                    connect(iconVec[0], &bigIconButton::clicked, this, [=]{
-//                        classAddPage* newPage = new classAddPage(12,1,300,0,"Create an class", slideParent);
+//                        teacherClassAddPage* newPage = new teacherClassAddPage(12,1,300,0,"Create an teacherClass", slideParent);
 //                        emit addPage(newPage);
-//                        connect(newPage, &classAddPage::deliver, this, [=](QVector<Qstring> s){
-//                            class
+//                        connect(newPage, &teacherClassAddPage::deliver, this, [=](QVector<Qstring> s){
+//                            teacherClass
 //                        })
-//                        classInfo = new classInfoWidget(info, this);
-//                        eventLayout->addWidget(classInfo);
+//                        teacherClassInfo = new teacherClassInfoWidget(info, this);
+//                        eventLayout->addWidget(teacherClassInfo);
 
 //                    })
 
@@ -313,103 +348,110 @@ ClassPage::ClassPage(QWidget* parent):
     //活动详情信息
 
     mainLayout->addWidget(itemWidget);
-    ClassQuery* query = new ClassQuery(studentId);
-    connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
-        QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
-        for(int i = 0; i < classResult.size(); i++){
+    /* todo class query
+    teacherClassQuery* query = new teacherClassQuery(studentId);
+    connect(query, &teacherClassQuery::receive, this, [=](QVariant varValue){
+        QVector<teacherClassResult*> teacherClassResult = varValue.value<QVector<teacherClassResult*>>();
+        for(int i = 0; i < teacherClassResult.size(); i++){
             QVector<QString> info;
-            info.push_back(classResult[i]->name);
-            info.push_back(classResult[i]->teacher);
-            info.push_back(classResult[i]->place);
-            info.push_back(classResult[i]->time);
-            info.push_back(classResult[i]->QQ);
-            info.push_back(QString::asprintf("%d", classResult[i]->id));
-            info.push_back(QString::number(classResult[i]->fileNames.size()));
-            for(int j = 0; j < classResult[i]->fileNames.size(); j++){
-                info.push_back(classResult[i]->fileNames[j]);
+            info.push_back(teacherClassResult[i]->name);
+            info.push_back(teacherClassResult[i]->teacher);
+            info.push_back(teacherClassResult[i]->place);
+            info.push_back(teacherClassResult[i]->time);
+            info.push_back(teacherClassResult[i]->QQ);
+            info.push_back(QString::asprintf("%d", teacherClassResult[i]->id));
+            info.push_back(QString::number(teacherClassResult[i]->fileNames.size()));
+            for(int j = 0; j < teacherClassResult[i]->fileNames.size(); j++){
+                info.push_back(teacherClassResult[i]->fileNames[j]);
             }
             //info.push_back
 
-            classWidget * newClass = new classWidget(info, itemWidget);
-            connect(newClass, &classWidget::clicked, this, [=]{
+            teacherClassWidget * newteacherClass = new teacherClassWidget(info, itemWidget);
+            connect(newteacherClass, &teacherClassWidget::clicked, this, [=]{
                 activityDtl->showDetail(info);
-                activityDtl->setActivity(newClass);
-                fileDlvr->setActivity(newClass);
-                fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                activityDtl->setActivity(newteacherClass);
+                fileDlvr->setActivity(newteacherClass);
+                fileDlvr->setDownloadInfo(newteacherClass->getInfoWidget()->getDownloadInfo());
                 emit fileDlvr->download();
-                homework->setClassId(newClass);
-            //TODO adding specific class page
+                homework->setteacherClassId(newteacherClass);
+                //TODO adding specific teacherClass page
             });
-            classList->addContent(newClass);
+            teacherClassList->addContent(newteacherClass);
         }
-    });
-    connect(searchClass, &bigIconButton::clicked, this, [=]{
-        if(classSearch->value() == ""){
-            classList->cleanContent();
-            ClassQuery* query = new ClassQuery(studentId);
-            connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
-                QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
-                for(int i = 0; i < classResult.size(); i++){
+    });*/
+    connect(searchteacherClass, &bigIconButton::clicked, this, [=]{
+        /*
+         * if(teacherClassSearch->value() == ""){
+            teacherClassList->cleanContent();
+            teacherClassQuery* query = new teacherClassQuery(studentId);
+            connect(query, &teacherClassQuery::receive, this, [=](QVariant varValue){
+                QVector<teacherClassResult*> teacherClassResult = varValue.value<QVector<teacherClassResult*>>();
+                for(int i = 0; i < teacherClassResult.size(); i++){
                     QVector<QString> info;
-                    info.push_back(classResult[i]->name);
-                    info.push_back(classResult[i]->teacher);
-                    info.push_back(classResult[i]->place);
-                    info.push_back(classResult[i]->time);
-                    info.push_back(classResult[i]->QQ);
-                    info.push_back(QString::asprintf("%d", classResult[i]->id));
-                    info.push_back(QString::number(classResult[i]->fileNames.size()));
-                    for(int j = 0; j < classResult[i]->fileNames.size(); j++){
-                        info.push_back(classResult[i]->fileNames[j]);
+                    info.push_back(teacherClassResult[i]->name);
+                    info.push_back(teacherClassResult[i]->teacher);
+                    info.push_back(teacherClassResult[i]->place);
+                    info.push_back(teacherClassResult[i]->time);
+                    info.push_back(teacherClassResult[i]->QQ);
+                    info.push_back(QString::asprintf("%d", teacherClassResult[i]->id));
+                    info.push_back(QString::number(teacherClassResult[i]->fileNames.size()));
+                    for(int j = 0; j < teacherClassResult[i]->fileNames.size(); j++){
+                        info.push_back(teacherClassResult[i]->fileNames[j]);
                     }
                     //info.push_back
 
-                    classWidget * newClass = new classWidget(info, itemWidget);
-                    connect(newClass, &classWidget::clicked, this, [=]{
+                    teacherClassWidget * newteacherClass = new teacherClassWidget(info, itemWidget);
+                    connect(newteacherClass, &teacherClassWidget::clicked, this, [=]{
                         activityDtl->showDetail(info);
-                        activityDtl->setActivity(newClass);
-                        fileDlvr->setActivity(newClass);
-                        fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                        activityDtl->setActivity(newteacherClass);
+                        fileDlvr->setActivity(newteacherClass);
+                        fileDlvr->setDownloadInfo(newteacherClass->getInfoWidget()->getDownloadInfo());
                         emit fileDlvr->download();
-                        homework->setClassId(newClass);
+                        homework->setteacherClassId(newteacherClass);
                     });
-                    classList->addContent(newClass);
+                    teacherClassList->addContent(newteacherClass);
                 }
             });
             return;
         }
-        search = new ClassSearch(classSearch->value(), selections->currentIndex());
+        */
+        search = new ClassSearch(teacherClassSearch->value(), selections->currentIndex());
         connect(search, &ClassSearch::receive, this, [=](QVariant varValue){
-            classList->cleanContent();
-            QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
-            for(int i = 0; i < classResult.size(); i++){
+            teacherClassList->cleanContent();
+            QVector<ClassResult*> teacherClassResult = varValue.value<QVector<ClassResult*>>();
+            for(int i = 0; i < teacherClassResult.size(); i++){
                 QVector<QString> info;
-                info.push_back(classResult[i]->name);
-                info.push_back(classResult[i]->teacher);
-                info.push_back(classResult[i]->place);
-                info.push_back(classResult[i]->time);
-                info.push_back(classResult[i]->QQ);
-                info.push_back(QString::asprintf("%d", classResult[i]->id));
-                info.push_back(QString::number(classResult[i]->fileNames.size()));
-                for(int j = 0; j < classResult[i]->fileNames.size(); j++){
-                    info.push_back(classResult[i]->fileNames[j]);
+                info.push_back(teacherClassResult[i]->name);
+                info.push_back(teacherClassResult[i]->teacher);
+                info.push_back(teacherClassResult[i]->place);
+                info.push_back(teacherClassResult[i]->time);
+                info.push_back(teacherClassResult[i]->QQ);
+                info.push_back(QString::asprintf("%d", teacherClassResult[i]->id));
+                info.push_back(QString::number(teacherClassResult[i]->fileNames.size()));
+                for(int j = 0; j < teacherClassResult[i]->fileNames.size(); j++){
+                    info.push_back(teacherClassResult[i]->fileNames[j]);
                 }
+                info.push_back(teacherClassResult[i]->examTime);
+                info.push_back(teacherClassResult[i]->examPlace);
                 //info.push_back
 
-                classWidget * newClass = new classWidget(info, itemWidget);
-                connect(newClass, &classWidget::clicked, this, [=]{
+                teacherClassWidget * newteacherClass = new teacherClassWidget(info, itemWidget);
+                connect(newteacherClass, &teacherClassWidget::clicked, this, [=]{
                     activityDtl->showDetail(info);
-                    activityDtl->setActivity(newClass);
-                    fileDlvr->setActivity(newClass);
-                    fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                    activityDtl->setActivity(newteacherClass);
+                    fileDlvr->setActivity(newteacherClass);
+                    fileDlvr->setDownloadInfo(newteacherClass->getInfoWidget()->getDownloadInfo());
                     emit fileDlvr->download();
-                    homework->setClassId(newClass);
+                    homework->setteacherClassId(newteacherClass);
                 });
-                classList->addContent(newClass);
+                teacherClassList->addContent(newteacherClass);
             }
         });
     });
+
+
 }
-void ClassPage::resizeEvent(QResizeEvent*) {
+void TeacherPage::resizeEvent(QResizeEvent*) {
     itemWidget->resize(this->size());
     for(int i = 0; i < pageList.size(); i++) {
         pageList[i]->resize(pageList[i]->width() - 1, pageList[i]->Type() == SlidePage::EXPANDING ? itemWidget->height() : pageList[i]->height());
@@ -418,7 +460,7 @@ void ClassPage::resizeEvent(QResizeEvent*) {
 }
 
 
-classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
+teacherClassFileDeliver::teacherClassFileDeliver(QWidget *parent):QWidget(parent){
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -447,7 +489,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     QVBoxLayout* downloadLayout = new QVBoxLayout(downloadWidget);
     downloadLayout->setAlignment(Qt::AlignTop);
     downloadList = new ScrollAreaCustom(false, downloadWidget);
-   //downloadList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    //downloadList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     downloadList->setFixedWidth(600);
     downloadLayout->addWidget(downloadList);
 
@@ -491,47 +533,24 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
             });
         }
     });
-    /*
-    QWidget* downWidget = new QWidget(this);
-    QVBoxLayout* downLayout = new QVBoxLayout(downWidget);
-    downLayout->setAlignment(Qt::AlignTop);
-    QLabel* downLabel = new QLabel("下载资料", downWidget);
-    downLabel->setStyleSheet("font-size:15px;");
-    downLayout->addWidget(downLabel);
-
-    QWidget* uploadWidget = new QWidget(this);
-    QVBoxLayout* uploadLayout = new QVBoxLayout(uploadWidget);
-    uploadLayout->setAlignment(Qt::AlignTop);
-    QLabel* uploadLabel = new QLabel("上传资料", uploadWidget);
-    uploadLabel->setStyleSheet("font-size:15px bold;");
-    uploadLayout->addWidget(uploadLabel);*/
     QWidget * splitter = new QWidget(this);
     splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     splitter->setStyleSheet("background-color:black");
     splitter->setFixedHeight(3);
 
 
-    connect(this, &classFileDeliver::download, this, [=]{
+    connect(this, &teacherClassFileDeliver::download, this, [=]{
         downloadList->clear();
         for(int i = 0; i < fileToDownload.size(); i++) {
-            /*downloadElement = new QWidget(downloadList);
-            QHBoxLayout* downloadLayout = new QHBoxLayout(downloadElement);
-            downloadElement->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            QLabel* fileName = new QLabel(fileToDownload[i], downloadElement);
-            QPushButton* downloadButton = new QPushButton("下载", downloadElement);
-            downloadLayout->addWidget(fileName);
-            downloadLayout->addWidget(downloadButton);
-            downloadList->AddWidget(downloadElement, true);*/
+
             QLabel* tmp = new QLabel(fileToDownload[i], downloadList);
             downloadList->addWidget(tmp, true);
         }
 
     });
-    //mainLayout->addWidget(downWidget);
     mainLayout->addWidget(downloadWidget);
     mainLayout->addWidget(downloadButton);
     mainLayout->addWidget(splitter);
-    //mainLayout->addWidget(uploadWidget);
     mainLayout->addWidget(select);
     mainLayout->addWidget(listWidget);
     mainLayout->addWidget(upload);
@@ -540,7 +559,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
 
 }
 
-classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
+teacherClassDetailWidget::teacherClassDetailWidget(QWidget *parent) : QWidget(parent){
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 //    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setAlignment(Qt::AlignVCenter);
@@ -552,13 +571,21 @@ classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
     place = new textInputItem("地点：",this);
     time = new textInputItem("时间：", this);
     qq = new textInputItem("QQ：", this);
+    textButton* modifyBtn = new textButton("Modify!", this);
+    connect(modifyBtn, &textButton::clicked, this, [=]{
+        qDebug() << "modify1";
+        currentActivity->modify(getLines());
+        //emit modify(getActivity());
+    });
+
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
     mainLayout->addWidget(time);
     mainLayout->addWidget(qq);
+    mainLayout->addWidget(modifyBtn);
 }
-QVector<QString> classDetailWidget::collectMsg() {
+QVector<QString> teacherClassDetailWidget::collectMsg() {
     QVector<QString> tmp;
     tmp.push_back(title->value());
     tmp.push_back(description->value());
@@ -570,35 +597,33 @@ QVector<QString> classDetailWidget::collectMsg() {
     return tmp;
 }
 
-void classDetailWidget::showDetail(QVector<QString> info) {
+void teacherClassDetailWidget::showDetail(QVector<QString> info) {
     title->setValue(info[0]);
     description->setValue(info[1]);
     place->setValue(info[2]);
     time->setValue(info[3]);
     qq->setValue(info[4]);
 
-    //isPersonal = info[4].toInt();
-    //alarm = info[5].toInt();
-    //frequency->setValue(info[6]);
+
 
 }
-classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
+teacherClassHomeworkWidget::teacherClassHomeworkWidget(QWidget *parent) {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-        searchBar = new QWidget(this);
-        QHBoxLayout *searchLayout = new QHBoxLayout(searchBar);
-        searchLayout->setContentsMargins(0,0,0,0);
-        searchBar->setLayout(searchLayout);
-        searchBar->setFixedHeight(40);
-        searchBar->setStyleSheet("background-color:rgb(255,255,255);");
-        searchBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        searchLayout->setAlignment(Qt::AlignLeft);
-        textInputItem* search = new textInputItem("搜索作业", searchBar);
-        search->setStyleSheet("background-color:rgb(255,255,255);");
-        bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
-        searchButton->setFixedSize(30, 30);
-        searchButton->setStyleSheet("background-color:rgb(255,255,255);");
-        searchLayout->addWidget(search);
-        searchLayout->addWidget(searchButton);
+    searchBar = new QWidget(this);
+    QHBoxLayout *searchLayout = new QHBoxLayout(searchBar);
+    searchLayout->setContentsMargins(0,0,0,0);
+    searchBar->setLayout(searchLayout);
+    searchBar->setFixedHeight(40);
+    searchBar->setStyleSheet("background-color:rgb(255,255,255);");
+    searchBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    searchLayout->setAlignment(Qt::AlignLeft);
+    textInputItem* search = new textInputItem("搜索作业", searchBar);
+    search->setStyleSheet("background-color:rgb(255,255,255);");
+    bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
+    searchButton->setFixedSize(30, 30);
+    searchButton->setStyleSheet("background-color:rgb(255,255,255);");
+    searchLayout->addWidget(search);
+    searchLayout->addWidget(searchButton);
     mainLayout->addWidget(searchBar);
 
     container = new ScrollAreaCustom(false, this);
@@ -631,7 +656,7 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
     });
 
     connect(deliver, &textButton::clicked, this, [=] {
-        homeworkUploader = new HomeworkUpload(studentId, classId, chooseId, fileNames.size(), fileNames, filesToSubmit);
+        homeworkUploader = new HomeworkUpload(studentId, teacherClassId, chooseId, fileNames.size(), fileNames, filesToSubmit);
         fileNames.clear();
         filesToSubmit.clear();
         tempHomework->clear();
@@ -639,7 +664,7 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
 
     connect(searchButton, &bigIconButton::clicked, this, [=]{
         this->cleanContent();
-        HomeworkSearch *searchEvent = new HomeworkSearch(studentId, classId, search->value());
+        HomeworkSearch *searchEvent = new HomeworkSearch(studentId, teacherClassId, search->value());
         connect(searchEvent, &HomeworkSearch::receive, this, [=](QVariant varValue) {
             QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
             for(int i = 0; i < result.size(); i++){
@@ -647,9 +672,9 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
                 info.push_back(QString::number(result[i]->id));
                 info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
-                homeworkWidget *infoWidget = new homeworkWidget(info, this);
+                teacherHomeworkWidget *infoWidget = new teacherHomeworkWidget(info, this);
                 this->addContent(infoWidget);
-                connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
+                connect(infoWidget, &teacherHomeworkWidget::clicked, this, [=](int homeworkId){
                     this->chooseId = homeworkId;
                 });
             }
@@ -658,25 +683,25 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
 
 }
 
-void classHomeworkWidget::mouseReleaseEvent(QMouseEvent *) {
+void teacherClassHomeworkWidget::mouseReleaseEvent(QMouseEvent *) {
     emit clicked();
 }
 
-void classHomeworkInfoWidget::mousePressEvent(QMouseEvent *) {
+void teacherClassHomeworkInfoWidget::mousePressEvent(QMouseEvent *) {
     mousePressed = true;
 }
 
-void classHomeworkInfoWidget::mouseReleaseEvent(QMouseEvent *) {
+void teacherClassHomeworkInfoWidget::mouseReleaseEvent(QMouseEvent *) {
     mousePressed = false;
     emit clicked(id);
 }
 
 
-void classHomeworkInfoWidget::resizeEvent(QResizeEvent *event) {
+void teacherClassHomeworkInfoWidget::resizeEvent(QResizeEvent *event) {
     infoWidget->resize(this->width() -2 * margin - spacing, this->height() - 2 * margin);
     infoWidget->move(margin, margin);
 }
-classHomeworkInfoWidget::classHomeworkInfoWidget(QVector<QString> info, QWidget* parent) :
+teacherClassHomeworkInfoWidget::teacherClassHomeworkInfoWidget(QVector<QString> info, QWidget* parent) :
         QWidget(parent)
 {
     this->info = info;
@@ -711,7 +736,7 @@ classHomeworkInfoWidget::classHomeworkInfoWidget(QVector<QString> info, QWidget*
 
 }
 
-homeworkWidget::homeworkWidget(QVector<QString> info, QWidget *parent): QWidget(parent) {
+teacherHomeworkWidget::teacherHomeworkWidget(QVector<QString> info, QWidget *parent): QWidget(parent) {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setFixedHeight(100);
     bgWidget = new QWidget(this);
@@ -721,10 +746,90 @@ homeworkWidget::homeworkWidget(QVector<QString> info, QWidget *parent): QWidget(
     layout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     layout->setContentsMargins(10, 10, 10, 10);
     layout->setSpacing(10);
-    infoWidget = new classHomeworkInfoWidget(info, this);
+    infoWidget = new teacherClassHomeworkInfoWidget(info, this);
     layout->addWidget(infoWidget);
-    connect(infoWidget, &classHomeworkInfoWidget::clicked, this, [=](int homeworkId) {emit clicked(homeworkId);});
+    connect(infoWidget, &teacherClassHomeworkInfoWidget::clicked, this, [=](int homeworkId) {emit clicked(homeworkId);});
 }
-void homeworkWidget::resizeEvent(QResizeEvent*) {
+void teacherHomeworkWidget::resizeEvent(QResizeEvent*) {
     bgWidget->resize(this->size());
 }
+
+teacherQuizAddPage::teacherQuizAddPage(int radius, int type, int width, int height, QString name, QWidget *parent,
+                                       int posy) : SlidePage(radius, type, width, height, name, parent, posy) {
+    title = new textInputItem("标题：", this);
+    description = new textInputItem("内容：", this);
+    place = new textInputItem("地点：", this);
+    time = new textInputItem("时间：", this);
+    activityBar = new QWidget(this);
+    QHBoxLayout* activityLayout = new QHBoxLayout(activityBar);
+    activityLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    activityLayout->setSpacing(10);
+    activityLayout->setContentsMargins(0, 0, 0, 0);
+
+    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
+    alarmOn->setFixedSize(30, 30);
+    activityLayout->addWidget(alarmOn);
+    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
+    alarmOff->setFixedSize(30, 30);
+    frequency = new textInputItem("频率：", activityBar);
+    activityLayout->addWidget(frequency);
+
+    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
+    TypeBtn->setFixedSize(30, 30);
+    activityLayout->addWidget(TypeBtn);
+    connect(TypeBtn, &bigIconButton::clicked, this, [=] {
+        if(isPersonal) {
+            TypeBtn->setPixmap(":/icons/icons/group-activity.svg");
+            isPersonal = false;
+        } else {
+            TypeBtn->setPixmap(":/icons/icons/personal-activity.svg");
+            isPersonal = true;
+        }
+    });
+
+    connect(alarmOn, &bigIconButton::clicked, this, [=] {
+        activityLayout->removeWidget(alarmOn);
+        alarmOn->hide();
+        activityLayout->insertWidget(0, alarmOff);
+        alarmOff->show();
+        alarm = false;
+    });
+    connect(alarmOff, &bigIconButton::clicked, this, [=] {
+        activityLayout->removeWidget(alarmOff);
+        alarmOff->hide();
+        activityLayout->insertWidget(0, alarmOn);
+        alarmOn->show();
+        alarm = true;
+    });
+
+    textButton* createBtn = new textButton("Create!", this);
+    connect(createBtn, &textButton::clicked, this, [=] {
+        slideOut();
+        createBtn->setText("Modify!");
+        if(created)
+                emit modify(collectMsg());
+        else {
+            created = true;
+            emit deliver(collectMsg());
+        }
+    });
+    AddContent(createBtn);
+    AddContent(activityBar);
+    AddContent(time);
+    AddContent(place);
+    AddContent(description);
+    AddContent(title);
+}
+
+QVector<QString> teacherQuizAddPage::collectMsg() {
+    QVector<QString> tmp;
+    tmp.push_back(title->value());
+    tmp.push_back(description->value());
+    tmp.push_back(place->value());
+    tmp.push_back(time->value());
+    tmp.push_back(isPersonal ? "true" : "false");
+    tmp.push_back(alarm ? "true" : "false");
+    tmp.push_back(frequency->value());
+    return tmp;
+}
+

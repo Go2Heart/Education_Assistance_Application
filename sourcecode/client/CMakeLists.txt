@@ -33,6 +33,7 @@ qt_add_executable(client MACOSX_BUNDLE
         graph_implement.cpp graph_implement.h
         graph_view.cpp graph_view.h
         guidepage.cpp guidepage.h
+        teacherpage.cpp teacherpage.h
         loginpage.cpp loginpage.h
         main.cpp
         mainpage.cpp mainpage.h

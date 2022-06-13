@@ -30,9 +30,19 @@ String GetStr(FILE *fin) {
 	String trans = tmp;
 	return trans;
 }
+void IniTeacher() {
+    FILE *in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/teacher.in", "r");
+    int n;
+    fscanf(in, "%d", &n);
+    for(int i = 1; i <= n; i++) {
+        String teacherNumber = GetStr(in), name = GetStr(in), password = GetStr(in);
+        //todo teacherGroup.AddTeacher()
+    }
+    fclose(in);
 
+}
 void InitStudent() {
-	FILE *in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
+	FILE *in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -43,7 +53,7 @@ void InitStudent() {
 }
 
 void InitTime() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/time.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/time.in", "r");
 	fscanf(in, "%d", &timeN);
 	for(int i = 1; i <= timeN; i++) {
 		int beg_hour, beg_min, end_hour, end_min;
@@ -55,7 +65,7 @@ void InitTime() {
 }
 
 void InitLesson() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/class.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/class.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -89,7 +99,7 @@ void InitLesson() {
 }
 
 void InitActivity() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/activity.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -123,7 +133,7 @@ int GenerateAlarmId() {
 	return alarmN;
 }
 void InitAlarms() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	FILE* in = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/alarm.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -151,17 +161,17 @@ int ToEndNum(Timer x) {
 }
 
 void LoadToFile() {
-	FILE* file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "w");
+	FILE* file = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/activity.in", "w");
 	activityGroup.WriteToFile(file);
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/alarm.in", "r");
 	alarmGroup.WriteToFile(file);
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/alarm.in", "r");
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/alarm.in", "r");
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("/home/ubuntu/Codefield/EduServer/server 3/default_settings/alarm.in", "r");
 	fclose(file);
 }
 

@@ -1,5 +1,6 @@
 #include "mainpage.h"
 #include "global.h"
+#include <QInputDialog>
 
 int type = -1;
 Student nowStudent;
@@ -350,6 +351,9 @@ mainPage::mainPage(QWidget* parent) :
             logoutBtn = new bigIconButton(1, ":/icons/icons/logout.svg", "", "", 0, cornerRadius, toolbar);
             logoutBtn->setFixedSize(40, 40);
             logoutBtn->hide();
+            teacherBtn = new bigIconButton(2, "", "教师", "微软雅黑", 13, cornerRadius, toolbar);
+            teacherBtn->setFixedSize(40, 40);
+            teacherBtn->hide();
             toolLayout->addWidget(userBtn);
             toolLayout->addWidget(spacing);
         mainLayout->addWidget(toolbar);
@@ -398,6 +402,8 @@ mainPage::mainPage(QWidget* parent) :
         activityPage = new ActivityPage(this);
         activityPage->hide();
 
+        teacherPage = new TeacherPage(this);
+
         userInfo = new SlidePage(10, SlidePage::FIXED, 250, 400, "", displayWidget, 0);
         userInfo->bgWidget->setStyleSheet("background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 255, 200, 255), stop:0.3 rgba(255, 255, 240, 255), stop:1 rgba(255, 255, 255, 255));border-radius:10px;");
         slidePageList.push_back(userInfo);
@@ -409,6 +415,7 @@ mainPage::mainPage(QWidget* parent) :
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                // TODO CHANGE FROM HERE as teacher when debugging
                 showNewPage(activityPage);
                 currentPage = ACTIVITY;
             }
@@ -447,6 +454,17 @@ mainPage::mainPage(QWidget* parent) :
                 //pageList.push_back(page);
             }
         });
+        connect(teacherBtn, &bigIconButton::clicked, this, [=] {
+            hideCurrentPage();
+            if(currentPage == TEACHER){
+                LoadInfo();
+                showNewPage(displayWidget);
+                currentPage = MAIN;
+            } else {
+                showNewPage(teacherPage);
+                currentPage = TEACHER;
+            }
+        });
 
     QTimer* flushTimer = new QTimer;
     flushTimer->setSingleShot(true);
@@ -482,6 +500,10 @@ void mainPage::hideCurrentPage() {
         case GUIDE:
             mainLayout->removeWidget(guidePage);
             guidePage->hide();
+            break;
+        case TEACHER:
+            mainLayout->removeWidget(teacherPage);
+            teacherPage->hide();
             break;
     }
 }
@@ -523,14 +545,19 @@ void mainPage::LoadInfo() {
         classBtn->show();
         activityBtn->show();
         guideBtn->show();
+        teacherBtn->show();
         toolLayout->addWidget(classBtn);
         toolLayout->addWidget(activityBtn);
         toolLayout->addWidget(guideBtn);
+        toolLayout->addWidget(teacherBtn);
         StudentInfoQuery* nowQuery = new StudentInfoQuery();
         connect(nowQuery, &StudentInfoQuery::receive, this, [=](QVariant varValue) {
             nowStudent = varValue.value<Student>();
             emit getInfo();
         });
+    } else {
+        //teacherBtn->show();
+        //toolLayout->addWidget(teacherBtn);
     }
     logoutBtn->show();
     toolLayout->addWidget(logoutBtn);

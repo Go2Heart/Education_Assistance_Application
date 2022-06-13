@@ -335,7 +335,7 @@ void ScrollListContainer::clear() {
 
 void ScrollListContainer::paintEvent(QPaintEvent *event) {
     for(int i = 0; i < widgets.size(); i++) {
-        qDebug() << "paint" << width() << widgets[i]->height();
+        //qDebug() << "paint" << width() << widgets[i]->height();
         widgets[i]->resize(width(), widgets[i]->height());
     }
 }

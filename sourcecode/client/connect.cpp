@@ -252,6 +252,7 @@ ClassSearch::ClassSearch(QString key, int type) {
             QString time = parms[i + 2]->qsMessage;
             QString QQ = parms[i + 4]->qsMessage;
             int id = parms[i + 5]->number;
+
             QVector<QString> files;
             int fileNum = parms[i + 6]->number;
             qDebug() <<"parms[i + 6]->qsMessage: " <<parms[i + 6]->qsMessage << "parms[i + 6]->number: "<< parms[i + 6]->number;
@@ -261,8 +262,10 @@ ClassSearch::ClassSearch(QString key, int type) {
                 qDebug() << "fileNum:" << fileNum;
                 qDebug() << "filename:" << parms[i + 7 + j]->qsMessage;
             }
-            i += 7 + fileNum;
-            v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files));
+            QString examTime = parms[i + 7 + fileNum]->qsMessage;
+            QString examPlace = parms[i + 8 + fileNum]->qsMessage;
+            i += 9 + fileNum;
+            v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files, examTime, examPlace));
         }
         //qDebug()<<"ClassQuery";
         emit receive(QVariant::fromValue(v));
@@ -319,12 +322,13 @@ FileUpload::FileUpload(QString id, QString descripter,std::string info, int stud
 
     if (mode == 0)paras.push_back(new Parameter(0x0E));
     else paras.push_back(new Parameter(0x0F));
-
+    /*
     qDebug() << "file upload student id: " << studentId;
     if (id == "")
         paras.push_back(new Parameter(0));
     else
         paras.push_back(new Parameter(id.toInt()));
+        */
     if(mode != 0) paras.push_back(new Parameter(studentId));
     paras.push_back(new Parameter(descripter));
     paras.push_back(new Parameter(info));

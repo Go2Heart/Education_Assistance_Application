@@ -211,16 +211,21 @@ struct ClassResult {
     int id;
     QString QQ;
     QVector<QString> fileNames;
+    QString examTime;
+    QString examPlace;
+
 
     ClassResult() {}
-    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, int& id, QVector<QString>& fileNames) :
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, int& id, QVector<QString>& fileNames, QString examTime = "", QString examPlace = "") :
         name(name),
         teacher(teacher),
         place(place),
         time(time),
         QQ(QQ),
         id(id),
-        fileNames(fileNames)
+        fileNames(fileNames),
+        examTime(examTime),
+        examPlace(examPlace)
     {}
 };
 Q_DECLARE_METATYPE(ClassResult*)

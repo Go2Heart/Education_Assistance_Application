@@ -73,6 +73,7 @@ void WriteFile(String path, String file) {
     FILE* tmpout = fopen("tmpfile", "wb");
     fwrite(file.c_str(), file.length() - 1, 1, tmpout);
     fclose(tmpout);
+    tmpout  = fopen("tmpfile", "wb");
     FILE* out = fopen(path.c_str(), "wb");
     encodeSolver.Encode(tmpout, out, 0, 0);
 }
@@ -136,7 +137,7 @@ Server::Server() {
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(43434);
 
     int on = 1;
     setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -242,7 +243,7 @@ void Server::run() {
                                         GetHomework(parms[3].number);
                         Vector<File*> fileVector;
                         for(int j = 0, k = 5; j < parms[4].number; j++, k += 2) {
-                            String savePath = "../Lesson/"
+                            String savePath = "Lesson/"
                             + ToString(parms[1].number) + "/"
                             + ToString(parms[2].number) + "/" 
                             + ToString(parms[3].number) + "/"
@@ -389,11 +390,19 @@ void Server::run() {
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
                                 resultParms.push_back(Parameter(ToString(j), false));// why not int?
+
+
                                 Vector<File*> files = nowLesson->Files();
                                 resultParms.push_back(Parameter(files.size()));
                                 for(int k = 0; k < files.size(); k++) {
                                     resultParms.push_back(Parameter(files[k]->name, false));
                                 }
+                                //exam Info
+                                time.clear();
+                                Duration exam = nowLesson->ExamDuration();
+                                time = ToString(exam.begin.week) + "周" + ToString(exam.begin.day) + "日" + ToString_Time(exam.begin.hour) + ":" + ToString_Time(exam.begin.minute) + "-" + ToString_Time(exam.end.hour) + ":" + ToString_Time(exam.end.minute);
+                                resultParms.push_back(Parameter(time, false));
+                                resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -550,7 +559,7 @@ void Server::run() {
                     case 0x0E : {// 活动文件上传
                         int id = parms[1].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String savePath = "../Activity/" + ToString(id) + "/" + parms[2].message;
+                        String savePath = "Activity/" + ToString(id) + "/" + parms[2].message;
                         unsigned long long tmpHash = GetHash(parms[3].message);
                         File* file = new File(savePath, parms[2].message, tmpHash);
                         nowActivity->AddFile(file);
@@ -563,7 +572,7 @@ void Server::run() {
                     case 0x0F : { // 课程文件上传
                         int id = parms[1].number;
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "../Lesson/" + ToString(id) +"/" + parms[2].message;
+                        String savePath = "Lesson/" + ToString(id) +"/" + parms[2].message;
                         unsigned long long tmpHash = GetHash(parms[3].message);
                         File* file = new File(savePath, parms[2].message, tmpHash);
                         nowLesson->AddFile(file);
@@ -587,7 +596,7 @@ void Server::run() {
                         if (studentID == 0) s2 = "0";
                         else s2 = ToString(studentID);
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        String savePath = "Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
                         FILE* file;
                         if((file = fopen(savePath.c_str(), "r")) == NULL) {
                             printf("file not found\n");
@@ -702,6 +711,17 @@ void Server::run() {
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, true);
                         break;
+                    }
+                    case 0x19 : {//change class info
+                        /*
+                         * @params: classId
+                         * @params: time
+                         * @params: place
+                         */
+                        printf("exam changed\n");
+
+
+
                     }
                 }
                 if(close(i) == -1) {
