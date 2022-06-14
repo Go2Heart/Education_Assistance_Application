@@ -6,6 +6,7 @@
 #include "data_structure/string.h"
 #include "data_structure/vector.h"
 #include "basicClass.h"
+#include "data_structure/rbtree.h"
 
 using namespace std;
 class File;
@@ -23,18 +24,25 @@ public:
 class Lesson_Student {
 private:
     Vector<Homework_Student*> homeworkStates;
+    RbTree<String, Homework_Student*> nameSort;
 public:
     int lessonId;
     Lesson_Student(int id) : lessonId(id) {}
     ~Lesson_Student() {
         for(int i = 0; i < homeworkStates.size(); i++) delete(homeworkStates[i]);
     }
-    void AddHomework(int id, String desc) { homeworkStates.push_back(new Homework_Student(id, desc)); }
+    void AddHomework(int id, String desc) { 
+        Homework_Student* newHomework = new Homework_Student(id, desc);
+        homeworkStates.push_back(newHomework);
+        nameSort.InsertNode(desc, newHomework); 
+    }
     Homework_Student* GetHomework(int id) { return homeworkStates[id]; }
     Vector<Homework_Student*> HomeworkStates() { return homeworkStates; }
+    Vector<Homework_Student*> FromHomeworkName(String name) { return nameSort.Find(name); }
 };
 
 class EventGroup {
+    RbTree<int, Lesson_Student*> idSort;
 public:
     Vector<Lesson_Student*> lessons;
     Vector<int> activities;
@@ -45,9 +53,14 @@ public:
     void AddActivity(int ActivityId);
     bool VerifyDuration(Vector<Duration> durations);
     Lesson_Student* GetLesson(int lessonId) {
+        Vector<Lesson_Student*> result = idSort.Find(lessonId);
+        if(result.size()) return result[0];
+        else return nullptr;
+        /*
         for(int i = 0; i < lessons.size(); i++)
             if(lessons[i]->lessonId == lessonId) return lessons[i];
         return nullptr;
+        */
     }
 };
 

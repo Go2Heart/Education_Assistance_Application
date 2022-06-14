@@ -4,6 +4,7 @@
 #include "basicClass.h"
 #include "identity.h"
 #include "data_structure/string.h"
+#include "data_structure/rbtree.h"
 //#include <string>
 //#include <vector>
 #include "data_structure/vector.h"
@@ -17,9 +18,8 @@ public:
 
 class File {
 public:
-    String savePath, name;
-    unsigned long long hash;
-    File(String path, String name, unsigned long long hash) :
+    String savePath, name, hash;
+    File(String path, String name, String hash) :
         savePath(path),
         name(name),
         hash(hash)
@@ -75,7 +75,11 @@ public:
             students[i]->events->GetLesson(lessonId)->AddHomework(id, homework->desc);
         }
     }
-    void AddFile(File* file) { files.push_back(file); }
+    void AddFile(File* file) {
+        bool find = false;
+        for(int i = 0; i < files.size(); i++) if(file->hash == files[i]->hash) find = true;
+        if(!find) files.push_back(file);
+    }
     void SetExamPlace(String place) { examPlace = place; }
     void SetExamDura(Duration duration) { examDuration = duration; }
     void SetClassPlace(String place) { classPlace = place; }
@@ -85,31 +89,28 @@ public:
 class Lessons {
 private:
     Vector<Lesson*> lessons;
+    RbTree<String, Lesson*> nameSort;
 public:
     ~Lessons() {
         for(int i = 0; i < lessons.size(); i++) delete(lessons[i]);
     }
     int AddLesson(Lesson* lesson) {
         lessons.push_back(lesson);
+        nameSort.InsertNode(lesson->Name(), lesson);
         return lessons.size() - 1;
     }
     int size() {return lessons.size(); }
-    Lesson* GetLesson(String name) {
-        for(int i = 0; i < lessons.size(); i++)
-            if(name == lessons[i]->Name())
-                return lessons[i];
-        return nullptr;
-    }
     Lesson* GetLesson(int id) {
         if(id >= lessons.size()) return nullptr;
         return lessons[id];
     }
     Vector<Lesson*> FromName(String name) {
-        Vector<Lesson*> tmp;
+        /*Vector<Lesson*> tmp;
         for(int i = 0; i < lessons.size(); i++)
             if(name == lessons[i]->Name())
                 tmp.push_back(lessons[i]);
-        return tmp;
+        return tmp;*/
+        return nameSort.Find(name);
     }
 };
 
@@ -131,18 +132,26 @@ public:
     ~Activity() {
         for(int i = 0; i < files.size(); i++) delete(files[i]);
     }
-    void AddFile(File* file) { files.push_back(file); }
+    void AddFile(File* file) {
+        bool find = false;
+        for(int i = 0; i < files.size(); i++) if(file->hash == files[i]->hash) find = true;
+        if(!find) files.push_back(file);
+    }
 };
 
 class Activities {
 private:
     Vector<Activity*> activities;
+    RbTree<String, Activity*> nameSort;
+    RbTree<String, Activity*> placeSort;
 public:
     ~Activities() {
         for(int i = 0; i < activities.size(); i++) delete(activities[i]);
     }
     int AddActivities(Activity* activity){
         activities.push_back(activity);
+        nameSort.InsertNode(activity->name, activity);
+        placeSort.InsertNode(activity->place, activity);
         return activities.size() - 1;
     }
     int GetActivityId(String name) {
@@ -156,9 +165,16 @@ public:
         return activities[id];
     }
     Vector<Activity*> FromName(String name) {
-        Vector<Activity*> result;
+        return nameSort.Find(name);
+        /*Vector<Activity*> result;
         for(int i = 0; i < activities.size(); i++) if(activities[i]->name == name) result.push_back(activities[i]);
-        return result;
+        return result;*/
+    }
+    Vector<Activity*> FromPlace(String place) {
+        return placeSort.Find(place);
+        /*Vector<Activity*> result;
+        for(int i = 0; i < activities.size(); i++) if(activities[i]->name == name) result.push_back(activities[i]);
+        return result;*/
     }
     void WriteToFile(FILE* file);
 };
@@ -195,21 +211,30 @@ public:
 class Alarms {
 private:
     Vector<Alarm*> alarms;
+    RbTree<int, Alarm*> idSort;
 public:
     ~Alarms() {
         for(int i = 0; i < alarms.size(); i++) delete(alarms[i]);
     }
-    void AddAlarm(Alarm* alarm) { alarms.push_back(alarm); }
+    void AddAlarm(Alarm* alarm) { 
+        alarms.push_back(alarm);
+        idSort.InsertNode(alarm->id, alarm);
+    }
     void DeleteAlarm(Alarm* alarm) {
         for(int i = 0; i < alarms.size(); i++) {
             if(alarms[i] == alarm) alarms.del(i);
         }
+        idSort.DeleteNode(alarm->id);
     }
-    Alarm* FromId(int id) { 
+    Alarm* FromId(int id) {
+        Vector<Alarm*> result = idSort.Find(id);
+        if(result.size()) return result[0];
+        else return nullptr;
+        /*
         for(int i = 0; i < alarms.size(); i++) {
             if(alarms[i]->id == id) return alarms[i];
         }
-        return nullptr;
+        return nullptr;*/
     }
     int Size() { return alarms.size(); }
     void WriteToFile(FILE* file) {

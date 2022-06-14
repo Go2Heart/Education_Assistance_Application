@@ -1,6 +1,9 @@
 #include "global.h"
 #include "customObject.h"
 
+bool nameCompare(Activity* x, Activity* y) { return x->name < y->name; }
+bool nameEqual(Activity* x, Activity* y) { return x->name ==  y->name; }
+
 void Activities::WriteToFile(FILE* file) {
     fprintf(file, "%d", activities.size());
     for(int i = 0; i < activities.size(); i++) {

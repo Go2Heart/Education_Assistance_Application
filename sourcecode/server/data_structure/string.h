@@ -48,6 +48,15 @@ public:
         for(int i = 0; i < strlen(x); i++) str_temp.push_back(x[i]);
         return str_temp;
     }
+    friend bool operator < (String x, String y) {
+        if(x.length() == 0) return true;
+        if(y.length() == 0) return false;
+        for(int i = 0; i << min(x.length(), y.length()); i++) {
+            if(x[i] < y[i]) return true;
+            if(x[i] > y[i]) return false;
+        }
+        return x.length() <= y.length();
+    }
     friend String operator + (const char a, const String b) {
     	String tmp;
     	tmp.siz = tmp.capacity = b.siz + 1;

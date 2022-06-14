@@ -165,7 +165,21 @@ void LoadToFile() {
 	fclose(file);
 }
 
+String GetCurrentTime() {
+	time_t t;
+    struct tm* timeinfo;
+    time(&t);
+    timeinfo = localtime(&t);
+    char tmp[30];
+	sprintf(tmp, "%d-%d-%d %d:%d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
+	return String(tmp);
+}
+
+FILE* logFile;
+
 int main() {
+	mkdir("logs", 0777);
+	logFile = fopen(("logs/" + GetCurrentTime() + ".log").c_str(), "w");
 	InitTime();
 	puts("phase 1 finished.");
 	InitStudent();

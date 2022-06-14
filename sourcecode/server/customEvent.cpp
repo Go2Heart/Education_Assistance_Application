@@ -24,8 +24,11 @@ bool EventGroup::VerifyDuration(Vector<Duration> durations) {
 void EventGroup::AddLesson(int lessonId) {
     if(!VerifyDuration(lessonGroup.GetLesson(lessonId)->ClassDurations()))
         puts("NO");
-    else
-        lessons.push_back(new Lesson_Student(lessonId));
+    else {
+        Lesson_Student* newLesson = new Lesson_Student(lessonId);
+        lessons.push_back(newLesson);
+        idSort.InsertNode(lessonId, newLesson);
+    }
 }
 
 void EventGroup::AddActivity(int ActivityId) {

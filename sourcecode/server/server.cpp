@@ -8,6 +8,7 @@
 #include "timeHeap.h"
 #include "huffman/decoder.h"
 #include "huffman/encoder.h"
+#include "sha256.h"
 
 Encoder encodeSolver;
 Decoder decodeSolver;
@@ -57,13 +58,6 @@ Vector<Parameter> GetParms(String message) {
     return parms;
 }
 
-unsigned long long GetHash(String s) {
-    unsigned long long tmp = 0;
-    for(int i = 0; i < s.length(); i++)
-        tmp = tmp * 10007 + s[i];
-    return tmp;
-}
-
 void WriteFile(String path, String file) {
     String tmppath;
     for(int i = 0; i < path.size(); i++) {
@@ -73,6 +67,7 @@ void WriteFile(String path, String file) {
     FILE* tmpout = fopen("tmpfile", "wb");
     fwrite(file.c_str(), file.length() - 1, 1, tmpout);
     fclose(tmpout);
+    tmpout = fopen("tmpfile", "wb");
     FILE* out = fopen(path.c_str(), "wb");
     encodeSolver.Encode(tmpout, out, 0, 0);
 }
@@ -128,6 +123,10 @@ bool sendAll(int &socket, Vector<Parameter> parms, bool debug) {
     if(debug) puts("");
     if(debug) puts("end send");
     return true;
+}
+
+void Log(String s) {
+    fprintf(logFile, "%s\n", s.c_str());
 }
 
 Server::Server() {
@@ -247,7 +246,7 @@ void Server::run() {
                             + ToString(parms[2].number) + "/" 
                             + ToString(parms[3].number) + "/"
                             + parms[k].message;
-                            unsigned long long tmpHash = GetHash(parms[k + 1].message);
+                            String tmpHash = sha256(parms[k + 1].message);
                             File* file = new File(savePath, parms[k].message, tmpHash);
                             fileVector.push_back(file);
                             WriteFile(savePath, parms[k + 1].message);
@@ -284,14 +283,12 @@ void Server::run() {
                          * params: 作业名称
                          */
                         Vector<Homework_Student*> homework = studentGroup.
-                                GetStudent(parms[1].number)->events->GetLesson(parms[2].number)->HomeworkStates();
+                                GetStudent(parms[1].number)->events->GetLesson(parms[2].number)->FromHomeworkName(parms[3].message);
                         Vector<Parameter> resultParms;
                         for (int i = 0; i < homework.size(); i++) {
-                            if(homework[i]->desc == parms[3].message){
-                                resultParms.push_back(Parameter(homework[i]->id));
-                                resultParms.push_back(Parameter(homework[i]->finished));
-                                resultParms.push_back(Parameter(homework[i]->desc, false));
-                            }
+                            resultParms.push_back(Parameter(homework[i]->id));
+                            resultParms.push_back(Parameter(homework[i]->finished));
+                            resultParms.push_back(Parameter(homework[i]->desc, false));
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -374,26 +371,25 @@ void Server::run() {
                          * return: Vector<Lesson>
                          */
                         Vector<Parameter> resultParms;
-                        for(int j = 0; j < lessonGroup.size(); j++) {
-                            Lesson *nowLesson = lessonGroup.GetLesson(j);
-                            if(nowLesson->Name() == parms[1].message) {
-                                resultParms.push_back(Parameter(nowLesson->Name(), false));
-                                resultParms.push_back(Parameter(nowLesson->Teacher(), false));
-                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                resultParms.push_back(Parameter(nowLesson->Place(), false));
-                                Vector<Duration> d = nowLesson->ClassDurations();
-                                String time;
-                                for(int k = 0; k < d.size(); k++) {
-                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
-                                }
-                                resultParms.push_back(Parameter(time, false));
-                                resultParms.push_back(Parameter(nowLesson->QQ(), false));
-                                resultParms.push_back(Parameter(ToString(j), false));// why not int?
-                                Vector<File*> files = nowLesson->Files();
-                                resultParms.push_back(Parameter(files.size()));
-                                for(int k = 0; k < files.size(); k++) {
-                                    resultParms.push_back(Parameter(files[k]->name, false));
-                                }
+                        Vector<Lesson*> result = lessonGroup.FromName(parms[1].message);
+                        for(int j = 0; j < result.size(); j++) {
+                            Lesson *nowLesson = result[j];
+                            resultParms.push_back(Parameter(nowLesson->Name(), false));
+                            resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                            //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                            resultParms.push_back(Parameter(nowLesson->Place(), false));
+                            Vector<Duration> d = nowLesson->ClassDurations();
+                            String time;
+                            for(int k = 0; k < d.size(); k++) {
+                                time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                            }
+                            resultParms.push_back(Parameter(time, false));
+                            resultParms.push_back(Parameter(nowLesson->QQ(), false));
+                            resultParms.push_back(Parameter(ToString(j), false));// why not int?
+                            Vector<File*> files = nowLesson->Files();
+                            resultParms.push_back(Parameter(files.size()));
+                            for(int k = 0; k < files.size(); k++) {
+                                resultParms.push_back(Parameter(files[k]->name, false));
                             }
                         }
                         sendAll(i, resultParms, false);
@@ -440,18 +436,16 @@ void Server::run() {
                                 break;
                             }
                             case 1: {//活动地点
-                                for(int j = 0; j < activityGroup.size(); j++) {
-                                    Activity* nowActivity = activityGroup.GetActivity(j);
-                                    if(nowActivity->place == parms[1].message) {
-                                        resultParms.push_back(Parameter(nowActivity->name, false));
-                                        //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                                        resultParms.push_back(Parameter(nowActivity->place, false));
-                                        Duration d = nowActivity->duration;
-                                        String time;
-                                        time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
-                                        resultParms.push_back(Parameter(time, false));
-                                        resultParms.push_back(Parameter(j));
-                                    }
+                                Vector<Activity*> result = activityGroup.FromPlace(parms[1].message);
+                                for(int j = 0; j < result.size(); j++) {
+                                    resultParms.push_back(Parameter(result[j]->name, false));
+                                    //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                    resultParms.push_back(Parameter(result[j]->place, false));
+                                    Duration d = result[j]->duration;
+                                    String time;
+                                    time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
+                                    resultParms.push_back(Parameter(time, false));
+                                    resultParms.push_back(Parameter(result[j]->activityId));
                                 }
 
                                 break;
@@ -550,8 +544,8 @@ void Server::run() {
                     case 0x0E : {// 活动文件上传
                         int id = parms[1].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String savePath = "../Activity/" + ToString(id) + "/" + parms[2].message;
-                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        String savePath = "Activity/" + ToString(id) + "/" + parms[2].message;
+                        String tmpHash = sha256(parms[3].message);
                         File* file = new File(savePath, parms[2].message, tmpHash);
                         nowActivity->AddFile(file);
                         WriteFile(savePath, parms[3].message);
@@ -563,8 +557,8 @@ void Server::run() {
                     case 0x0F : { // 课程文件上传
                         int id = parms[1].number;
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "../Lesson/" + ToString(id) +"/" + parms[2].message;
-                        unsigned long long tmpHash = GetHash(parms[3].message);
+                        String savePath = "Lesson/" + ToString(id) +"/" + parms[2].message;
+                        String tmpHash = sha256(parms[3].message);
                         File* file = new File(savePath, parms[2].message, tmpHash);
                         nowLesson->AddFile(file);
                         WriteFile(savePath, parms[3].message);

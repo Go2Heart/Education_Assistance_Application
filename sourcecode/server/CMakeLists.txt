@@ -4,6 +4,7 @@ set(CMAKE_CXX_FLAGS	" -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inli
 #set(CMAKE_CXX_STANDARD 11)
 add_executable(test
         data_structure/heap.h
+        data_structure/rbtree.h
         data_structure/string.h
         data_structure/string.cpp
         data_structure/vector.h
@@ -26,4 +27,6 @@ add_executable(test
         main.cpp
         server.cpp
         server.h
+        sha256.cpp
+        sha256.h
         timeHeap.h)
