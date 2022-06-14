@@ -363,6 +363,12 @@ void Server::run() {
                             for(int k = 0; k < files.size(); k++) {
                                 resultParms.push_back(Parameter(files[k]->name, false));
                             }
+                            Duration exam = nowLesson->ExamDuration();
+                            int b1 = exam.begin.Zip();
+                            resultParms.push_back(Parameter(b1));
+                            int e1 = exam.end.Zip();
+                            resultParms.push_back(Parameter(e1));
+                            resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -389,19 +395,19 @@ void Server::run() {
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
-                                resultParms.push_back(Parameter(ToString(j), false));// why not int?
-
-
+                                resultParms.push_back(Parameter(j));// why not int?
+                                printf("%d\n", j);
                                 Vector<File*> files = nowLesson->Files();
                                 resultParms.push_back(Parameter(files.size()));
                                 for(int k = 0; k < files.size(); k++) {
                                     resultParms.push_back(Parameter(files[k]->name, false));
                                 }
                                 //exam Info
-                                time.clear();
                                 Duration exam = nowLesson->ExamDuration();
-                                time = ToString(exam.begin.week) + "周" + ToString(exam.begin.day) + "日" + ToString_Time(exam.begin.hour) + ":" + ToString_Time(exam.begin.minute) + "-" + ToString_Time(exam.end.hour) + ":" + ToString_Time(exam.end.minute);
-                                resultParms.push_back(Parameter(time, false));
+                                int b1 = exam.begin.Zip();
+                                resultParms.push_back(Parameter(b1));
+                                int e1 = exam.end.Zip();
+                                resultParms.push_back(Parameter(e1));
                                 resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
                         }
@@ -714,14 +720,32 @@ void Server::run() {
                     }
                     case 0x19 : {//change class info
                         /*
-                         * @params: classId
-                         * @params: time
-                         * @params: place
+                         * @params1: classId
+                         * @params2: name
+                         * @params3: teacher
+                         * @params4: place
+                         * @params5: beginTime
+                         * @params6: endTime
+                         * @params7: qq
+                         * @params8: examBegin
+                         * @params9: examEnd
+                         * @params10: examPlace
+                         * todo change time how to deal with it
                          */
                         printf("exam changed\n");
-
-
-
+                        Lesson* nowClass = lessonGroup.GetLesson(parms[1].number);
+                        Timer classBeginTime = UnzipTimer(parms[5].number);
+                        Timer classEndTime = UnzipTimer(parms[6].number);
+                        Vector<Duration> classTime;
+                        classTime.push_back(Duration(classBeginTime, classEndTime));
+                        Timer beginTime = UnzipTimer(parms[8].number);
+                        Timer endTime = UnzipTimer(parms[9].number);
+                        Duration dura(beginTime, endTime);
+                        nowClass->updateInfo(parms[2].message, parms[3].message, parms[4].message,classTime, parms[7].message, dura, parms[10].message);
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, true);
+                        break;
                     }
                 }
                 if(close(i) == -1) {

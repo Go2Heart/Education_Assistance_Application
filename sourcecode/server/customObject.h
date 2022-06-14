@@ -76,6 +76,16 @@ public:
             students[i]->events->GetLesson(lessonId)->AddHomework(id, homework->desc);
         }
     }
+    //void updateInfo(String name, String teacher, String classPlace, String QQnumber, Vector<Duration> classdurations, String examPlace, Duration examDuration) {
+    void updateInfo(String name, String teacher, String classPlace, Vector<Duration> classdurations, String QQnumber, Duration examDuration, String examPlace){
+        this->name = name;
+        this->teacher = teacher;
+        this->classPlace = classPlace;
+        this->classDurations = classdurations;
+        this->QQnumber = QQnumber;
+        this->examDuration = examDuration;
+        this->examPlace = examPlace;
+    }
     void AddFile(File* file) { files.push_back(file); }
     void SetExamPlace(String place) { examPlace = place; }
     void SetExamDura(Duration duration) { examDuration = duration; }

@@ -211,12 +211,13 @@ struct ClassResult {
     int id;
     QString QQ;
     QVector<QString> fileNames;
-    QString examTime;
+    Timer examBegin;
+    Timer examEnd;
     QString examPlace;
 
 
     ClassResult() {}
-    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, int& id, QVector<QString>& fileNames, QString examTime = "", QString examPlace = "") :
+    ClassResult(QString& name, QString& teacher, QString& place, QString& time, QString& QQ, int& id, QVector<QString>& fileNames, Timer examBegin, Timer examEnd, QString examPlace) :
         name(name),
         teacher(teacher),
         place(place),
@@ -224,7 +225,8 @@ struct ClassResult {
         QQ(QQ),
         id(id),
         fileNames(fileNames),
-        examTime(examTime),
+        examBegin(examBegin),
+        examEnd(examEnd),
         examPlace(examPlace)
     {}
 };
@@ -412,6 +414,18 @@ private:
     TcpConnector* connector = nullptr;
 public:
     PasswordUpd(QString passwd);
+};
+
+class ClassChange : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+
+public:
+    ClassChange(int id, QString name, QString teacher, QString place, int classBegin, int classEnd,
+                QString QQ, int examBegin, int examEnd, QString examPlace);
+signals:
+    void receive();
 };
 
 #endif // CONNECT_H

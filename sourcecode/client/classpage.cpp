@@ -328,6 +328,11 @@ ClassPage::ClassPage(QWidget* parent):
             for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                 info.push_back(classResult[i]->fileNames[j]);
             }
+            info.push_back(QString::number(classResult[i]->examBegin.week));
+            info.push_back(QString::number(classResult[i]->examBegin.day));
+            info.push_back(classResult[i]->examBegin.ToString());
+            info.push_back(classResult[i]->examEnd.ToString());
+            info.push_back(classResult[i]->examPlace);
             //info.push_back
 
             classWidget * newClass = new classWidget(info, itemWidget);
@@ -361,6 +366,11 @@ ClassPage::ClassPage(QWidget* parent):
                     for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                         info.push_back(classResult[i]->fileNames[j]);
                     }
+                    info.push_back(QString::number(classResult[i]->examBegin.week));
+                    info.push_back(QString::number(classResult[i]->examBegin.day));
+                    info.push_back(classResult[i]->examBegin.ToString());
+                    info.push_back(classResult[i]->examEnd.ToString());
+                    info.push_back(classResult[i]->examPlace);
                     //info.push_back
 
                     classWidget * newClass = new classWidget(info, itemWidget);
@@ -393,6 +403,11 @@ ClassPage::ClassPage(QWidget* parent):
                 for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                     info.push_back(classResult[i]->fileNames[j]);
                 }
+                info.push_back(QString::number(classResult[i]->examBegin.week));
+                info.push_back(QString::number(classResult[i]->examBegin.day));
+                info.push_back(classResult[i]->examBegin.ToString());
+                info.push_back(classResult[i]->examEnd.ToString());
+                info.push_back(classResult[i]->examPlace);
                 //info.push_back
 
                 classWidget * newClass = new classWidget(info, itemWidget);
@@ -552,11 +567,27 @@ classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
     place = new textInputItem("地点：",this);
     time = new textInputItem("时间：", this);
     qq = new textInputItem("QQ：", this);
+    QWidget* examWidget = new QWidget(this);
+    examTime = new QLabel("考试时间：", examWidget);
+    QHBoxLayout* examLayout = new QHBoxLayout();
+    examLayout->addWidget(examTime);
+    week = new textInputItem("周：", examWidget);
+    examLayout->addWidget(week);
+    day = new textInputItem("天：", examWidget);
+    examLayout->addWidget(day);
+    begin = new textInputItem("开始：", examWidget);
+    examLayout->addWidget(begin);
+    end = new textInputItem("结束：", examWidget);
+    examLayout->addWidget(end);
+    examWidget->setLayout(examLayout);
+    examPlace = new textInputItem("考试地点：", this);
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
     mainLayout->addWidget(time);
     mainLayout->addWidget(qq);
+    mainLayout->addWidget(examWidget);
+    mainLayout->addWidget(examPlace);
 }
 QVector<QString> classDetailWidget::collectMsg() {
     QVector<QString> tmp;
@@ -573,10 +604,14 @@ QVector<QString> classDetailWidget::collectMsg() {
 void classDetailWidget::showDetail(QVector<QString> info) {
     title->setValue(info[0]);
     description->setValue(info[1]);
-    place->setValue(info[2]);
-    time->setValue(info[3]);
+    place->setValue(info[3]);
+    time->setValue(info[2]);
     qq->setValue(info[4]);
-
+    week->setValue(info[info.size() - 5]);
+    day->setValue(info[info.size() - 4]);
+    begin->setValue(info[info.size() - 3]);
+    end->setValue(info[info.size() - 2]);
+    examPlace->setValue(info[info.size() - 1]);
     //isPersonal = info[4].toInt();
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);

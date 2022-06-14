@@ -215,17 +215,20 @@ ClassQuery::ClassQuery(int id) {
            QString time = parms[i + 2]->qsMessage;
            QString QQ = parms[i + 4]->qsMessage;
            int id = parms[i + 5]->number;
+           qDebug() << "id:" << id;
            QVector<QString> files;
            int fileNum = parms[i + 6]->number;
-           qDebug() <<"parms[i + 6]->qsMessage: " <<parms[i + 6]->qsMessage << "parms[i + 6]->number: "<< parms[i + 6]->number;
            qDebug() << name << teacher << place << time << QQ << id << fileNum;
               for(int j = 0; j < fileNum; j++) {
                 files.push_back(parms[i + 7 + j]->qsMessage);
                 qDebug() << "fileNum:" << fileNum;
                 qDebug() << "filename:" << parms[i + 7 + j]->qsMessage;
               }
-              i += 7 + fileNum;
-           v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files));
+           Timer examBegin = UnzipTimer(parms[i + 7 + fileNum]->number);
+           Timer examEnd = UnzipTimer(parms[i + 8 + fileNum]->number);
+           QString examPlace = parms[i + 9 + fileNum]->qsMessage;
+           i += 10 + fileNum;
+           v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files, examBegin, examEnd, examPlace));
        }
        //qDebug()<<"ClassQuery";
        emit receive(QVariant::fromValue(v));
@@ -252,20 +255,20 @@ ClassSearch::ClassSearch(QString key, int type) {
             QString time = parms[i + 2]->qsMessage;
             QString QQ = parms[i + 4]->qsMessage;
             int id = parms[i + 5]->number;
-
+            qDebug() << "id:" << id;
             QVector<QString> files;
             int fileNum = parms[i + 6]->number;
-            qDebug() <<"parms[i + 6]->qsMessage: " <<parms[i + 6]->qsMessage << "parms[i + 6]->number: "<< parms[i + 6]->number;
             qDebug() << name << teacher << place << time << QQ << id << fileNum;
             for(int j = 0; j < fileNum; j++) {
                 files.push_back(parms[i + 7 + j]->qsMessage);
                 qDebug() << "fileNum:" << fileNum;
                 qDebug() << "filename:" << parms[i + 7 + j]->qsMessage;
             }
-            QString examTime = parms[i + 7 + fileNum]->qsMessage;
-            QString examPlace = parms[i + 8 + fileNum]->qsMessage;
-            i += 9 + fileNum;
-            v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files, examTime, examPlace));
+            Timer examBegin = UnzipTimer(parms[i + 7 + fileNum]->number);
+            Timer examEnd = UnzipTimer(parms[i + 8 + fileNum]->number);
+            QString examPlace = parms[i + 9 + fileNum]->qsMessage;
+            i += 10 + fileNum;
+            v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files, examBegin, examEnd, examPlace));
         }
         //qDebug()<<"ClassQuery";
         emit receive(QVariant::fromValue(v));
@@ -457,4 +460,26 @@ PasswordUpd::PasswordUpd(QString passwd) {
         paras.push_back(new Parameter(teacherId));
     paras.push_back(new Parameter(passwd));
     connector = new TcpConnector(paras);
+}
+
+ClassChange::ClassChange(int id, QString name, QString teacher, QString place, int classBegin, int classEnd,
+                         QString QQ, int examBegin, int examEnd, QString examPlace) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x19));
+    paras.push_back(new Parameter(id));
+    paras.push_back(new Parameter(name));
+    paras.push_back(new Parameter(teacher));
+    paras.push_back(new Parameter(place));
+    paras.push_back(new Parameter(classBegin));
+    paras.push_back(new Parameter(classEnd));
+    paras.push_back(new Parameter(QQ));
+    paras.push_back(new Parameter(examBegin));
+    paras.push_back(new Parameter(examEnd));
+    paras.push_back(new Parameter(examPlace));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+       qDebug() << "socket query receive data!";
+        emit receive();
+    });
+
 }

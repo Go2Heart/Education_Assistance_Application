@@ -71,7 +71,7 @@ void teacherClassInfoWidget::resizeEvent(QResizeEvent *event) {
 void teacherClassInfoWidget::modify(QVector<QString> info) {
     this->info = info;
     descLabel->setText("[课程]" + info[0]);
-    detailLabel->setText("[教师]" + info[1]+"     [时间]" + info[2] + "       [地点]" + info[3]);
+    detailLabel->setText("[教师]" + info[1]+"     [地点]" + info[2] + "       [时间]" + info[3]);
     //activityType->setPixmap( info[4] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/);
 }
 
@@ -249,6 +249,7 @@ TeacherPage::TeacherPage(QWidget* parent):
     areaLayout->setContentsMargins(5,0,5,0);
 
     activityDtl = new teacherClassDetailWidget(detailArea);
+
     areaLayout->addWidget(activityDtl);
 //        activityDtl->hide();
 
@@ -431,7 +432,10 @@ TeacherPage::TeacherPage(QWidget* parent):
                 for(int j = 0; j < teacherClassResult[i]->fileNames.size(); j++){
                     info.push_back(teacherClassResult[i]->fileNames[j]);
                 }
-                info.push_back(teacherClassResult[i]->examTime);
+                info.push_back(QString::number(teacherClassResult[i]->examBegin.week));
+                info.push_back(QString::number(teacherClassResult[i]->examBegin.day));
+                info.push_back(teacherClassResult[i]->examBegin.ToString());
+                info.push_back(teacherClassResult[i]->examEnd.ToString());
                 info.push_back(teacherClassResult[i]->examPlace);
                 //info.push_back
 
@@ -571,9 +575,36 @@ teacherClassDetailWidget::teacherClassDetailWidget(QWidget *parent) : QWidget(pa
     place = new textInputItem("地点：",this);
     time = new textInputItem("时间：", this);
     qq = new textInputItem("QQ：", this);
+    QWidget* examWidget = new QWidget(this);
+    examTime = new QLabel("考试时间：", examWidget);
+    QHBoxLayout* examLayout = new QHBoxLayout();
+    examLayout->addWidget(examTime);
+     week = new textInputItem("周：", examWidget);
+    examLayout->addWidget(week);
+     day = new textInputItem("天：", examWidget);
+    examLayout->addWidget(day);
+     begin = new textInputItem("开始：", examWidget);
+    examLayout->addWidget(begin);
+     end = new textInputItem("结束：", examWidget);
+    examLayout->addWidget(end);
+    examWidget->setLayout(examLayout);
+    examPlace = new textInputItem("考试地点：", this);
     textButton* modifyBtn = new textButton("Modify!", this);
+
     connect(modifyBtn, &textButton::clicked, this, [=]{
+        QString classBegin = time->value().first(6).last(5);
+        QString classEnd = time->value().last(6).first(5);
+        qDebug() << classBegin;
+        qDebug()<< classEnd;
+        Timer* classBeginTimer = new Timer(classBegin.first(2).toInt(), classBegin.last(2).toInt());
+        Timer* classEndTimer = new Timer(classEnd.first(2).toInt(), classEnd.last(2).toInt());
+        Timer *beginTimer = new Timer( begin->value().first(2).toInt(), begin->value().sliced(3).toInt(), day->value().toInt(), week->value().toInt() );
+        qDebug() << "w:" << week->value().toInt() << "d:" << day->value().toInt()<< "h:" << begin->value().first(2).toInt() << "m:" << begin->value().sliced(3).toInt();
+        Timer *endTimer = new Timer(end->value().first(2).toInt(), end->value().sliced(3).toInt(), day->value().toInt(), week->value().toInt());
         qDebug() << "modify1";
+        ClassChange* classChange = new ClassChange(id.toInt(), title->value(), description->value(), place->value(), classBeginTimer->Zip(),
+                                                   classEndTimer->Zip(), qq->value(), beginTimer->Zip(), endTimer->Zip(),
+                                                   examPlace->value());
         currentActivity->modify(getLines());
         //emit modify(getActivity());
     });
@@ -583,6 +614,8 @@ teacherClassDetailWidget::teacherClassDetailWidget(QWidget *parent) : QWidget(pa
     mainLayout->addWidget(place);
     mainLayout->addWidget(time);
     mainLayout->addWidget(qq);
+    mainLayout->addWidget(examWidget);
+    mainLayout->addWidget(examPlace);
     mainLayout->addWidget(modifyBtn);
 }
 QVector<QString> teacherClassDetailWidget::collectMsg() {
@@ -600,12 +633,14 @@ QVector<QString> teacherClassDetailWidget::collectMsg() {
 void teacherClassDetailWidget::showDetail(QVector<QString> info) {
     title->setValue(info[0]);
     description->setValue(info[1]);
-    place->setValue(info[2]);
-    time->setValue(info[3]);
+    place->setValue(info[3]);
+    time->setValue(info[2]);
     qq->setValue(info[4]);
-
-
-
+    week->setValue(info[info.size() - 5]);
+    day->setValue(info[info.size() - 4]);
+    begin->setValue(info[info.size() - 3]);
+    end->setValue(info[info.size() - 2]);
+    examPlace->setValue(info[info.size() - 1]);
 }
 teacherClassHomeworkWidget::teacherClassHomeworkWidget(QWidget *parent) {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

@@ -71,7 +71,11 @@ private:
     textInputItem* place;
     textInputItem* time;
     textInputItem* qq;
-    textInputItem* examTime;
+    QLabel* examTime;
+    textInputItem* week;
+    textInputItem* day;
+    textInputItem* begin;
+    textInputItem* end;
     textInputItem* examPlace;
     textInputItem* frequency;
     bool isPersonal = true;
@@ -90,8 +94,13 @@ public:
         lines.append(time->value());
         return lines;
     }
+    QString id;
     void setActivity(teacherClassWidget* activity) {
         currentActivity = activity;
+        id = activity->getInfoWidget()->getId();
+        if(id == "") {
+            id = "0";
+        }
     }
     teacherClassWidget* getActivity() {
         return currentActivity;
