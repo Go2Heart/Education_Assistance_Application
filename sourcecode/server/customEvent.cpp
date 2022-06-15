@@ -22,13 +22,16 @@ bool EventGroup::VerifyDuration(Vector<Duration> durations) {
 }
 
 void EventGroup::AddLesson(int lessonId) {
-    if(!VerifyDuration(lessonGroup.GetLesson(lessonId)->ClassDurations()))
+    Lesson* nowLesson = lessonGroup.GetLesson(lessonId);
+    /*if(!VerifyDuration(lessonGroup.GetLesson(lessonId)->ClassDurations()))
         puts("NO");
-    else {
-        Lesson_Student* newLesson = new Lesson_Student(lessonId);
-        lessons.push_back(newLesson);
-        idSort.InsertNode(lessonId, newLesson);
-    }
+    else {*/
+    Lesson_Student* newLesson = new Lesson_Student(lessonId);
+    lessons.push_back(newLesson);
+    
+    lessonNameSort.InsertNode(nowLesson->Name(), nowLesson);
+    idSort.InsertNode(lessonId, newLesson);
+    //}
 }
 
 void EventGroup::AddActivity(int ActivityId) {

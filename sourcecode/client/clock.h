@@ -20,9 +20,9 @@ private:
     Timer nowTime;
 public:
     Clock(QWidget *parent = nullptr);
-    int Hour() {return nowTime.hour; }
-    int Min() {return nowTime.minute; }
-    int Day() {return nowTime.day; }
+    int Hour() {return nowTime.Hour();}
+    int Min() {return nowTime.Min();}
+    int Day() {return nowTime.Day();}
 signals:
     void checkAlarm();
 public slots:

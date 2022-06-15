@@ -46,6 +46,7 @@ void ScrollAreaCustom::paintEvent(QPaintEvent *event) {
     painter.setBrush(Qt::NoBrush);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.drawRoundedRect(this->rect(), 12, 12);
+    //qDebug()<< width() << " " << height();
 
     container->resize(this->width() - 2 * margin, container->height());
     //missing
@@ -224,7 +225,9 @@ void ScrollAreaCustom::addSpacing(int x) {
     container->AddWidget(space, false);
 }
 
-void ScrollAreaCustom::clear() { container->clear(); }
+void ScrollAreaCustom::clear() {
+    container->clear();
+}
 
 ScrollListContainer::ScrollListContainer(QWidget *parent) :
     QWidget(parent)
@@ -241,8 +244,7 @@ void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
     ys.push_back(0);
 
     //重订宽度
-    widget->resize(210, 300);
-    //widget->resize(this->width(), widget->height());
+    widget->resize(this->width(), widget->height());
     widget->show();
 
     if(setAnimation) {
@@ -335,7 +337,6 @@ void ScrollListContainer::clear() {
 
 void ScrollListContainer::paintEvent(QPaintEvent *event) {
     for(int i = 0; i < widgets.size(); i++) {
-        qDebug() << "paint" << width() << widgets[i]->height();
         widgets[i]->resize(width(), widgets[i]->height());
     }
 }

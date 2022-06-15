@@ -51,7 +51,7 @@ public:
     friend bool operator < (String x, String y) {
         if(x.length() == 0) return true;
         if(y.length() == 0) return false;
-        for(int i = 0; i << min(x.length(), y.length()); i++) {
+        for(int i = 0; i < min(x.length(), y.length()); i++) {
             if(x[i] < y[i]) return true;
             if(x[i] > y[i]) return false;
         }
@@ -59,20 +59,14 @@ public:
     }
     friend String operator + (const char a, const String b) {
     	String tmp;
-    	tmp.siz = tmp.capacity = b.siz + 1;
-    	char* newbuf = new char[tmp.siz];
-    	newbuf[0] = a;
-    	memcpy(newbuf + 1, b.buf, b.siz * sizeof(char));
-    	tmp.buf = newbuf;
+    	tmp.push_back(a);
+        for(int i = 0; i < b.length(); i++) tmp.push_back(b[i]);
     	return tmp;
 	}
     friend String operator + (const char* a, const String b) {
     	String tmp;
-    	tmp.siz = tmp.capacity = strlen(a) + b.siz;
-    	char* newbuf = new char[tmp.siz];
-    	memcpy(newbuf, a, strlen(a) * sizeof(char));
-    	memcpy(newbuf + strlen(a), b.buf, b.siz * sizeof(char));
-		tmp.buf = newbuf;
+        for(int i = 0; i < strlen(a); i++) tmp.push_back(a[i]);
+        for(int i = 0; i < b.length(); i++) tmp.push_back(b[i]);
     	return tmp;
 	}
     bool operator == (const String &str) const {

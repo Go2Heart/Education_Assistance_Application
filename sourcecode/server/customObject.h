@@ -61,6 +61,8 @@ public:
     String QQ() { return QQnumber; }
     Vector<Duration> ClassDurations() { return classDurations; }
     Vector<File*> Files() { return files; }
+    String ExamPlace() { return examPlace; }
+    Duration ExamDuration() { return examDuration; }
 
     bool cross(Vector<Duration> durations) {
         for(int i = 0; i < durations.size(); i++)
@@ -74,6 +76,15 @@ public:
         for(int i = 0; i < students.size(); i++) {
             students[i]->events->GetLesson(lessonId)->AddHomework(id, homework->desc);
         }
+    }
+    void updateInfo(String name, String teacher, String classPlace, Vector<Duration> classdurations, String QQnumber, Duration examDuration, String examPlace){
+        this->name = name;
+        this->teacher = teacher;
+        this->classPlace = classPlace;
+        this->classDurations = classdurations;
+        this->QQnumber = QQnumber;
+        this->examDuration = examDuration;
+        this->examPlace = examPlace;
     }
     void AddFile(File* file) {
         bool find = false;

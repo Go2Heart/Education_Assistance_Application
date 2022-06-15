@@ -39,8 +39,8 @@ Clock::Clock(QWidget *parent) :
         //Add();
         TimeQuery* query = new TimeQuery();
         connect(query, &TimeQuery::receive, this, [=](int zipTimer) {
-            nowTime = UnzipTimer(zipTimer);
-            clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.week, nowTime.day, nowTime.hour, nowTime.minute));
+            nowTime.FromZip(zipTimer);
+            clock->setText(QString::asprintf("Week:%d,Day:%d,%02d:%02d", nowTime.Week(), nowTime.Day(), nowTime.Hour(), nowTime.Min()));
             emit checkAlarm();
         });
         addTimer->start(100);

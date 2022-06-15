@@ -1,9 +1,8 @@
 #include "activitypage.h"
 #include "loginpage.h"
-#include "global.h"
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
-    QWidget(parent),
-    activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
+        QWidget(parent),
+        activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
 {
     this->info = info;
     id = info[4];
@@ -72,15 +71,15 @@ activityAddPage::activityAddPage(int radius, int type, int width, int height, QS
     activityLayout->setSpacing(10);
     activityLayout->setContentsMargins(0, 0, 0, 0);
 
-    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
+    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, activityBar);
     alarmOn->setFixedSize(30, 30);
     activityLayout->addWidget(alarmOn);
-    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
+    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", 0, activityBar);
     alarmOff->setFixedSize(30, 30);
     frequency = new textInputItem("频率：", activityBar);
     activityLayout->addWidget(frequency);
 
-    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
+    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", 0, activityBar);
     TypeBtn->setFixedSize(30, 30);
     activityLayout->addWidget(TypeBtn);
     connect(TypeBtn, &bigIconButton::clicked, this, [=] {
@@ -140,9 +139,9 @@ QVector<QString> activityAddPage::collectMsg() {
 }
 
 activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent) :
-    QWidget(parent),
-    extraIcons(icons),
-    slideParent(p)
+        QWidget(parent),
+        extraIcons(icons),
+        slideParent(p)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding );
 //    setStyleSheet("Height:540");
@@ -392,7 +391,7 @@ ActivityPage::ActivityPage(QWidget* parent):
 //                        selections->setStyleSheet("border-radius: 3");
     selections->addItems(selectList);
     textInputItem* activitySearch = new textInputItem("活动", searchBar);
-    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
+    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchActivity->setFixedSize(30,30);
 
     /*TODO connect */
@@ -524,7 +523,7 @@ ActivityPage::ActivityPage(QWidget* parent):
             info.push_back(activityResult[i]->name);
             info.push_back(activityResult[i]->place);
             info.push_back(activityResult[i]->time);
-            info.push_back(QString::asprintf("%d", activityResult[i]->id));
+            info.push_back(activityResult[i]->id);
             info.push_back("true");
             info.push_back("true");
             info.push_back("1");
@@ -550,7 +549,7 @@ ActivityPage::ActivityPage(QWidget* parent):
                 info.push_back(activityResult[i]->name);
                 info.push_back(activityResult[i]->place);
                 info.push_back(activityResult[i]->time);
-                info.push_back(QString::asprintf("%d", activityResult[i]->id));
+                info.push_back(activityResult[i]->id);
                 info.push_back("true");
                 info.push_back("true");
                 info.push_back("1");

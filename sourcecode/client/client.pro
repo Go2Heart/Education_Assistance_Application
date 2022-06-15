@@ -34,7 +34,6 @@ HEADERS += \
     connect.h \
     customScrollContainer.h \
     customWidgets.h \
-    global.h \
     graph_implement.h \
     graph_view.h \
     guidepage.h \

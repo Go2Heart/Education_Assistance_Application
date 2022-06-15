@@ -74,7 +74,6 @@ void MainWindow::Init() {
             ui->mainLayout->removeWidget(loginpage);
             loginpage->hide();
             ui->mainLayout->addWidget(mainpage);
-            mainpage->LoadInfo();
             mainpage->show();
     });
 }

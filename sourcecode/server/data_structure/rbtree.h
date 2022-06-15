@@ -26,6 +26,7 @@ public:
     void RightRotate(RbNode<T1, T2>* current);
     void InsertNode(T1 key, T2 data);
     bool DeleteNode(T1 key);
+    void ReleaseMemory(RbNode<T1, T2>* current);
     void FixTree(RbNode<T1, T2>* current);
     void EraseNode(RbNode<T1, T2>* delNode);
     void FixTreeDelete(RbNode<T1, T2>* current, RbNode<T1, T2>* currentFather);
@@ -40,7 +41,13 @@ public:
 
 template<class T1, class T2> RbTree<T1, T2>::RbTree() : root(NULL) {}
 
-template<class T1, class T2> RbTree<T1, T2>::~RbTree() {}
+template<class T1, class T2> RbTree<T1, T2>::~RbTree() { if(root) ReleaseMemory(root); }
+
+template<class T1, class T2> void RbTree<T1, T2>::ReleaseMemory(RbNode<T1, T2>* current) {
+    if(current->left) ReleaseMemory(current->left);
+    if(current->right) ReleaseMemory(current->right);
+    delete current;
+}
 
 template<class T1, class T2> void RbTree<T1, T2>::InsertNode(T1 key, T2 data) {
     RbNode<T1, T2>* tmpNode = root;

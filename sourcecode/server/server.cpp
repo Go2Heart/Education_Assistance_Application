@@ -186,6 +186,7 @@ void Server::run() {
                 char opt[233];
                 scanf("%s", opt);
                 if(string(opt) == string("exit")) {
+                    fclose(logFile);
                     return;
                 }
             } else if(i == server_sock) {
@@ -226,19 +227,21 @@ void Server::run() {
                 Vector<Parameter> parms = GetParms(message);
                 if(parms.size() == 0) continue;
                 switch (parms[0].number) {
-                    case 0x01 : {// 添加课程作业
-                        lessonGroup.GetLesson(parms[1].number)->AddHomework(new Homework(parms[2].message));
+                    case 0x01 : {// 添加课程作业 updated
+                        Teacher* nowTeacher = teacherGroup.GetTeacher(parms[1].number);
+                        Lesson* nowLesson = lessonGroup.GetLesson(parms[2].number);
+                        Log("[添加作业]  教师 " + nowTeacher->name + " 对课程 " + nowLesson->Name() + "添加了作业。");
+                        nowLesson->AddHomework(new Homework(parms[3].message));
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, false);
                         break;
                     }
                     case 0x02 : {// 课程作业上传 参数：学生ID 课程ID 作业下标 文件个数 多个文件
-                        Homework_Student* nowHomework = studentGroup.
-                            GetStudent(parms[1].number)->
-                                events->
-                                    GetLesson(parms[2].number)->
-                                        GetHomework(parms[3].number);
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        Lesson_Student* nowLesson = nowStudent->events->GetLesson(parms[2].number);
+                        Homework_Student* nowHomework = nowLesson->GetHomework(parms[3].number);
+                        Log("[提交作业]  学生 " + nowStudent->name + " 对课程 " + lessonGroup.GetLesson(nowLesson->lessonId)->Name() + " 提交了 " + nowHomework->desc + " 作业");
                         Vector<File*> fileVector;
                         for(int j = 0, k = 5; j < parms[4].number; j++, k += 2) {
                             String savePath = "../Lesson/"
@@ -264,9 +267,12 @@ void Server::run() {
                                    * params: 课程ID
                                    * return: 作业ID & 作业状态 &作业描述
                                    */
-                        Vector<Homework_Student*> homework = studentGroup.
-                                GetStudent(parms[1].number)->events->GetLesson(parms[2].number)->HomeworkStates();
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        Lesson_Student* nowLesson = nowStudent->events->GetLesson(parms[2].number);
+                        Vector<Homework_Student*> homework = nowLesson->HomeworkStates();
+                        Log("[查询作业集合] 学生 " + nowStudent->name + " 查询了课程 " + lessonGroup.GetLesson(nowLesson->lessonId)->Name() + " 的作业集合。");
                         Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(homework.size()));
                         for (int i = 0; i < homework.size(); i++) {
                             resultParms.push_back(Parameter(homework[i]->id));
                             resultParms.push_back(Parameter(homework[i]->finished));
@@ -282,8 +288,10 @@ void Server::run() {
                          * params: 课程id
                          * params: 作业名称
                          */
-                        Vector<Homework_Student*> homework = studentGroup.
-                                GetStudent(parms[1].number)->events->GetLesson(parms[2].number)->FromHomeworkName(parms[3].message);
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        Lesson_Student* nowLesson = nowStudent->events->GetLesson(parms[2].number);
+                        Vector<Homework_Student*> homework = nowLesson->FromHomeworkName(parms[3].message);
+                        Log("[检索作业集合] 学生 " + nowStudent->name + " 检索了课程 " + lessonGroup.GetLesson(nowLesson->lessonId)->Name() + " 的作业集合，关键词为 " + parms[3].message + "。");
                         Vector<Parameter> resultParms;
                         for (int i = 0; i < homework.size(); i++) {
                             resultParms.push_back(Parameter(homework[i]->id));
@@ -294,12 +302,28 @@ void Server::run() {
                         break;
                     }
                     case 0x05 : {//查询路径
+                        String log;
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
                         Vector<int> v;
-                        int vectorSize = parms[1].number;
-                        for(int j = 2; j < 2 + vectorSize; j++)
+                        int vectorSize = parms[2].number;
+                        for(int j = 3; j < 3 + vectorSize; j++)
                             v.push_back(parms[j].number);
-                        int queryMode = (unsigned char)parms[2 + vectorSize].number;
+                        int queryMode = (unsigned char)parms[3 + vectorSize].number;
                         ResPackage result = graph.QueryDis(v, queryMode);
+
+                        Vector<String> modeString;
+                        modeString.push_back("最短距离");
+                        modeString.push_back("最短时间");
+                        modeString.push_back("交通工具的最短时间");
+                        log = log + "[查询路径] 学生 " + nowStudent->name + " 查询了一条路径 策略为 " + modeString[queryMode - 1];
+                        log = log + "起始点为 " + graph.GetPoint(parms[3].number).Name() + " 终点为" + graph.GetPoint(parms[2 + vectorSize].number).Name();
+                        log = log + "途经点序列为：";
+                        for(int j = 4; j < 2 + vectorSize; j++) {
+                            log = log + " " + graph.GetPoint(parms[3].number).Name();
+                        }
+                        log = log + "。";
+                        Log(log);
+
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(result.timeCost.Zip()));
                         resultParms.push_back(Parameter(result.v.size()));
@@ -318,20 +342,35 @@ void Server::run() {
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x07 : {//修改速度
-                        timeTracker.ChgSpd(parms[1].number / 10.0);
+                    case 0x07 : {//修改速度 update
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[修改时间速度] 学生 " + nowStudent->name + " 修改了时间速度。");
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[修改时间速度] 教师 " + nowTeacher->name + " 修改了时间速度。");
+                        }
+                        timeTracker.ChgSpd(parms[3].number / 10.0);
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x08 : {
+                    case 0x08 : { // 登录
                         Vector<Parameter> resultParms;
                         int value;
-                        if(parms[1].number == 1)
+                        if(parms[1].number == 1) {
                             value = teacherGroup.GetTeacherCheck(parms[2].message, parms[3].message);
-                        else
+                            if(value != 255) {
+                                Log("[登录请求] 老师 " + teacherGroup.GetTeacher(value)->name + " 已登录。");
+                            }
+                        }
+                        else {
                             value = studentGroup.GetStudentCheck(parms[2].message, parms[3].message);
+                            if(value != 255) {
+                                Log("[登录请求] 学生 " + studentGroup.GetStudent(value)->name + " 已登录。");
+                            }
+                        }
                         resultParms.push_back(Parameter(value));
                         sendAll(i, resultParms, false);
                         break;
@@ -339,66 +378,152 @@ void Server::run() {
 
                     case 0x09 : {//查询课程
                         Vector<Parameter> resultParms;
-                        Vector<Lesson_Student*> lessons = studentGroup.GetStudent(parms[1].number)->events->lessons;
-                        for(int j = 0; j < lessons.size(); j++) {
-                            Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]->lessonId);
-                            resultParms.push_back(Parameter(nowLesson->Name(), false));
-                            resultParms.push_back(Parameter(nowLesson->Teacher(), false));
-                            //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                            resultParms.push_back(Parameter(nowLesson->Place(), false));
-                            Vector<Duration> d = nowLesson->ClassDurations();
-                            String time;
-                            for(int k = 0; k < d.size(); k++) {
-                                time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[课程列表查询] 学生 " + nowStudent->name + " 查询了课程列表。");
+                            Vector<Lesson_Student*> lessons = nowStudent->events->lessons;
+                            for(int j = 0; j < lessons.size(); j++) {
+                                Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]->lessonId);
+                                resultParms.push_back(Parameter(nowLesson->Name(), false));
+                                resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(nowLesson->Place(), false));
+                                Vector<Duration> d = nowLesson->ClassDurations();
+                                String time;
+                                for(int k = 0; k < d.size(); k++) {
+                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                }
+                                resultParms.push_back(Parameter(time, false));
+                                resultParms.push_back(Parameter(nowLesson->QQ(), false));
+                                resultParms.push_back(Parameter(lessons[j]->lessonId));// why not int?
+                                Vector<File*> files = nowLesson->Files();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int k = 0; k < files.size(); k++) {
+                                    resultParms.push_back(Parameter(files[k]->name, false));
+                                }
+                                Duration exam = nowLesson->ExamDuration();
+                                int b1 = exam.begin.Zip();
+                                resultParms.push_back(Parameter(b1));
+                                int e1 = exam.end.Zip();
+                                resultParms.push_back(Parameter(e1));
+                                resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
-                            resultParms.push_back(Parameter(time, false));
-                            resultParms.push_back(Parameter(nowLesson->QQ(), false));
-                            resultParms.push_back(Parameter(lessons[j]->lessonId));// why not int?
-                            Vector<File*> files = nowLesson->Files();
-                            resultParms.push_back(Parameter(files.size()));
-                            for(int k = 0; k < files.size(); k++) {
-                                resultParms.push_back(Parameter(files[k]->name, false));
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[课程列表查询] 老师 " + nowTeacher->name + " 查询了课程列表。");
+                            Vector<int> lessons = nowTeacher->lessons;
+                            for(int j = 0; j < lessons.size(); j++) {
+                                Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]);
+                                resultParms.push_back(Parameter(nowLesson->Name(), false));
+                                resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(nowLesson->Place(), false));
+                                Vector<Duration> d = nowLesson->ClassDurations();
+                                String time;
+                                for(int k = 0; k < d.size(); k++) {
+                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                }
+                                resultParms.push_back(Parameter(time, false));
+                                resultParms.push_back(Parameter(nowLesson->QQ(), false));
+                                resultParms.push_back(Parameter(lessons[j]));// why not int?
+                                Vector<File*> files = nowLesson->Files();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int k = 0; k < files.size(); k++) {
+                                    resultParms.push_back(Parameter(files[k]->name, false));
+                                }
+                                Duration exam = nowLesson->ExamDuration();
+                                int b1 = exam.begin.Zip();
+                                resultParms.push_back(Parameter(b1));
+                                int e1 = exam.end.Zip();
+                                resultParms.push_back(Parameter(e1));
+                                resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
                         }
+                        
                         sendAll(i, resultParms, false);
                         break;
                     }
 
-                    case 0x0A : {
+                    case 0x0A : { // update
                         /*
                          * 检索课程
-                         * param: key
+                         * param: studentId key
                          * return: Vector<Lesson>
                          */
                         Vector<Parameter> resultParms;
-                        Vector<Lesson*> result = lessonGroup.FromName(parms[1].message);
-                        for(int j = 0; j < result.size(); j++) {
-                            Lesson *nowLesson = result[j];
-                            resultParms.push_back(Parameter(nowLesson->Name(), false));
-                            resultParms.push_back(Parameter(nowLesson->Teacher(), false));
-                            //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
-                            resultParms.push_back(Parameter(nowLesson->Place(), false));
-                            Vector<Duration> d = nowLesson->ClassDurations();
-                            String time;
-                            for(int k = 0; k < d.size(); k++) {
-                                time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[课程列表检索] 学生 " + nowStudent->name + " 检索了课程列表，关键词为 " + parms[3].message + " 。");
+                            Vector<Lesson*> result = nowStudent->events->FromLessonName(parms[3].message);
+                            for(int j = 0; j < result.size(); j++) {
+                                Lesson *nowLesson = result[j];
+                                resultParms.push_back(Parameter(nowLesson->Name(), false));
+                                resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(nowLesson->Place(), false));
+                                Vector<Duration> d = nowLesson->ClassDurations();
+                                String time;
+                                for(int k = 0; k < d.size(); k++) {
+                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                }
+                                resultParms.push_back(Parameter(time, false));
+                                resultParms.push_back(Parameter(nowLesson->QQ(), false));
+                                resultParms.push_back(Parameter(ToString(j), false));// why not int?
+                                Vector<File*> files = nowLesson->Files();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int k = 0; k < files.size(); k++) {
+                                    resultParms.push_back(Parameter(files[k]->name, false));
+                                }
+                                Duration exam = nowLesson->ExamDuration();
+                                int b1 = exam.begin.Zip();
+                                resultParms.push_back(Parameter(b1));
+                                int e1 = exam.end.Zip();
+                                resultParms.push_back(Parameter(e1));
+                                resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
-                            resultParms.push_back(Parameter(time, false));
-                            resultParms.push_back(Parameter(nowLesson->QQ(), false));
-                            resultParms.push_back(Parameter(ToString(j), false));// why not int?
-                            Vector<File*> files = nowLesson->Files();
-                            resultParms.push_back(Parameter(files.size()));
-                            for(int k = 0; k < files.size(); k++) {
-                                resultParms.push_back(Parameter(files[k]->name, false));
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[课程列表检索] 老师 " + nowTeacher->name + " 检索了课程列表，关键词为 " + parms[3].message + " 。");
+                            Vector<Lesson*> result = nowTeacher->FromLessonName(parms[3].message);
+                            for(int j = 0; j < result.size(); j++) {
+                                Lesson *nowLesson = result[j];
+                                resultParms.push_back(Parameter(nowLesson->Name(), false));
+                                resultParms.push_back(Parameter(nowLesson->Teacher(), false));
+                                //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
+                                resultParms.push_back(Parameter(nowLesson->Place(), false));
+                                Vector<Duration> d = nowLesson->ClassDurations();
+                                String time;
+                                for(int k = 0; k < d.size(); k++) {
+                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                }
+                                resultParms.push_back(Parameter(time, false));
+                                resultParms.push_back(Parameter(nowLesson->QQ(), false));
+                                resultParms.push_back(Parameter(ToString(j), false));// why not int?
+                                Vector<File*> files = nowLesson->Files();
+                                resultParms.push_back(Parameter(files.size()));
+                                for(int k = 0; k < files.size(); k++) {
+                                    resultParms.push_back(Parameter(files[k]->name, false));
+                                }
+                                Duration exam = nowLesson->ExamDuration();
+                                int b1 = exam.begin.Zip();
+                                resultParms.push_back(Parameter(b1));
+                                int e1 = exam.end.Zip();
+                                resultParms.push_back(Parameter(e1));
+                                resultParms.push_back(Parameter(nowLesson->ExamPlace(), false));
                             }
                         }
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        
                         sendAll(i, resultParms, false);
                         break;
                     }
 
                     case 0x0B : {//查询活动
                         Vector<Parameter> resultParms;
-                        Vector<int> activities = studentGroup.GetStudent(parms[1].number)->events->activities;
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        Log("[活动列表查询] 学生 " + nowStudent->name + " 查询了活动列表。");
+                        Vector<int> activities = nowStudent->events->activities;
                         //printf("activity phase");
                         for(int j = 0; j < activities.size(); j++) {
                             Activity* nowActivity = activityGroup.GetActivity(activities[j]);
@@ -415,14 +540,20 @@ void Server::run() {
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x0C : {//检索活动
+                    case 0x0C : {//检索活动 update
                         Vector<Parameter> resultParms;
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+
+                        Vector<String> modeString;
+                        modeString.push_back("活动名称");
+                        modeString.push_back("活动地点");
+                        modeString.push_back("活动时间");
+                        Log("[活动列表检索] 学生 " + nowStudent->name + " 检索了活动列表, 检索类型为 " + modeString[parms[2].number] + " 关键词为 " + parms[3].message);
+
                         int type = parms[2].number;
-                        printf("%d\n", type);
-                        printf("%s\n", parms[1].message.c_str());
                         switch(type) {
                             case 0: {//活动名称
-                                Vector<Activity*> result = activityGroup.FromName(parms[1].message);
+                                Vector<Activity*> result = activityGroup.FromName(parms[3].message);
                                 for(int j = 0; j < result.size(); j++) {
                                     resultParms.push_back(Parameter(result[j]->name, false));
                                     //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
@@ -436,7 +567,7 @@ void Server::run() {
                                 break;
                             }
                             case 1: {//活动地点
-                                Vector<Activity*> result = activityGroup.FromPlace(parms[1].message);
+                                Vector<Activity*> result = activityGroup.FromPlace(parms[3].message);
                                 for(int j = 0; j < result.size(); j++) {
                                     resultParms.push_back(Parameter(result[j]->name, false));
                                     //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
@@ -451,7 +582,7 @@ void Server::run() {
                                 break;
                             }
                             case 2: {//活动时间
-                                const char* time = parms[1].message.c_str();
+                                const char* time = parms[3].message.c_str();
                                 int index = 0;
                                 int beginHour = 0;
                                 int beginMin = 0;
@@ -495,6 +626,9 @@ void Server::run() {
                     }
                     case 0x0D : {//活动上传
                         Student* nowStudent = studentGroup.GetStudent(parms[5].number);
+
+                        Log("[活动添加] 学生 " + nowStudent->name + " 添加了活动。");
+
                         Vector<Student*> nowStudents;
                         nowStudents.push_back(nowStudent);
                         const char* time = parms[4].message.c_str();
@@ -541,27 +675,40 @@ void Server::run() {
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x0E : {// 活动文件上传
-                        int id = parms[1].number;
+                    case 0x0E : {// 活动文件上传 update
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+                        int id = parms[2].number;
                         Activity* nowActivity = activityGroup.GetActivity(id);
-                        String savePath = "Activity/" + ToString(id) + "/" + parms[2].message;
-                        String tmpHash = sha256(parms[3].message);
-                        File* file = new File(savePath, parms[2].message, tmpHash);
+                        String savePath = "Activity/" + ToString(id) + "/" + parms[3].message;
+                        String tmpHash = sha256(parms[4].message);
+                        File* file = new File(savePath, parms[3].message, tmpHash);
                         nowActivity->AddFile(file);
-                        WriteFile(savePath, parms[3].message);
+                        WriteFile(savePath, parms[4].message);
+
+                        Log("[活动文件上传] 学生 " + nowStudent->name + " 给活动 " + nowActivity->name + " 上传了文件。");
+
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, false);
                         break;
                     }
-                    case 0x0F : { // 课程文件上传
-                        int id = parms[1].number;
+                    case 0x0F : { // 课程文件上传 update
+                        int id = parms[3].number;
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "Lesson/" + ToString(id) +"/" + parms[2].message;
-                        String tmpHash = sha256(parms[3].message);
-                        File* file = new File(savePath, parms[2].message, tmpHash);
+                        String savePath = "Lesson/" + ToString(id) +"/" + parms[4].message;
+                        String tmpHash = sha256(parms[5].message);
+                        File* file = new File(savePath, parms[4].message, tmpHash);
                         nowLesson->AddFile(file);
-                        WriteFile(savePath, parms[3].message);
+                        WriteFile(savePath, parms[5].message);
+
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[课程文件上传] 学生 " + nowStudent->name + " 给课程 " + nowLesson->Name() + " 上传了文件。");
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[课程文件上传] 教师 " + nowTeacher->name + " 给课程 " + nowLesson->Name() + " 上传了文件。");
+                        }
+
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, false);
@@ -570,7 +717,7 @@ void Server::run() {
                     case 0x10 : { // 活动文件下载
 
                     }
-                    case 0x11 : { // 课程文件下载
+                    case 0x11 : { // 课程文件下载 log undone
                         printf("begin download\n");
                         Vector<Parameter> resultParms;
                         int id = parms[1].number;
@@ -581,7 +728,7 @@ void Server::run() {
                         if (studentID == 0) s2 = "0";
                         else s2 = ToString(studentID);
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "../Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        String savePath = "Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
                         FILE* file;
                         if((file = fopen(savePath.c_str(), "r")) == NULL) {
                             printf("file not found\n");
@@ -622,9 +769,11 @@ void Server::run() {
                         break;
                     }
                     case 0x13 : {// 待办列表
-                        printf("Send alarm lists\n");
                         Vector<Parameter> resultParms;
                         Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+
+                        Log("[闹钟查询] 学生 " + nowStudent->name + " 查询了闹钟列表。");
+
                         resultParms.push_back(Parameter(nowStudent->alarms.size()));
                         for(int j = 0; j < nowStudent->alarms.size(); j++) {
                             Alarm* nowAlarm = alarmGroup.FromId(nowStudent->alarms[j]);        
@@ -638,11 +787,13 @@ void Server::run() {
                         sendAll(i, resultParms, true);
                         break;
                     }
-                    case 0x14 : { // 修改闹钟
-                        printf("alarm modified\n");
-                        Alarm* nowAlarm = alarmGroup.FromId(parms[1].number);
+                    case 0x14 : { // 修改闹钟 update
+                        Student* nowStudent = studentGroup.GetStudent(parms[1].number);
+
+                        Log("[闹钟修改] 学生 " + nowStudent->name + " 修改了闹钟。");
+                        Alarm* nowAlarm = alarmGroup.FromId(parms[2].number);
                         timeHeap.Delete(nowAlarm->id);
-                        nowAlarm->updateMsg(UnzipTimer(parms[2].number), parms[3].number, parms[4].message, parms[5].message, parms[6].number);
+                        nowAlarm->updateMsg(UnzipTimer(parms[3].number), parms[4].number, parms[5].message, parms[6].message, parms[7].number);
                         if(nowAlarm->enabled = true) {
                             timeHeap.Push(ClockTimer(nowAlarm->GetNextTime(timeTracker.NowTimer()), nowAlarm->id));
                         }
@@ -652,7 +803,6 @@ void Server::run() {
                         break;
                     }
                     case 0x15 : { // 添加闹钟
-                        printf("alarm added\n");
                         Alarm* nowAlarm = new Alarm(
                             UnzipTimer(parms[1].number),
                             parms[2].number,
@@ -662,7 +812,11 @@ void Server::run() {
                             GenerateAlarmId(),
                             parms[6].number);
                         alarmGroup.AddAlarm(nowAlarm);
-                        studentGroup.GetStudent(parms[5].number)->AddAlarm(nowAlarm->id);
+                        Student* nowStudent = studentGroup.GetStudent(parms[5].number);
+                        nowStudent->AddAlarm(nowAlarm->id);
+
+                        Log("[闹钟添加] 学生 " + nowStudent->name + " 添加了闹钟。");
+
                         timeHeap.Push(ClockTimer(nowAlarm->GetNextTime(timeTracker.NowTimer()), nowAlarm->id));
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
@@ -674,7 +828,11 @@ void Server::run() {
                         Alarm* nowAlarm = alarmGroup.FromId(parms[1].number);
                         timeHeap.Delete(nowAlarm->id);
                         alarmGroup.DeleteAlarm(nowAlarm);
-                        studentGroup.GetStudent(nowAlarm->belongId)->DeleteAlarm(parms[1].number);
+                        Student* nowStudent = studentGroup.GetStudent(nowAlarm->belongId);
+                        nowStudent->DeleteAlarm(parms[1].number);
+
+                        Log("[闹钟删除] 学生 " + nowStudent->name + " 删除了闹钟。");
+
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
                         sendAll(i, resultParms, true);
@@ -691,9 +849,60 @@ void Server::run() {
                     }
                     case 0x18 : { // passwordupd
                         printf("password query!\n");
-                        studentGroup.GetStudent(parms[1].number)->password = parms[2].message;
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[密码更改] 学生 " + nowStudent->name + " 更改了密码。");
+                            nowStudent->password = parms[3].message;
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[密码更改] 老师 " + nowTeacher->name + " 更改了密码。");
+                            nowTeacher->password = parms[3].message;
+                        }
+                        
                         Vector<Parameter> resultParms;
                         resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x19 : {//change class info
+                        /*
+                         * @params1: classId
+                         * @params2: name
+                         * @params3: teacher
+                         * @params4: place
+                         * @params5: beginTime
+                         * @params6: endTime
+                         * @params7: qq
+                         * @params8: examBegin
+                         * @params9: examEnd
+                         * @params10: examPlace
+                         * todo change time how to deal with it
+                         */
+                        printf("exam changed\n");
+                        
+                        Lesson* nowClass = lessonGroup.GetLesson(parms[2].number);
+                        Timer classBeginTime = UnzipTimer(parms[6].number);
+                        Timer classEndTime = UnzipTimer(parms[7].number);
+                        Vector<Duration> classTime;
+                        classTime.push_back(Duration(classBeginTime, classEndTime));
+                        Timer beginTime = UnzipTimer(parms[9].number);
+                        Timer endTime = UnzipTimer(parms[10].number);
+                        Duration dura(beginTime, endTime);
+                        nowClass->updateInfo(parms[3].message, parms[4].message, parms[5].message, classTime, parms[8].message, dura, parms[11].message);
+                        
+                        Teacher* nowTeacher = teacherGroup.GetTeacher(parms[1].number);
+                        Log("[修改课程信息] 教师 " + nowTeacher->name + " 修改了课程 " + nowClass->Name() + " 的课程信息。");
+                        
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x1A : { // teacherinfoquery
+                        Teacher* nowTeacher = teacherGroup.GetTeacher(parms[1].number);
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(nowTeacher->name, false));
+                        resultParms.push_back(Parameter(nowTeacher->teacherNumber, false));
                         sendAll(i, resultParms, true);
                         break;
                     }

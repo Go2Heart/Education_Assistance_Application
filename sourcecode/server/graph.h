@@ -117,6 +117,7 @@ public:
 	}
 	void UpdGraph(Timer t);
 	void Init();
+	Point GetPoint(int id) { return p[id]; }
 };
 
 struct DisStruct {

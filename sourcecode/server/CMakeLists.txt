@@ -23,6 +23,7 @@ add_executable(test
         global.h
         graph.cpp
         graph.h
+        identity.cpp
         identity.h
         main.cpp
         server.cpp

@@ -41,8 +41,10 @@ public:
     Vector<Homework_Student*> FromHomeworkName(String name) { return nameSort.Find(name); }
 };
 
+class Lesson;
 class EventGroup {
     RbTree<int, Lesson_Student*> idSort;
+    RbTree<String, Lesson*> lessonNameSort;
 public:
     Vector<Lesson_Student*> lessons;
     Vector<int> activities;
@@ -62,6 +64,7 @@ public:
         return nullptr;
         */
     }
+    Vector<Lesson*> FromLessonName(String name) { return lessonNameSort.Find(name); }
 };
 
 #endif

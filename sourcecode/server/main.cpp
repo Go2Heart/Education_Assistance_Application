@@ -42,6 +42,17 @@ void InitStudent() {
 	fclose(in);
 }
 
+void InitTeacher() {
+	FILE *in = fopen("/root/trans_test/new_version/Education_Assistance_Application/sourcecode/server/default_settings/teacher.in", "r");//fopen("default_settings/student.in", "r");
+	int n;
+	fscanf(in, "%d", &n);
+	for(int i = 1; i <= n; i++) {
+		String teacherNumber = GetStr(in), name = GetStr(in), password = GetStr(in);
+		teacherGroup.AddTeacher(new Teacher(teacherNumber, name, password));
+	}
+	fclose(in);
+}
+
 void InitTime() {
 	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/time.in", "r");
 	fscanf(in, "%d", &timeN);
@@ -84,6 +95,7 @@ void InitLesson() {
 		tmpLesson->lessonId = lessonId;
 		for(int j = 0; j < m; j++)
 			tmpStudents[j]->events->AddLesson(lessonId);
+		teacherGroup.FromName(teacher)->AddLesson(lessonId);
 	}
 	fclose(in);
 }
@@ -183,6 +195,7 @@ int main() {
 	InitTime();
 	puts("phase 1 finished.");
 	InitStudent();
+	InitTeacher();
 	puts("phase 2 finished.");
 	InitLesson();
 	puts("phase 3 finished.");

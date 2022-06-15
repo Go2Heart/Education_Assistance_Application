@@ -5,11 +5,10 @@
 #include <QFileDialog>
 #include "classpage.h"
 #include "loginpage.h"
-#include "global.h"
 
 classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
-    QWidget(parent),
-    classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
+        QWidget(parent),
+        classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
 {
     this->info = info;
     id = info[5];
@@ -57,16 +56,20 @@ void classInfoWidget::mouseReleaseEvent(QMouseEvent *) {
     emit clicked();
 }
 
+
 void classInfoWidget::resizeEvent(QResizeEvent *event) {
     infoWidget->resize(this->width() - classType->width() - 2 * margin - spacing, this->height() - 2 * margin);
     infoWidget->move(margin, margin);
     classType->move(this->width() - classType->width() - margin, this->height() / 2 - classType->height() / 2);
 }
 
+
+
+
 classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* parent) :
-    QWidget(parent),
-    maxHeight(h),
-    slideParent(p)
+        QWidget(parent),
+        maxHeight(h),
+        slideParent(p)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     //setFixedHeight(maxHeight - titleHeight + overlap);
@@ -84,6 +87,8 @@ classListWidget::classListWidget(QString name, int h, QWidget* p, QWidget* paren
         connect(extraIcons[i], &bigIconButton::clicked, this, [=] {emit clicked(i);});
     }
     container = new ScrollAreaCustom(false, this);
+
+
 }
 
 void classListWidget::resizeEvent(QResizeEvent*){
@@ -168,7 +173,7 @@ ClassPage::ClassPage(QWidget* parent):
     selections->setFixedWidth(100);
     selections->addItems(selectList);
     textInputItem* classSearch = new textInputItem("课程", searchBar);
-    bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
+    bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
     searchClass->setFixedSize(30, 30);
 
     searchLayout->addWidget(classSearch);
@@ -323,7 +328,7 @@ ClassPage::ClassPage(QWidget* parent):
             info.push_back(classResult[i]->place);
             info.push_back(classResult[i]->time);
             info.push_back(classResult[i]->QQ);
-            info.push_back(QString::asprintf("%d", classResult[i]->id));
+            info.push_back(classResult[i]->id);
             info.push_back(QString::number(classResult[i]->fileNames.size()));
             for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                 info.push_back(classResult[i]->fileNames[j]);
@@ -356,7 +361,7 @@ ClassPage::ClassPage(QWidget* parent):
                     info.push_back(classResult[i]->place);
                     info.push_back(classResult[i]->time);
                     info.push_back(classResult[i]->QQ);
-                    info.push_back(QString::asprintf("%d", classResult[i]->id));
+                    info.push_back(classResult[i]->id);
                     info.push_back(QString::number(classResult[i]->fileNames.size()));
                     for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                         info.push_back(classResult[i]->fileNames[j]);
@@ -388,7 +393,7 @@ ClassPage::ClassPage(QWidget* parent):
                 info.push_back(classResult[i]->place);
                 info.push_back(classResult[i]->time);
                 info.push_back(classResult[i]->QQ);
-                info.push_back(QString::asprintf("%d", classResult[i]->id));
+                info.push_back(classResult[i]->id);
                 info.push_back(QString::number(classResult[i]->fileNames.size()));
                 for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                     info.push_back(classResult[i]->fileNames[j]);
@@ -591,7 +596,7 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
         searchLayout->setAlignment(Qt::AlignLeft);
         textInputItem* search = new textInputItem("搜索作业", searchBar);
         search->setStyleSheet("background-color:rgb(255,255,255);");
-        bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
+        bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
         searchButton->setFixedSize(30, 30);
         searchButton->setStyleSheet("background-color:rgb(255,255,255);");
         searchLayout->addWidget(search);
