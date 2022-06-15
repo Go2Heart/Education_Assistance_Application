@@ -98,7 +98,7 @@ void MyCanvas::Init(){
 
     modeLayout->addWidget(chooseMode);
 
-    bigIconButton *modeBtn = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, upper);
+    bigIconButton *modeBtn = new bigIconButton(1, ":/icons/icons/add.svg", "", "", 0, 15, upper);
     modeBtn->setFixedSize(30, 30);
     modeLayout->addWidget(modeBtn);
     //QWidget *lowerSplitter2 = new QWidget(lower);
@@ -154,7 +154,7 @@ void MyCanvas::Init(){
     //lower3->resize(30, 40);
     lowerLayout3->setAlignment(Qt::AlignRight | Qt::AlignBottom);
     lowerLayout3->setContentsMargins(11, 10, 0, 11);
-    bigIconButton *goIcon = new bigIconButton(1, ":/icons/icons/find-path.svg", "", 25, lower3);
+    bigIconButton *goIcon = new bigIconButton(1, ":/icons/icons/find-path.svg", "", "", 0, 25, lower3);
     lowerLayout3->addWidget(goIcon);
     goIcon->setFixedSize(50, 50);
 

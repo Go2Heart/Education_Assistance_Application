@@ -145,6 +145,7 @@ signals:
     void deliver(QVector<std::string> msg);
 };
 
+class activityListWidget;
 class ActivityPage : public QWidget{
 Q_OBJECT
 private:
@@ -156,12 +157,14 @@ private:
     QVector<SlidePage*> pageList;
     activityInfoWidget* activityInfo = nullptr;
     activityDetailWidget* activityDtl = nullptr;
+    activityListWidget* activityList = nullptr;
     activityFileDeliver* fileDlvr = nullptr;
     ActivitySearch* search;
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
     ActivityPage(QWidget* parent = nullptr);
+    void LoadInfo();
 };
 
 

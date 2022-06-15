@@ -12,23 +12,18 @@
 #include "guidepage.h"
 #include "classpage.h"
 #include "clock.h"
+#include "teacherpage.h"
 
-class toDo : public QWidget {
-Q_OBJECT
-private:
-    QString description;
-    QString place;
-    Timer* clockTime;
-    bool alarm;
-    enum frequenceType{once, weekly, monthly} frequency;
+class UserInfoWidget : public QWidget { // 用户名片widget类
+    Q_OBJECT
 public:
-    toDo(QString desc, QString place, Timer* time, bool alarm, int freq, QWidget* parent = nullptr);
-    Timer getTime() {return *clockTime;}
-    QString getPlace() {return place;}
-    QString getDescription() {return description;}
-    bool getAlarm() {return alarm;}
-    int getFrequency() {return frequency;}
-    void setAlarm(bool x) {alarm = x;}
+    UserInfoWidget(QWidget* parent = nullptr);
+};
+
+class TeacherInfoWidget : public QWidget { // 用户名片widget类
+    Q_OBJECT
+public:
+    TeacherInfoWidget(QWidget* parent = nullptr);
 };
 
 class clockAddPage : public SlidePage {
@@ -43,16 +38,18 @@ private:
     ComboBox*  hour;
     ComboBox* minute;
     QWidget* clockBar;
+    bigIconButton* alarmBtn;
+    textButton* createBtn;
     ComboBox* frequency;
     bool alarm = true;
-    bool created = false;
-    QVector<QString> collectMsg();
-
+    bool created = true;
+    int nowid;
 public:
-    clockAddPage(int radius, int type, int width, int height, QString name, QVector<toDo*>* toDoList,QWidget *parent = nullptr, int posy = 0);
+    clockAddPage(int radius, int type, int width, int height, QString name, QWidget *parent = nullptr, int posy = 0);
+    void clear();
+    void LoadFromData(int id, QString desc, QString place, Timer x, int frequency, bool alarm);
 signals:
-    void deliver(QVector<QString> msg);
-    void modify(QVector<QString> msg);
+    void msgDeliver();
 };
 
 class clockInfoWidget : public QWidget {
@@ -69,7 +66,6 @@ private:
     void resizeEvent(QResizeEvent*);
 public:
     clockInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
-    void modify(QVector<QString> info);
 signals:
     void clicked();
 };
@@ -91,9 +87,6 @@ private:
     void resizeEvent(QResizeEvent*);
 public:
     clockWidget(QVector<QString> info, QWidget* parent = nullptr);
-    void modify(QVector<QString> info) {
-        infoWidget->modify(info);
-    }
 signals:
     void clicked();
 };
@@ -102,9 +95,10 @@ class clockfoldWidget : public foldWidget {
     Q_OBJECT
 private:
     QWidget* slideParent;
-    QVector<clockAddPage*> pageList;
 public:
-    clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QVector<toDo*>* toDoList, QWidget* parent = nullptr);
+    clockAddPage* modifyPage;
+    clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent = nullptr);
+    void reloadInfo();
 signals:
     void addPage(clockAddPage*);
 };
@@ -118,34 +112,49 @@ private:
     QTimer* clickpressTimer;
     QTimer* clickreleaseTimer;
     SlidePage* userInfo;
+    UserInfoWidget* userDetail = nullptr;
+    TeacherInfoWidget* teacherDetail = nullptr;
     ActivityPage* activityPage;
+    TeacherPage* teacherPage;
+
     Clock* clock = nullptr;
     ScrollAreaCustom* infoContainer = nullptr;
+    clockfoldWidget* clockWidget = nullptr;
     QVector<SlidePage*> slidePageList;
     QVector<clockAddPage*> clockPageList;
-    QVector<toDo*> toDoList;
-    QVector<QLabel*> eventList;
+
     GuidePage* guidePage  = nullptr;
     ClassPage* classPage = nullptr;
     int cornerRadius = 12;
     bool stateChanged = false;
     int currentPage = 0;
+
+    int lastUserType;
+    QVBoxLayout* toolLayout;
+    bigIconButton* userBtn;
+    bigIconButton* classBtn;
+    bigIconButton* activityBtn;
+    bigIconButton* guideBtn;
+    bigIconButton* logoutBtn;
+
     void hideCurrentPage();
     void showNewPage(QWidget* w);
     void resizeEvent(QResizeEvent*);
 public:
     enum PageType {
-        MAIN = 0, CLASS = 1, ACTIVITY = 2, GUIDE = 3
+        MAIN = 0, CLASS = 1, ACTIVITY = 2, GUIDE = 3, TEACHERPAGE = 4
     };
     mainPage(QWidget* parent = nullptr);
+    void LoadInfo();
+    void LoadTriggerInfo();
     void raisePage() {
         displayWidget->raise();
         clickpressTimer->start(1000);
     }
+signals:
+    void getInfo();
+    void logined();
+    void logout();
 };
-
-extern int type;
-extern int studentId;
-extern int teacherId;
 
 #endif // MAINPAGE_H

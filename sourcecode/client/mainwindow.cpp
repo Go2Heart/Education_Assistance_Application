@@ -63,18 +63,25 @@ void MainWindow::Init() {
     ui->mainLayout->addWidget(loginpage);
     loginpage->show();
 
+    mainpage = new mainPage(ui->mainWidget);
+    mainpage->hide();
+
     //mainpage->setGraphicsEffect(0);
     //ui->mainLayout->addWidget(mainpage);
     //mainpage->show();
     //mainpage->raisePage();
-    connect(loginpage,
-        &loginPage::logined,
-        [=] {
-            mainpage = new mainPage(ui->mainWidget);
-            ui->mainLayout->removeWidget(loginpage);
-            loginpage->hide();
-            ui->mainLayout->addWidget(mainpage);
-            mainpage->show();
+    connect(loginpage, &loginPage::logined, this, [=] {
+        ui->mainLayout->removeWidget(loginpage);
+        loginpage->hide();
+        ui->mainLayout->addWidget(mainpage);
+        emit mainpage->logined();
+        mainpage->show();
+    });
+    connect(mainpage, &mainPage::logout, this, [=] {
+        ui->mainLayout->removeWidget(mainpage);
+        mainpage->hide();
+        ui->mainLayout->addWidget(loginpage);
+        loginpage->show();
     });
 }
 void MainWindow::mousePressEvent(QMouseEvent *event) {

@@ -1,8 +1,9 @@
 #include "activitypage.h"
 #include "loginpage.h"
+#include "global.h"
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
-        QWidget(parent),
-        activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", 0, this))
+    QWidget(parent),
+    activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
 {
     this->info = info;
     id = info[4];
@@ -71,15 +72,15 @@ activityAddPage::activityAddPage(int radius, int type, int width, int height, QS
     activityLayout->setSpacing(10);
     activityLayout->setContentsMargins(0, 0, 0, 0);
 
-    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, activityBar);
+    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
     alarmOn->setFixedSize(30, 30);
     activityLayout->addWidget(alarmOn);
-    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", 0, activityBar);
+    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
     alarmOff->setFixedSize(30, 30);
     frequency = new textInputItem("频率：", activityBar);
     activityLayout->addWidget(frequency);
 
-    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", 0, activityBar);
+    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
     TypeBtn->setFixedSize(30, 30);
     activityLayout->addWidget(TypeBtn);
     connect(TypeBtn, &bigIconButton::clicked, this, [=] {
@@ -139,9 +140,9 @@ QVector<QString> activityAddPage::collectMsg() {
 }
 
 activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent) :
-        QWidget(parent),
-        extraIcons(icons),
-        slideParent(p)
+    QWidget(parent),
+    extraIcons(icons),
+    slideParent(p)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding );
 //    setStyleSheet("Height:540");
@@ -391,7 +392,7 @@ ActivityPage::ActivityPage(QWidget* parent):
 //                        selections->setStyleSheet("border-radius: 3");
     selections->addItems(selectList);
     textInputItem* activitySearch = new textInputItem("活动", searchBar);
-    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", 6, searchBar);
+    bigIconButton* searchActivity = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
     searchActivity->setFixedSize(30,30);
 
     /*TODO connect */
@@ -480,7 +481,7 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     /*end of detail layout*/
 
-    activityListWidget* activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
+    activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
     connect(activityList, &activityListWidget::addPage, this, [=](activityAddPage* page){
         pageList.push_back(page);
     });
@@ -504,7 +505,7 @@ ActivityPage::ActivityPage(QWidget* parent):
     itemLayout->addWidget(eventWidget);
     itemLayout->addWidget(detailWidget);
     mainLayout->addWidget(itemWidget);
-    ActivityQuery* query = new ActivityQuery(studentId);
+
     connect(activityList, &activityListWidget::newActivity, this, [=](activityWidget* activityWidget) {
         QVector<QString> info = activityWidget->getInfo();
         //activityUpload* upload = new activityUpload(info, studentId);
@@ -512,32 +513,6 @@ ActivityPage::ActivityPage(QWidget* parent):
     });
 
     /*Detail Widget*/
-
-
-
-    connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
-        QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
-        for(int i = 0; i < activityResult.size(); i++){
-            QVector<QString> info;
-            info.push_back(activityResult[i]->name);
-            info.push_back(activityResult[i]->name);
-            info.push_back(activityResult[i]->place);
-            info.push_back(activityResult[i]->time);
-            info.push_back(activityResult[i]->id);
-            info.push_back("true");
-            info.push_back("true");
-            info.push_back("1");
-
-            //info.push_back
-            activityWidget* newWidget = new activityWidget(info, this);
-            activityList->addContent(newWidget);
-            connect(newWidget, &activityWidget::clicked, this, [=](){
-                activityDtl->showDetail(newWidget->getInfo());
-                activityDtl->setActivity(newWidget);
-                fileDlvr->setActivity(newWidget);
-            });
-        }
-    });
     connect(searchActivity, &bigIconButton::clicked, this, [=] {
         search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
         connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
@@ -549,7 +524,7 @@ ActivityPage::ActivityPage(QWidget* parent):
                 info.push_back(activityResult[i]->name);
                 info.push_back(activityResult[i]->place);
                 info.push_back(activityResult[i]->time);
-                info.push_back(activityResult[i]->id);
+                info.push_back(QString::asprintf("%d", activityResult[i]->id));
                 info.push_back("true");
                 info.push_back("true");
                 info.push_back("1");
@@ -573,4 +548,31 @@ void ActivityPage::resizeEvent(QResizeEvent*) {
         pageList[i]->resize(pageList[i]->width() - 1, pageList[i]->Type() == SlidePage::EXPANDING ? itemWidget->height() : pageList[i]->height());
         pageList[i]->resize(pageList[i]->width() + 1, pageList[i]->height());
     }
+}
+
+void ActivityPage::LoadInfo() {
+    ActivityQuery* query = new ActivityQuery(studentId);
+    connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
+        QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+        for(int i = 0; i < activityResult.size(); i++){
+            QVector<QString> info;
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->name);
+            info.push_back(activityResult[i]->place);
+            info.push_back(activityResult[i]->time);
+            info.push_back(QString::asprintf("%d", activityResult[i]->id));
+            info.push_back("true");
+            info.push_back("true");
+            info.push_back("1");
+
+            //info.push_back
+            activityWidget* newWidget = new activityWidget(info, this);
+            activityList->addContent(newWidget);
+            connect(newWidget, &activityWidget::clicked, this, [=](){
+                activityDtl->showDetail(newWidget->getInfo());
+                activityDtl->setActivity(newWidget);
+                fileDlvr->setActivity(newWidget);
+            });
+        }
+    });
 }

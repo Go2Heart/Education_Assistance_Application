@@ -24,7 +24,8 @@ SOURCES += \
     mainpage.cpp \
     mainwindow.cpp \
     mycanvas.cpp \
-    slidepage.cpp
+    slidepage.cpp \
+    teacherpage.cpp
 
 HEADERS += \
     activitypage.h \
@@ -34,6 +35,7 @@ HEADERS += \
     connect.h \
     customScrollContainer.h \
     customWidgets.h \
+    global.h \
     graph_implement.h \
     graph_view.h \
     guidepage.h \
@@ -41,7 +43,8 @@ HEADERS += \
     mainpage.h \
     mainwindow.h \
     mycanvas.h \
-    slidepage.h
+    slidepage.h \
+    teacherpage.h
 
 FORMS += \
     mainwindow.ui

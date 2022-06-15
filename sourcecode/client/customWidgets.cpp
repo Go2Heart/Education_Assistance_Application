@@ -427,7 +427,7 @@ void horizontalValueAdjuster::setValue(qreal value){
 
 //*****************
 
-bigIconButton::bigIconButton(int type, const QString &iconPath, const QString &description, int radius, QWidget *parent) :
+bigIconButton::bigIconButton(int type, const QString &iconPath, const QString &description, const QString &fontstyle, int fontsize, int radius, QWidget *parent) :
     buttonType(type),
     QWidget(parent),
     cornerRadius(radius)
@@ -449,7 +449,7 @@ bigIconButton::bigIconButton(int type, const QString &iconPath, const QString &d
         layout->addWidget(icon);
     }
     if(type & TEXT) {
-        QFont textFont = QFont("Corbel", 10);
+        QFont textFont = QFont(fontstyle, fontsize);
         QFontMetrics fm(textFont);
         text = new QLabel(this);
         text->setFont(textFont);
@@ -471,7 +471,7 @@ bigIconButton::bigIconButton(int type, const QString &iconPath, const QString &d
     bgWidget->show();
 }
 
-void bigIconButton::resizeEvent(QResizeEvent *event){
+void bigIconButton::resizeEvent(QResizeEvent*){
     //qDebug()<<width()<<height();
     if(buttonType & ICON) {
         scale = 1.0 * (width() - margin) / iconImg->width();
@@ -480,20 +480,20 @@ void bigIconButton::resizeEvent(QResizeEvent *event){
     bgWidget->setFixedSize(this->size());
 }
 
-void bigIconButton::enterEvent(QEvent *event){
+void bigIconButton::enterEvent(QEvent*){
     bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : hoverColor));
 }
 
-void bigIconButton::leaveEvent(QEvent *event){
+void bigIconButton::leaveEvent(QEvent*){
     bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : defaultColor));
 }
 
-void bigIconButton::mousePressEvent(QMouseEvent *event){
+void bigIconButton::mousePressEvent(QMouseEvent*){
     bgWidget->setStyleSheet(radiusStyle + "background-color:" + ((buttonType & DISABLE) ? noColor : pressColor));
     mousePressed = true;
 }
 
-void bigIconButton::mouseReleaseEvent(QMouseEvent *event){
+void bigIconButton::mouseReleaseEvent(QMouseEvent*){
     if(mousePressed){
         bgWidget->setStyleSheet(radiusStyle + "background-color:#0a0078D4");
         mousePressed = false;
@@ -792,8 +792,151 @@ void textButton::mouseReleaseEvent(QMouseEvent *event){
         emit clicked();
     }
 }
-singleSelectGroupVertical::singleSelectGroupVertical(QString name, QWidget *parent) :
+
+selectionItemVertical::selectionItemVertical(QString name, QWidget *parent) :
     QWidget(parent){
+    /* set labels */
+    QFont titleFont = QFont("Corbel", 13);
+    QFontMetrics fm(titleFont);
+    qreal height = fm.lineSpacing();
+    title = new QLabel(this);
+    title->setText(name);
+    title->setFont(titleFont);
+    title->setFixedHeight(height);
+    title->setStyleSheet("color:#2c2c2c");
+    title->setAlignment(Qt::AlignLeft | Qt::AlignBottom);
+    title->setFixedWidth(QFontMetrics(title->font()).size(Qt::TextSingleLine, title->text()).width());
+    indicator = new QWidget(this);
+    setFixedWidth(title->height() + 10);
+    indicator->resize(6, 0.4 * this->height());
+    indicator->move(4, 0.3 * this->height());
+    indicator->setStyleSheet("border-radius:3px;background-color:#0078D4");
+    opac = new QGraphicsOpacityEffect(indicator);
+    opac->setOpacity(0);
+    indicator->setGraphicsEffect(opac);
+    this->setFixedWidth(20 + title->width() + margin);
+    title->move(20, 5);
+    /* set background widget */
+    bgWidget = new QWidget(this);
+    bgWidget->resize(this->size());
+    bgWidget->setStyleSheet("border-radius:5px;background-color:#00000000");
+    bgWidget->lower();
+    bgWidget->show();
+
+    this->setMouseTracking(true);
+}
+
+void selectionItemVertical::enterEvent(QEvent*){
+    bgWidget->setStyleSheet("border-radius:5px;background-color:#0a000000");
+    QParallelAnimationGroup *enter = new QParallelAnimationGroup(this);
+    QPropertyAnimation *longer = new QPropertyAnimation(indicator, "geometry", this);
+    longer->setStartValue(indicator->geometry());
+    longer->setEndValue(QRectF(4, 0.25 * this->height(), 6, this->height() * 0.5));
+    longer->setDuration(150);
+    longer->setEasingCurve(QEasingCurve::OutBack);
+    QPropertyAnimation *fadeIn = new QPropertyAnimation(opac, "opacity", this);
+    fadeIn->setStartValue(opac->opacity());
+    fadeIn->setEndValue(0.99);
+    fadeIn->setDuration(100);
+    enter->addAnimation(longer);
+    enter->addAnimation(fadeIn);
+    enter->start();
+}
+
+void selectionItemVertical::leaveEvent(QEvent*){
+    bgWidget->setStyleSheet("border-radius:5px;background-color:#00000000");
+    QParallelAnimationGroup *leave = new QParallelAnimationGroup(this);
+    QPropertyAnimation *shorter = new QPropertyAnimation(indicator, "geometry", this);
+    shorter->setStartValue(indicator->geometry());
+    shorter->setEndValue(QRectF(4, 0.3 * this->height(), 6, this->height() * 0.4));
+    shorter->setDuration(150);
+    shorter->setEasingCurve(QEasingCurve::OutBack);
+    QPropertyAnimation *fadeOut = new QPropertyAnimation(opac, "opacity", this);
+    fadeOut->setStartValue(opac->opacity());
+    fadeOut->setEndValue(onSelected ? 0.99 : 0);
+    fadeOut->setDuration(100);
+    leave->addAnimation(shorter);
+    leave->addAnimation(fadeOut);
+    leave->start();
+
+    if(mousePressed)
+        mousePressed = false;
+}
+
+void selectionItemVertical::mousePressEvent(QMouseEvent*){
+    bgWidget->setStyleSheet("border-radius:5px;background-color:#1a000000");
+    QPropertyAnimation *shorter = new QPropertyAnimation(indicator, "geometry", this);
+    shorter->setStartValue(indicator->geometry());
+    shorter->setEndValue(QRectF(4, 0.4 * this->height(), 6, this->height() * 0.2));
+    shorter->setDuration(100);
+    shorter->setEasingCurve(QEasingCurve::OutBack);
+    shorter->start();
+
+    mousePressed = true;
+}
+
+void selectionItemVertical::mouseReleaseEvent(QMouseEvent*){
+    if(mousePressed){
+        bgWidget->setStyleSheet("border-radius:5px;background-color:#0a000000");
+        QPropertyAnimation *longer = new QPropertyAnimation(indicator, "geometry", this);
+        longer->setStartValue(indicator->geometry());
+        longer->setEndValue(QRectF(4, 0.25 * this->height(), 6, this->height() * 0.5));
+        longer->setDuration(150);
+        longer->setEasingCurve(QEasingCurve::OutBack);
+        longer->start();
+
+        if(!onSelected){
+            onSelected = true;
+            title->setStyleSheet("color:#005FB8");
+            emit selected(this);
+            setFocus();
+        }
+        mousePressed = false;
+    }
+}
+
+void selectionItemVertical::resizeEvent(QResizeEvent*){
+    bgWidget->resize(this->size());
+}
+
+void selectionItemVertical::Select() {
+    if(!onSelected){
+        onSelected = true;
+        title->setStyleSheet("color:#005FB8");
+        indicator->setGeometry(4, 0.5 * this->height(), 6, 0);
+        QParallelAnimationGroup *sel = new QParallelAnimationGroup(this);
+        QPropertyAnimation *longer = new QPropertyAnimation(indicator, "geometry", this);
+        longer->setStartValue(indicator->geometry());
+        longer->setEndValue(QRectF(4, 0.3 * this->height(), 6, this->height() * 0.4));
+        longer->setDuration(150);
+        longer->setEasingCurve(QEasingCurve::OutBack);
+        QPropertyAnimation *fadeIn = new QPropertyAnimation(opac, "opacity", this);
+        fadeIn->setStartValue(opac->opacity());
+        fadeIn->setEndValue(0.99);
+        fadeIn->setDuration(100);
+        sel->addAnimation(longer);
+        sel->addAnimation(fadeIn);
+        sel->start();
+        emit selected(this);
+    }
+}
+
+void selectionItemVertical::Deselect(){
+    if(onSelected){
+        onSelected = false;
+        title->setStyleSheet("color:#2c2c2c");
+        QPropertyAnimation *fadeOut = new QPropertyAnimation(opac, "opacity", this);
+        fadeOut->setStartValue(opac->opacity());
+        fadeOut->setEndValue(0);
+        fadeOut->setDuration(100);
+        fadeOut->start();
+    }
+}
+
+singleSelectGroupVertical::singleSelectGroupVertical(QString name, QWidget *parent) :
+    QWidget(parent)
+{
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     QFont titleFont = QFont("Corbel", 16);
     QFontMetrics fm(titleFont);
     qreal height = fm.lineSpacing();
@@ -801,16 +944,16 @@ singleSelectGroupVertical::singleSelectGroupVertical(QString name, QWidget *pare
     groupName->setMinimumHeight(height);
     groupName->setFont(titleFont);
     groupName->setText(name);
-
-    this->setFixedWidth(groupName->width() + middleSpacing + 1);
-
+    groupName->setFixedWidth(QFontMetrics(groupName->font()).size(Qt::TextSingleLine, groupName->text()).width());
+    this->setFixedWidth(groupName->width() + middleSpacing + 20);
     mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(10, 0, 10, 0);
     mainLayout->setSpacing(middleSpacing);
     mainLayout->addWidget(groupName);
+    mainLayout->setAlignment(Qt::AlignCenter);
 }
 
-void singleSelectGroupVertical::AddItem(selectionItem *item){
+void singleSelectGroupVertical::AddItem(selectionItemVertical *item) {
     selections.push_back(item);
     this->setFixedWidth(this->width() + middleSpacing + item->width());
     mainLayout->addWidget(item);
@@ -818,11 +961,11 @@ void singleSelectGroupVertical::AddItem(selectionItem *item){
         item->Select();
         selectedID = 0;
     }
-    connect(item, SIGNAL(selected(selectionItem*)), this, SLOT(changeSelection(selectionItem*)));
+    connect(item, SIGNAL(selected(selectionItemVertical*)), this, SLOT(changeSelection(selectionItemVertical*)));
     emit itemChange();
 }
 
-void singleSelectGroupVertical::RemoveItem(selectionItem *item){
+void singleSelectGroupVertical::RemoveItem(selectionItemVertical *item) {
     int id = selections.indexOf(item);
     if(id < 0)  return;
     selections.erase(selections.begin() + id);
@@ -840,12 +983,12 @@ void singleSelectGroupVertical::RemoveItem(selectionItem *item){
     emit itemChange();
 }
 
-void singleSelectGroupVertical::SetSelection(selectionItem *item){
+void singleSelectGroupVertical::SetSelection(selectionItemVertical* item) {
     int id = selections.indexOf(item);
     selections[id]->Select();
 }
 
-void singleSelectGroupVertical::changeSelection(selectionItem *item){
+void singleSelectGroupVertical::changeSelection(selectionItemVertical* item) {
     int id = selections.indexOf(item);
     for(int i = 0; i < selections.size(); i++){
         if(i == id) continue;
@@ -1105,15 +1248,16 @@ void customWidget::leaveEvent(QEvent *event){
     bgWidget->setStyleSheet("border:transparent;border-radius:5px;background-color:#00000000");
 }
 
-textItem::textItem(QString text, QWidget* parent) :
+textItem::textItem(QString text, QString fontstyle, int fontsize, QWidget* parent, QString style) :
     QLabel(parent)
 {
-    QFont font = QFont("Corbel", 13);
+    font = QFont(fontstyle, fontsize);
     QFontMetrics fm(font);
+    font.setStyleStrategy(QFont::PreferAntialias);
     qreal height = fm.lineSpacing();
     setText(text);
     setFont(font);
-    setMinimumHeight(height);
-    setStyleSheet("color:#2c2c2c");
+    setFixedSize(fm.size(Qt::TextSingleLine, this->text()).width() + 3, height);
+    setStyleSheet(style);
     setAlignment(Qt::AlignCenter);
 }

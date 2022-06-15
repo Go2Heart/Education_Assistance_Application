@@ -4,12 +4,8 @@
 #include <QDebug>
 
 class Timer {
-private:
-    int week = 0, day = 0, hour = 0, minute = 0;
 public:
-    /*enum {
-        Mon = 1, Tue = 2, Wed = 3, Thu = 4, Fri = 5, Sat = 6, Sun = 7
-    };*/
+    int week = 0, day = 0, hour = 0, minute = 0;
     Timer(int hour, int minute, int day = 0, int week = 0) :
         week(week),
         day(day),
@@ -29,35 +25,21 @@ public:
     friend Timer operator - (Timer a, Timer b) {
         return Timer(a.hour - b.hour - (a.minute < b.minute), (a.minute + 60 - b.minute) % 60);
     }
-    int Week() { return week; }
-    int Day() { return day; }
-    int Hour() { return hour; }
-    int Min() { return minute; }
     int Zip() {
         return week * (1 << 24) + day * (1 << 16) + hour * (1 << 8) + minute;
     }
-    void FromZip(int x) {
-        minute = x % 256;
-        x >>= 8;
-        hour = x % 256;
-        x >>= 8;
-        day = x % 256;
-        x >>= 8;
-        week = x % 256;
-    }
+    QString ToString() { return QString::asprintf("%02d: %02d", hour, minute); }
     void Print() {
         qDebug() << week << day << hour << minute;
     }
 
 };
 
-extern Timer ToTimer(int x);
-extern int ToInt(Timer x);
+extern Timer UnzipTimer(int x);
 
 class Duration {
-private:
-    Timer begin, end;
 public:
+    Timer begin, end;
     Duration(Timer begin, Timer end) :
         begin(begin),
         end(end)
@@ -67,7 +49,5 @@ public:
         end(Timer(0, 0))
     {}
     bool cross(Duration duration);
-    Timer Begin() { return begin; }
-    Timer End() { return end; }
 };
 #endif // BASICCLASS_H

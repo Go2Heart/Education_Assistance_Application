@@ -27,8 +27,4 @@ public:
 signals:
     void logined();
 };
-
-extern int type;
-extern int studentId;
-extern int teacherId;
 #endif // LOGINPAGE_H

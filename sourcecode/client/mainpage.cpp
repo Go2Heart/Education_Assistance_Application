@@ -1,10 +1,118 @@
 #include "mainpage.h"
+#include "global.h"
 
 int type = -1;
+Student nowStudent;
+Teacher nowTeacher;
 int studentId = 255;
 int teacherId = 255;
 
-clockAddPage::clockAddPage(int radius, int type, int width, int height, QString name, QVector<toDo*>* toDoList, QWidget* parent,  int posy) :
+UserInfoWidget::UserInfoWidget(QWidget* parent) :
+    QWidget(parent)
+{
+    setStyleSheet("background-color:#00000000");
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setSpacing(7);
+    layout->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    layout->setContentsMargins(10, 10, 0, 0);
+        QWidget* line1 = new QWidget(this);
+        QHBoxLayout* layout1 = new QHBoxLayout(line1);
+        layout1->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
+        layout1->setContentsMargins(0, 0, 0, 0);
+            textItem* username = new textItem(nowStudent.name, "微软雅黑", 15, line1);
+            bigIconButton* identityIcon = new bigIconButton(9, ":/icons/icons/student.svg", "", "", 0, 5, line1);
+            identityIcon->setFixedSize(username->height() + 5, username->height() + 5);
+            layout1->addWidget(username);
+            layout1->addWidget(identityIcon);
+        line1->setFixedHeight(40);
+        QWidget* split1 = new QWidget(this);
+        split1->setStyleSheet("background-color:#ff666666;");
+        split1->setFixedHeight(2);
+        layout->addWidget(line1);
+        layout->addWidget(split1);
+
+        QWidget* line2 = new QWidget(this);
+        QHBoxLayout* layout2 = new QHBoxLayout(line2);
+        layout2->setAlignment(Qt::AlignBottom|Qt::AlignLeft);
+        layout2->setContentsMargins(0, 0, 0, 0);
+            bigIconButton* idIcon = new bigIconButton(9, ":/icons/icons/student-id.svg", "", "", 0, 5, line2);
+            textItem* studentId = new textItem(nowStudent.studentNumber, "微软雅黑", 13, this);
+            idIcon->setFixedSize(studentId->height(), studentId->height());
+            layout2->addWidget(idIcon);
+            layout2->addWidget(studentId);
+        line2->setFixedHeight(30);
+        QWidget* split2 = new QWidget(this);
+        split2->setStyleSheet("background-color:#ff666666;");
+        split2->setFixedHeight(2);
+        layout->addWidget(line2);
+        layout->addWidget(split2);
+        textButton* passwdBtn = new textButton("修改密码", this);
+        connect(passwdBtn, &textButton::clicked, this, [=] {
+            QString newpasswd = QInputDialog::getText(this,
+                "请输入密码", "密码",
+                QLineEdit::Normal, "", nullptr, Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint
+            );
+            PasswordUpd* passwordUpd = new PasswordUpd(newpasswd);
+        });
+        layout->addWidget(passwdBtn);
+    setFixedHeight(300);
+}
+
+TeacherInfoWidget::TeacherInfoWidget(QWidget* parent) :
+    QWidget(parent)
+{
+    setStyleSheet("background-color:#00000000");
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setSpacing(7);
+    layout->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    layout->setContentsMargins(10, 10, 0, 0);
+        QWidget* line1 = new QWidget(this);
+        QHBoxLayout* layout1 = new QHBoxLayout(line1);
+        layout1->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
+        layout1->setContentsMargins(0, 0, 0, 0);
+            textItem* username = new textItem(nowTeacher.name, "微软雅黑", 15, line1);
+            bigIconButton* identityIcon = new bigIconButton(9, ":/icons/icons/teacher.svg", "", "", 0, 5, line1);
+            identityIcon->setFixedSize(username->height() + 5, username->height() + 5);
+            layout1->addWidget(username);
+            layout1->addWidget(identityIcon);
+        line1->setFixedHeight(40);
+        QWidget* split1 = new QWidget(this);
+        split1->setStyleSheet("background-color:#ff666666;");
+        split1->setFixedHeight(2);
+        layout->addWidget(line1);
+        layout->addWidget(split1);
+
+        QWidget* line2 = new QWidget(this);
+        QHBoxLayout* layout2 = new QHBoxLayout(line2);
+        layout2->setAlignment(Qt::AlignBottom|Qt::AlignLeft);
+        layout2->setContentsMargins(0, 0, 0, 0);
+            bigIconButton* idIcon = new bigIconButton(9, ":/icons/icons/student-id.svg", "", "", 0, 5, line2);
+            textItem* studentId = new textItem(nowTeacher.teacherNumber, "微软雅黑", 13, this);
+            idIcon->setFixedSize(studentId->height(), studentId->height());
+            layout2->addWidget(idIcon);
+            layout2->addWidget(studentId);
+        line2->setFixedHeight(30);
+        QWidget* split2 = new QWidget(this);
+        split2->setStyleSheet("background-color:#ff666666;");
+        split2->setFixedHeight(2);
+        layout->addWidget(line2);
+        layout->addWidget(split2);
+        textButton* passwdBtn = new textButton("修改密码", this);
+        connect(passwdBtn, &textButton::clicked, this, [=] {
+            QString newpasswd = QInputDialog::getText(this,
+                "请输入密码", "密码",
+                QLineEdit::Normal, "", nullptr, Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint
+            );
+            PasswordUpd* passwordUpd = new PasswordUpd(newpasswd);
+        });
+        layout->addWidget(passwdBtn);
+    setFixedHeight(300);
+}
+
+
+clockAddPage::clockAddPage(int radius, int type, int width, int height, QString name, QWidget* parent,  int posy) :
     SlidePage(radius, type, width, height, name, parent, posy)
 {
     description = new textInputItem("描述：", this);
@@ -68,7 +176,7 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
     clockLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     clockLayout->setSpacing(10);
     clockLayout->setContentsMargins(0, 0, 0, 0);
-        bigIconButton* alarmBtn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", 0, clockBar);
+        alarmBtn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, clockBar);
         alarmBtn->setFixedSize(30, 30);
         clockLayout->addWidget(alarmBtn);
         frequency = new ComboBox(clockBar);
@@ -92,7 +200,7 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
         }
     });
 
-    textButton* createBtn = new textButton("Create!", this);
+    createBtn = new textButton("Create!", this);
     connect(createBtn, &textButton::clicked, this, [=] {
         if(description->value().isEmpty() || place->value().isEmpty()){
             QMessageBox::warning(this, "Warning", "请填写完整信息！");
@@ -104,22 +212,25 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
             return;
         }
 
-        Timer* tempTime = new Timer(hour->currentText().toInt(), minute->currentText().toInt(), day->currentText().toInt(), week->currentText().toInt());
+        Timer tempTime = Timer(hour->currentText().toInt(), minute->currentText().toInt(), day->currentText().toInt(), week->currentText().toInt());
 
-        toDo* toDos = new toDo(description->value(), place->value(), tempTime, alarm, frequency->currentIndex());
-        toDoList->push_back(toDos);
-        QMessageBox::information(this, "Success", "创建成功！");
-        slideOut();
-        createBtn->setText("Modify!");
-        if(created)
-            emit modify(collectMsg());
-        else {
-            created = true;
-            emit deliver(collectMsg());
+        if(created == false) {
+            AlarmModify* nowModify = new AlarmModify(nowid, tempTime.Zip(), frequency->currentIndex(), description->value(), place->value(), alarm);
+            QMessageBox::information(this, "Success", "修改成功！");
+            connect(nowModify, &AlarmModify::receive, this, [=] {
+                emit msgDeliver();
+            });
+        } else {
+            AlarmAdd* nowAdd = new AlarmAdd(tempTime.Zip(), frequency->currentIndex(), description->value(), place->value(), alarm);
+            QMessageBox::information(this, "Success", "创建成功！");
+            connect(nowAdd, &AlarmAdd::receive, this, [=] { //why????
+                qDebug() << "receive data!";
+                emit msgDeliver();
+            });
         }
+        slideOut();
     });
     AddContent(createBtn);
-
     AddContent(clockBar);
     AddContent(timeWidget);
     AddContent(dayWidget);
@@ -127,19 +238,37 @@ clockAddPage::clockAddPage(int radius, int type, int width, int height, QString 
     AddContent(description);
 }
 
-QVector<QString> clockAddPage::collectMsg() {
-    QVector<QString> tmp;
-    tmp.push_back(description->value());
-    tmp.push_back(place->value());
-    tmp.push_back(hour->currentText() + ":" + minute->currentText());
-    tmp.push_back(alarm ? "true" : "alse");
-    tmp.push_back(frequency->currentText());
-    return tmp;
+void clockAddPage::clear() {
+    description->setValue("");
+    place->setValue("");
+    week->setEditText("");
+    day->setEditText("");
+    hour->setEditText("");
+    minute->setEditText("");
+    frequency->setCurrentIndex(0);
+    alarmBtn->setPixmap(":/icons/icons/alarm_on.svg");
+    createBtn->setText("Create!");
+    alarm = true;
+    created = true;
+}
+
+void clockAddPage::LoadFromData(int id, QString desc, QString place, Timer x, int frequency, bool alarm) {
+    nowid = id;
+    description->setValue(desc);
+    this->place->setValue(place);
+    hour->setEditText(QString::asprintf("%d", x.hour));
+    minute->setEditText(QString::asprintf("%d", x.minute));
+    this->frequency->setCurrentIndex(frequency);
+    this->alarm = alarm;
+    if(alarm) alarmBtn->setPixmap(":/icons/icons/alarm_off.svg");
+    else alarmBtn->setPixmap(":/icons/icons/alarm_on.svg");
+    created = false;
+    createBtn->setText("Modify!");
 }
 
 clockInfoWidget::clockInfoWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent),
-    alarm(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/alarm_on.svg" : ":/icons/icons/alarm_off.svg", "", 0, this))
+    alarm(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/alarm_on.svg" : ":/icons/icons/alarm_off.svg", "", "", 0, 0, this))
 {
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -183,12 +312,6 @@ void clockInfoWidget::resizeEvent(QResizeEvent*) {
     alarm->move(this->width() - alarm->width() - margin, this->height() / 2 - alarm->height() / 2);
 }
 
-void clockInfoWidget::modify(QVector<QString> info) {
-    descLabel->setText("#内容#" + info[0]);
-    detailLabel->setText("#地点#" + info[1] + "       #时间#" + info[2]);
-    alarm->setPixmap(info[3] == "true" ? ":/icons/icons/alarm_on.svg" : ":/icons/icons/alarm_off.svg");
-}
-
 clockWidget::clockWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent)
 {
@@ -210,23 +333,40 @@ void clockWidget::resizeEvent(QResizeEvent *) {
     bgWidget->resize(this->size());
 }
 
-clockfoldWidget::clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QVector<toDo*>* toDoList, QWidget* parent) :
+clockfoldWidget::clockfoldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* p, QWidget* parent) :
     foldWidget(name, h, icons, parent),
     slideParent(p)
 {
+    modifyPage = new clockAddPage(12, 1, 300, 0, "1", slideParent);
+    connect(modifyPage, &clockAddPage::msgDeliver, this, [=] {
+        reloadInfo();
+    });
     connect(icons[0], &bigIconButton::clicked, this, [=] {
-        clockAddPage* newPage = new clockAddPage(12, 1, 300, 0, "创建新待办", toDoList,slideParent);
-        emit addPage(newPage);
-        connect(newPage, &clockAddPage::deliver, this, [=](QVector<QString> s) {
-            clockWidget* newWidget = new clockWidget(s, this);
-            addContent(newWidget);
-            connect(newWidget, &clockWidget::clicked, newPage, &SlidePage::slideIn);
-            connect(newPage, &clockAddPage::modify, newWidget, [=](QVector<QString> s) {
-                newWidget->modify(s);
+        modifyPage->SetName("创建新待办");
+        modifyPage->clear();
+        modifyPage->slideIn();
+    });
+}
+
+void clockfoldWidget::reloadInfo() {
+    AlarmsQuery* nowQuery = new AlarmsQuery();
+    clear();
+    connect(nowQuery, &AlarmsQuery::receive, this, [=](QVariant varValue) {
+        QVector<Alarm> tmp = varValue.value<QVector<Alarm>>();
+        for(int i = 0; i < tmp.size(); i++) {
+            QVector<QString> infos;
+            infos.push_back(tmp[i].desc);
+            infos.push_back(tmp[i].place);
+            infos.push_back(tmp[i].t.ToString());
+            infos.push_back(tmp[i].enabled ? "true" : "false");
+            clockWidget* nowWidget = new clockWidget(infos, this);
+            connect(nowWidget, &clockWidget::clicked, this, [=] {
+                modifyPage->SetName("修改待办");
+                modifyPage->LoadFromData(tmp[i].id, tmp[i].desc, tmp[i].place, tmp[i].t, tmp[i].frequency, tmp[i].enabled);
+                modifyPage->slideIn();
             });
-            pageList.push_back(newPage);
-        });
-        newPage->slideIn();
+            addContent(nowWidget);
+        }
     });
 }
 
@@ -242,27 +382,30 @@ mainPage::mainPage(QWidget* parent) :
         toolbar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
         toolbar->setStyleSheet("background-color:#97a9ff;border-radius:0px;");
         toolbar->setFixedWidth(56);
-        QVBoxLayout* toolLayout = new QVBoxLayout(toolbar);
+        toolLayout = new QVBoxLayout(toolbar);
         toolbar->setLayout(toolLayout);
         toolLayout->setContentsMargins(8, 30, 8, 30);
         toolLayout->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
         toolLayout->setSpacing(20);
-            bigIconButton* userBtn = new bigIconButton(1, ":/icons/icons/user.svg", "", cornerRadius, toolbar);
+            userBtn = new bigIconButton(1, ":/icons/icons/user.svg", "", "", 0, cornerRadius, toolbar);
             userBtn->setFixedSize(40, 40);
             QWidget* spacing = new QWidget(toolbar);
             spacing->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             spacing->setFixedHeight(20);
-            bigIconButton* classBtn = new bigIconButton(2, "", "课程", cornerRadius, toolbar);
+            classBtn = new bigIconButton(2, "", "课程", "微软雅黑", 13, cornerRadius, toolbar);
             classBtn->setFixedSize(40, 40);
-            bigIconButton* activityBtn = new bigIconButton(2, "", "活动", cornerRadius, toolbar);
+            classBtn->hide();
+            activityBtn = new bigIconButton(2, "", "活动", "微软雅黑", 13, cornerRadius, toolbar);
             activityBtn->setFixedSize(40, 40);
-            bigIconButton* guideBtn = new bigIconButton(2, "", "导航", cornerRadius, toolbar);
+            activityBtn->hide();
+            guideBtn = new bigIconButton(2, "", "导航", "微软雅黑", 13, cornerRadius, toolbar);
             guideBtn->setFixedSize(40, 40);
+            guideBtn->hide();
+            logoutBtn = new bigIconButton(1, ":/icons/icons/logout.svg", "", "", 0, cornerRadius, toolbar);
+            logoutBtn->setFixedSize(40, 40);
+            logoutBtn->hide();
             toolLayout->addWidget(userBtn);
             toolLayout->addWidget(spacing);
-            toolLayout->addWidget(classBtn);
-            toolLayout->addWidget(activityBtn);
-            toolLayout->addWidget(guideBtn);
         mainLayout->addWidget(toolbar);
 
         displayWidget = new QWidget(this);
@@ -293,10 +436,8 @@ mainPage::mainPage(QWidget* parent) :
 
                     QVector<bigIconButton*> iconVec;
                     iconVec.push_back(new bigIconButton(9, ":/icons/icons/add.svg"));
-                    clockfoldWidget* clockWidget = new clockfoldWidget("clock", 500, iconVec, displayWidget, &toDoList,eventWidget);
-                    connect(clockWidget, &clockfoldWidget::addPage, this, [=](clockAddPage* page) {
-                        clockPageList.push_back(page);
-                    });
+                    clockWidget = new clockfoldWidget("clock", 500, iconVec, displayWidget, eventWidget);
+                    clockPageList.push_back(clockWidget->modifyPage);
                     eventLayout->addWidget(clockWidget);
 
                 infoLayout->addWidget(eventWidget);
@@ -305,18 +446,22 @@ mainPage::mainPage(QWidget* parent) :
                 classTable->setStyleSheet("border:1px solid gray;background-color:green");
                 infoLayout->addWidget(classTable);
             displayLayout->addWidget(infoWidget);
-        mainLayout->addWidget(displayWidget);
-        currentPage = MAIN;
+        displayWidget->hide();
 
         activityPage = new ActivityPage(this);
         activityPage->hide();
 
-        userInfo = new SlidePage(10, SlidePage::FIXED, 250, 100, "", displayWidget, 0);
+        teacherPage = new TeacherPage(this);
+        teacherPage->hide();
+
+        userInfo = new SlidePage(10, SlidePage::FIXED, 250, 400, "", displayWidget, 0);
+        userInfo->bgWidget->setStyleSheet("background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 255, 200, 255), stop:0.3 rgba(255, 255, 240, 255), stop:1 rgba(255, 255, 255, 255));border-radius:10px;");
         slidePageList.push_back(userInfo);
         connect(userBtn, &bigIconButton::clicked, userInfo, &SlidePage::slideIn);
         connect(activityBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == ACTIVITY){
+                LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
@@ -333,6 +478,7 @@ mainPage::mainPage(QWidget* parent) :
         connect(classBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == CLASS){
+                LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
@@ -340,9 +486,10 @@ mainPage::mainPage(QWidget* parent) :
                 currentPage = CLASS;
             }
         });
-        connect(guideBtn, &bigIconButton::clicked, [=] {
+        connect(guideBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if (currentPage == GUIDE){
+                LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
@@ -350,47 +497,46 @@ mainPage::mainPage(QWidget* parent) :
                 currentPage = GUIDE;
             }
         });
+        connect(logoutBtn, &bigIconButton::clicked, this, [=] {
+            type = -1;
+            studentId = teacherId = 255;
+            hideCurrentPage();
+            emit logout();
+        });
         connect(guidePage, &GuidePage::addPage, this, [=](SlidePage* page){
             if(page){
                 //qDebug()<<page->objectName();
                 //pageList.push_back(page);
             }
         });
-    connect(clock, &Clock::checkAlarm, this, [=] {
-        for (int i = 0; i< toDoList.size(); i++) {
-            //qDebug() << toDoList[i]->getTime().Hour() << ":" << toDoList[i]->getTime().Min();
-            if(clock->Hour() == toDoList[i]->getTime().Hour() && clock->Min() == toDoList[i]->getTime().Min() && toDoList[i]->getAlarm()){
-                switch(toDoList[i]->getFrequency()){
-                    case 0:
-                        //alarm once
-                        QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                        new QLabel(toDoList[i]->getDescription() + " at " + toDoList[i]->getPlace(), this);
 
-                        eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
-                        eventList.back()->setStyleSheet("background-color:#ffffb3");
-                        infoContainer->addWidget(eventList.back(), 0);
-                        toDoList[i]->setAlarm(false);
-                        break;
-                    case 1:
-                        //alarm daily
-                        QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                        eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点：" + toDoList[i]->getPlace(), this));
-                        eventList.back()->setStyleSheet("background-color:#ffffb3");
-                        infoContainer->addWidget(eventList.back(), 0);
-                        break;
-                    case 2:
-                        //alarm weekly
-                        if(clock->Day() == toDoList[i]->getTime().Day()){
-                            QMessageBox::information(this, "提醒", "   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace());
-                            eventList.push_back(new QLabel("   闹钟："+ QString::number(toDoList[i]->getTime().Hour())  +" :0" + QString::number(toDoList[i]->getTime().Min())+" 内容： " + toDoList[i]->getDescription() + "  地点： " + toDoList[i]->getPlace(), this));
-                            eventList.back()->setStyleSheet("background-color:#ffffb3");
-                            infoContainer->addWidget(eventList.back(), 0);
-                        }
-                        break;
-                    default:
-                        qDebug() << "error";
-                }
-            }
+    QTimer* flushTimer = new QTimer;
+    flushTimer->setSingleShot(true);
+    flushTimer->start(100);
+    connect(flushTimer, &QTimer::timeout,this, [=] {
+        if(type == 0) LoadTriggerInfo();
+        flushTimer->start(100);
+    });
+
+    connect(this, &mainPage::getInfo, this, [=] {
+        if(type == STUDENT) {
+            userDetail = new UserInfoWidget(userInfo);
+            //qDebug()<<"debug begin";
+            userInfo->AddContent(userDetail);
+        } else if(type == TEACHER) {
+            teacherDetail = new TeacherInfoWidget(userInfo);
+            userInfo->AddContent(teacherDetail);
+        }
+    });
+
+    connect(this, &mainPage::logined, this, [=] {
+        LoadInfo();
+        if(type == 0){
+            showNewPage(displayWidget);
+            currentPage = MAIN;
+        } else {
+            showNewPage(teacherPage);
+            currentPage = TEACHERPAGE;
         }
     });
 }
@@ -413,6 +559,9 @@ void mainPage::hideCurrentPage() {
             mainLayout->removeWidget(guidePage);
             guidePage->hide();
             break;
+        case TEACHERPAGE:
+            mainLayout->removeWidget(teacherPage);
+            teacherPage->hide();
     }
 }
 
@@ -427,16 +576,69 @@ void mainPage::resizeEvent(QResizeEvent*) {
         slidePageList[i]->resize(slidePageList[i]->width() - 1, (slidePageList[i]->Type() & SlidePage::HEIGHT_FIXED) ? slidePageList[i]->height() : displayWidget->height());
         slidePageList[i]->resize(slidePageList[i]->width() + 1, slidePageList[i]->height());
     }
+
     for(int i = 0; i < clockPageList.size(); i++) {
         clockPageList[i]->resize(clockPageList[i]->width() - 1, (clockPageList[i]->Type() & SlidePage::HEIGHT_FIXED) ? clockPageList[i]->height() : displayWidget->height());
         clockPageList[i]->resize(clockPageList[i]->width() + 1, clockPageList[i]->height());
     }
 }
 
-toDo::toDo(QString desc, QString place, Timer* time, bool alarm, int freq, QWidget* parent) {
-    this->description = desc;
-    this->place = place;
-    this->clockTime = time;
-    this->alarm = alarm;
-    this->frequency = (frequenceType)freq;
+void mainPage::LoadInfo() {
+    userInfo->clear();
+    if(lastUserType == STUDENT) {
+        toolLayout->removeWidget(classBtn);
+        toolLayout->removeWidget(activityBtn);
+        toolLayout->removeWidget(guideBtn);
+        classBtn->hide();
+        activityBtn->hide();
+        guideBtn->hide();
+        userInfo->RemoveContent(userDetail);
+        userDetail->deleteLater();
+    } else {
+        userInfo->RemoveContent(teacherDetail);
+        teacherDetail->deleteLater();
+    }
+    lastUserType = type;
+    toolLayout->removeWidget(logoutBtn);
+    logoutBtn->hide();
+    if(type == STUDENT) {
+        classBtn->show();
+        activityBtn->show();
+        guideBtn->show();
+        toolLayout->addWidget(classBtn);
+        toolLayout->addWidget(activityBtn);
+        toolLayout->addWidget(guideBtn);
+        StudentInfoQuery* nowQuery = new StudentInfoQuery();
+        connect(nowQuery, &StudentInfoQuery::receive, this, [=](QVariant varValue) {
+            nowStudent = varValue.value<Student>();
+            emit getInfo();
+        });
+        classPage->LoadInfo();
+        activityPage->LoadInfo();
+        clockWidget->reloadInfo();
+        LoadTriggerInfo();
+    } else {
+        TeacherInfoQuery* nowQuery = new TeacherInfoQuery();
+        connect(nowQuery, &TeacherInfoQuery::receive, this, [=](QVariant varValue) {
+            nowTeacher = varValue.value<Teacher>();
+            emit getInfo();
+        });
+        teacherPage->LoadInfo();
+    }
+    logoutBtn->show();
+    toolLayout->addWidget(logoutBtn);
+}
+
+void mainPage::LoadTriggerInfo() {
+    TriggersQuery* nowQuery = new TriggersQuery();
+    connect(nowQuery, &TriggersQuery::receive, this, [=](QVariant varValue) {
+        QVector<Alarm> triggerAlarms = varValue.value<QVector<Alarm>>();
+        for(int i = 0; i < triggerAlarms.size(); i++) {
+            Alarm nowAlarm = triggerAlarms[i];
+            QMessageBox::information(this, "提醒", "   闹钟：" + nowAlarm.t.ToString() + " 内容: " + nowAlarm.desc + "  地点： " + nowAlarm.place);
+            QLabel* nowLabel = new QLabel("   闹钟：" + nowAlarm.t.ToString() + " 内容: " + nowAlarm.desc + "  地点： " + nowAlarm.place, this);
+            nowLabel->setStyleSheet("background-color:#ffffb3");
+            infoContainer->addWidget(nowLabel, true);
+        }
+    });
 }
