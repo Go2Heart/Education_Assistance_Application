@@ -510,6 +510,10 @@ ActivityPage::ActivityPage(QWidget* parent):
         QVector<QString> info = activityWidget->getInfo();
         //activityUpload* upload = new activityUpload(info, studentId);
         ActivityUpload* upload = new ActivityUpload(info, studentId);
+        connect(upload, &ActivityUpload::receive, this, [=](int result) {
+            if(result == 1) LoadInfo();
+            else QMessageBox::information(this, "注意", "时间出现冲突！");
+        });
     });
 
     /*Detail Widget*/
@@ -551,6 +555,7 @@ void ActivityPage::resizeEvent(QResizeEvent*) {
 }
 
 void ActivityPage::LoadInfo() {
+    activityList->cleanContent();
     ActivityQuery* query = new ActivityQuery(studentId);
     connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
         QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();

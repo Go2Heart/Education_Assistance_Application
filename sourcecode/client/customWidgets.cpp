@@ -520,9 +520,6 @@ textInputItem::textInputItem(const QString &name, QWidget *parent, int t) :
     QWidget(parent),
     type(t)
 {
-    if(!t)
-        setStyleSheet("border:1px solid gray");
-    else setStyleSheet("border:transparent");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QFont nameFont = QFont("Corbel", 12);
     QFontMetrics fm(nameFont);
@@ -539,18 +536,28 @@ textInputItem::textInputItem(const QString &name, QWidget *parent, int t) :
     editor = new QLineEdit(this);
     editor->setText("");
     editor->setFixedHeight(fm.lineSpacing());
-    editor->setStyleSheet("color:#5c5c5c;background-color:#00000000;border-style:none;");
     editor->setReadOnly(true);
     editor->setFont(textFont);
+    editor->setStyleSheet("color:#5c5c5c;background-color:#00000000;border-style:none;");
 
     bgWidget = new QWidget(this);
-    bgWidget->setStyleSheet("border:transparent; background-color:#00000000; border-radius:5px;");
     bgWidget->lower();
     bgWidget->show();
 
+    editorbgWidget = new QWidget(this);
+    editorbgWidget->show();
+
+    if(type) {
+        editorbgWidget->setStyleSheet("border:transparent; background-color:#ffffffff; border-radius:4px;");
+        bgWidget->setStyleSheet("border:1px solid gray; background-color:#ffdddddd; border-radius:5px;");
+    }
+    else {
+        bgWidget->setStyleSheet("border:transparent; background-color:#00000000; border-radius:5px;");
+    }
+
     indicator = new QWidget(this);
     indicator->setFixedHeight(4);
-    indicator->setStyleSheet("background-color:#0078d4;border-radius:2px");
+    indicator->setStyleSheet("background-color:#0078d4; border:transparent; border-radius:2px;");
 
     opac = new QGraphicsOpacityEffect(this);
     opac->setOpacity(0);
@@ -580,9 +587,11 @@ textInputItem::textInputItem(const QString &name, QWidget *parent, int t) :
 
 void textInputItem::resizeEvent(QResizeEvent *event){
     itemName->move(margin, this->height() / 2 - itemName->height() / 2);
-    nameWidth = std::max(QFontMetrics(itemName->font()).size(Qt::TextSingleLine, itemName->text()).width() + 3, (int)(width() * 0.3) - margin - spacing);
+    nameWidth = std::max(QFontMetrics(itemName->font()).size(Qt::TextSingleLine, itemName->text()).width() + 3, (int)(width() * 0.2) - margin - spacing);
     itemName->setFixedWidth(nameWidth);
     int leftWidth = width() - nameWidth - 2 * margin - spacing;
+    editorbgWidget->setFixedSize(std::max(int(leftWidth + 1.5 * margin), 0), editor->height() + 4);
+    editorbgWidget->move(this->width() - 2 * margin - leftWidth, this->height() / 2 - editorbgWidget->height() / 2);
     if(!onEditing) {
         int editorWidth = std::min(QFontMetrics(editor->font()).size(Qt::TextSingleLine, editor->text()).width() + 3, leftWidth);
         editor->resize(editorWidth, editor->height());
@@ -594,6 +603,7 @@ void textInputItem::resizeEvent(QResizeEvent *event){
         indicator->move(margin + nameWidth + spacing, this->height() - 7);
     }
     bgWidget->setFixedSize(this->size());
+    editor->raise();
 }
 
 void textInputItem::enterEditEffect(){
@@ -609,14 +619,16 @@ void textInputItem::enterEditEffect(){
     fade->setStartValue(opac->opacity());
     fade->setEndValue(0.99);
     fade->setDuration(150);
-    QPropertyAnimation *move = new QPropertyAnimation(editor, "geometry", this);
-    move->setStartValue(editor->geometry());
-    move->setEndValue(QRectF(margin + nameWidth + spacing, this->height() / 2 - editor->height() / 2 - 2, width() - nameWidth - 2 * margin - spacing, editor->height()));
-    move->setDuration(500);
-    move->setEasingCurve(QEasingCurve::InOutExpo);
     group->addAnimation(longer);
     group->addAnimation(fade);
-    group->addAnimation(move);
+    //if(!isPassword){
+        QPropertyAnimation *move = new QPropertyAnimation(editor, "geometry", this);
+        move->setStartValue(editor->geometry());
+        move->setEndValue(QRectF(margin + nameWidth + spacing, this->height() / 2 - editor->height() / 2 - 2, width() - nameWidth - 2 * margin - spacing, editor->height()));
+        move->setDuration(500);
+        move->setEasingCurve(QEasingCurve::InOutExpo);
+        group->addAnimation(move);
+    //}
     group->start();
 }
 
@@ -633,34 +645,48 @@ void textInputItem::leaveEditEffect(){
     fade->setStartValue(opac->opacity());
     fade->setEndValue(0);
     fade->setDuration(350);
-    QPropertyAnimation *move = new QPropertyAnimation(editor, "geometry", this);
-    move->setStartValue(editor->geometry());
-    int leftWidth = width() - nameWidth - 2 * margin - spacing;
-    int width = std::min(QFontMetrics(editor->font()).size(Qt::TextSingleLine, editor->text()).width() + 3, leftWidth);
-    move->setEndValue(QRectF(this->width() - width - margin, this->height() / 2 - editor->height() / 2, width, editor->height()));
-    move->setDuration(500);
-    move->setEasingCurve(QEasingCurve::InOutExpo);
     group->addAnimation(shorter);
     group->addAnimation(fade);
-    group->addAnimation(move);
+    //if(!isPassword){
+        QPropertyAnimation *move = new QPropertyAnimation(editor, "geometry", this);
+        move->setStartValue(editor->geometry());
+        int leftWidth = width() - nameWidth - 2 * margin - spacing;
+        int width = std::min(QFontMetrics(editor->font()).size(Qt::TextSingleLine, editor->text()).width() + 3, leftWidth);
+        move->setEndValue(QRectF(this->width() - width - margin, this->height() / 2 - editor->height() / 2, width, editor->height()));
+        move->setDuration(500);
+        move->setEasingCurve(QEasingCurve::InOutExpo);
+        group->addAnimation(move);
+    //}
     group->start();
 }
 void textInputItem::enterEvent(QEvent *event){
-    bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ff888888");
+    else
+        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
 }
 
 void textInputItem::leaveEvent(QEvent *event){
-    bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#00000000");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ffdddddd");
+    else
+        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#00000000");
 }
 
 void textInputItem::mousePressEvent(QMouseEvent *event){
-    bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#1a000000");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ff666666");
+    else
+        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#1a000000");
     mousePressed = true;
 }
 
 void textInputItem::mouseReleaseEvent(QMouseEvent *event){
     if(mousePressed){
-        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
+        if(type)
+            bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ff888888");
+        else
+            bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
         if(onEditing){
             leaveEditEffect();
             onEditing = false;
@@ -699,6 +725,7 @@ void textInputItem::setValue(const QString &text){
         editor->move(this->width() * 0.3, this->height() / 2 - editor->height() / 2 - 2);
     }
 }
+
 
 
 textButton::textButton(QString text, QWidget *parent, qreal ratio) :
@@ -1198,8 +1225,9 @@ void ComboBox::setNumberRange(int l, int r) {
     }
 }
 
-customWidget::customWidget(const QString &name, QWidget* content, QWidget *parent) :
-    QWidget(parent)
+customWidget::customWidget(const QString &name, QWidget* content, QWidget *parent, int type) :
+    QWidget(parent),
+    type(type)
 {
     setStyleSheet("QWidget::{}");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -1223,7 +1251,10 @@ customWidget::customWidget(const QString &name, QWidget* content, QWidget *paren
     contentWidget->setStyleSheet("background-color:transparent;");
 
     bgWidget = new QWidget(this);
-    bgWidget->setStyleSheet("border:transparent;background-color:#00000000;border-radius:5px;");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; background-color:#ffdddddd; border-radius:5px;");
+    else
+        bgWidget->setStyleSheet("border:transparent; background-color:#00000000; border-radius:5px;");
     bgWidget->lower();
     bgWidget->show();
 
@@ -1232,7 +1263,7 @@ customWidget::customWidget(const QString &name, QWidget* content, QWidget *paren
 
 void customWidget::resizeEvent(QResizeEvent *event){
     itemName->move(margin, this->height() / 2 - itemName->height() / 2);
-    int nameWidth = std::max(QFontMetrics(itemName->font()).size(Qt::TextSingleLine, itemName->text()).width() + 3, (int)(width() * 0.3) - margin - spacing);
+    int nameWidth = std::max(QFontMetrics(itemName->font()).size(Qt::TextSingleLine, itemName->text()).width() + 3, (int)(width() * 0.2) - 2 * margin - spacing);
     itemName->setFixedWidth(std::max(nameWidth, 0));
     int leftWidth = width() - nameWidth - 2 * margin - spacing;
     contentWidget->setFixedWidth(std::max(leftWidth, 0));
@@ -1241,12 +1272,19 @@ void customWidget::resizeEvent(QResizeEvent *event){
 }
 
 void customWidget::enterEvent(QEvent *event){
-    bgWidget->setStyleSheet("border:transparent;border-radius:5px;background-color:#0a000000");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ff888888");
+    else
+        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
 }
 
 void customWidget::leaveEvent(QEvent *event){
-    bgWidget->setStyleSheet("border:transparent;border-radius:5px;background-color:#00000000");
+    if(type)
+        bgWidget->setStyleSheet("border:1px solid gray; border-radius:5px;background-color:#ffdddddd");
+    else
+        bgWidget->setStyleSheet("border:transparent; border-radius:5px;background-color:#0a000000");
 }
+
 
 textItem::textItem(QString text, QString fontstyle, int fontsize, QWidget* parent, QString style) :
     QLabel(parent)

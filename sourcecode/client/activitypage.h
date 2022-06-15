@@ -188,7 +188,7 @@ public:
         container->addWidget(p, true);
         itemList.push_back(p);
     }
-void cleanContent(){
+    void cleanContent() {
     for(int i = 0; i < itemList.size(); i++){
         container->removeWidget(itemList[i]);
     }

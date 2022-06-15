@@ -13,6 +13,8 @@ extern class Clock timeTracker;
 extern class TimeHeap timeHeap;
 extern FILE* logFile;
 class Timer;
+extern Timer beg[20];
+extern Timer fin[20];
 int ToBegNum(Timer x);
 int ToEndNum(Timer x);
 int GenerateAlarmId();

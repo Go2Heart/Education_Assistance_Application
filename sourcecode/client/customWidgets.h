@@ -210,49 +210,58 @@ signals:
     void selected();
 };
 
-class textInputItem : public QWidget{
+class textInputItem : public QWidget { // 文本输入框
     Q_OBJECT
 
 private:
-    const int margin = 10;
-    const int spacing = 10;
-    QLabel* itemName;
-    QLineEdit* editor;
-    QWidget* bgWidget;
-    QWidget* indicator;
-    QGraphicsOpacityEffect* opac;
+    const int margin = 10; // 边界
+    const int spacing = 10; // 标题与editor间隔
+    QLabel* itemName; // 标题
+    QLineEdit* editor; // 编辑框
+    QWidget* bgWidget; // 背景
+    QWidget* editorbgWidget;
+    QWidget* indicator; // 指示条
+    QGraphicsOpacityEffect* opac; // 透明度效果，用于indicator渐入
 
-    QString curText = "";
-    bool mousePressed = false;
-    bool onEditing = false;
+    QString curText = ""; // 当前内容
+    bool mousePressed = false; // 鼠标是否按下
+    bool onEditing = false; // 是否可编辑
 
-    bool enabled = true;
-    int type = 0;
+    bool enabled = true; // 是否启用，不起用不会有悬停和按下效果
+    bool isPassword = false; // 是否是密码，弃用
+    int type = 0; // 输入框类型
     int nameWidth = 0;
 
-    void enterEditEffect();
-    void leaveEditEffect();
+    void enterEditEffect(); // 编辑输入框动画模块
+    void leaveEditEffect(); // 离开编辑输入框动画模块
 
     void enterEvent(QEvent* event);
     void leaveEvent(QEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
     void resizeEvent(QResizeEvent* event);
-    //void focusOutEvent(QFocusEvent* event);
 
 public:
     textInputItem(const QString &name, QWidget* parent = nullptr, int type = 0);
-    QLineEdit* lineEditor(){return editor;}
-    QString value(){return editor->text();}
+    QLineEdit* lineEditor(){return editor;} // 返回editor
+    QString value(){return editor->text();} // 返回editor当前内容
 
-    void setValue(const QString &text);
-    void setValidator(QValidator* vali){editor->setValidator(vali);}
-    void setEnabled(bool enable = true){enabled = enable;}
+    void setValue(const QString &text); // 设置editor文字
+    void setValidator(QValidator* vali){editor->setValidator(vali);} //设置editor文本过滤器，如正则式，整数过滤器等
+    void setIntValidator() {
+        QRegExp regx("^[1-9][0-9]+$");
+        setValidator(new QRegExpValidator(regx, this));
+    }
+    void setNumberValidator() {
+        QRegExp regx("^[0-9]+$");
+        setValidator(new QRegExpValidator(regx, this));
+    }
+    void setEnabled(bool enable = true){enabled = enable;} // 是否启用
+    void setPasswordMode() { isPassword = true; editor->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit); } // 密码模式（弃用）
 
 signals:
     void textEdited(QString text);
 };
-
 class textButton : public QWidget {
     Q_OBJECT
 
@@ -395,22 +404,21 @@ public:
     void setNumberRange(int l, int r);
 };
 
-class customWidget : public QWidget {
+class customWidget : public QWidget { // 包裹窗体类，用于将没有边框的窗口包裹
     Q_OBJECT
 
 private:
-    const int margin = 10;
-    const int spacing = 10;
-    QLabel* itemName;
-    QWidget* bgWidget;
-    QWidget* contentWidget;
-
+    const int margin = 10; // 边框
+    const int spacing = 10; // 间隔
+    QLabel* itemName; // 名字
+    QWidget* bgWidget; // 背景
+    QWidget* contentWidget; // 内容widget
+    int type;
     void enterEvent(QEvent* event);
     void leaveEvent(QEvent* event);
     void resizeEvent(QResizeEvent* event);
-
 public:
-    customWidget(const QString &name, QWidget* content, QWidget* parent = nullptr);
+    customWidget(const QString &name, QWidget* content, QWidget* parent = nullptr, int type = 0);
 };
 
 class textItem : public QLabel { // 文字类，可自定义字体大小，字体样式，文字内容

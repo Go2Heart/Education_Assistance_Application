@@ -40,7 +40,7 @@ classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
     QFont detailFont = QFont("Corbel Light", 10);
     QFontMetrics detailm(detailFont);
     detailFont.setStyleStrategy(QFont::PreferAntialias);
-    detailLabel = new QLabel("[教师]" + info[1] + "       [地点]" + info[2] + "     [时间]" + info[3], infoWidget);
+    detailLabel = new QLabel("[教师]" + info[1] + "       [时间]" + info[3] + "     [地点]" + info[2], infoWidget);
     detailLabel->setFont(detailFont);
     detailLabel->setFixedHeight(detailm.lineSpacing());
     detailLabel->setStyleSheet("color: gray");
@@ -163,9 +163,9 @@ ClassPage::ClassPage(QWidget* parent):
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
     QStringList selectList;
-    selectList<<"名称"<<"教师"<<"地点"<<"时间"<<"成员";
+    selectList<<"名称"<<"时间排序"<<"位置排序";
     ComboBox* selections = new ComboBox(searchBar);
-    selections->setFixedWidth(100);
+    selections->setFixedWidth(150);
     selections->addItems(selectList);
     textInputItem* classSearch = new textInputItem("课程", searchBar);
     bigIconButton* searchClass = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
@@ -220,7 +220,7 @@ ClassPage::ClassPage(QWidget* parent):
 
     QWidget* materialDlvr = new QWidget(detailArea);
     materialDlvr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    materialDlvr->setStyleSheet("Height:400; Width:400");
+    //materialDlvr->setStyleSheet("Height:400; Width:400");
     QVBoxLayout* MDlvrLayout = new QVBoxLayout(materialDlvr);
     MDlvrLayout->setAlignment(Qt::AlignCenter);
 
@@ -232,7 +232,7 @@ ClassPage::ClassPage(QWidget* parent):
 
     QWidget* homeworkDlvr = new QWidget(detailArea);
     homeworkDlvr->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    homeworkDlvr->setStyleSheet("Height:400; Width:400");
+    //homeworkDlvr->setStyleSheet("Height:400; Width:400");
     QVBoxLayout* HDlvrLayout = new QVBoxLayout(homeworkDlvr);
     HDlvrLayout->setAlignment(Qt::AlignCenter);
 
@@ -316,36 +316,56 @@ ClassPage::ClassPage(QWidget* parent):
     connect(searchClass, &bigIconButton::clicked, this, [=]{
         if(classSearch->value() == ""){
             classList->cleanContent();
-            ClassQuery* query = new ClassQuery();
-            connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
-                QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
-                for(int i = 0; i < classResult.size(); i++){
-                    QVector<QString> info;
-                    info.push_back(classResult[i]->name);
-                    info.push_back(classResult[i]->teacher);
-                    info.push_back(classResult[i]->place);
-                    info.push_back(classResult[i]->time);
-                    info.push_back(classResult[i]->QQ);
-                    info.push_back(QString::asprintf("%d", classResult[i]->id));
-                    info.push_back(QString::number(classResult[i]->fileNames.size()));
-                    for(int j = 0; j < classResult[i]->fileNames.size(); j++){
-                        info.push_back(classResult[i]->fileNames[j]);
-                    }
-                    //info.push_back
+            if(selections->currentIndex() == 0) {
+                //requery
+                ClassQuery* query = new ClassQuery();
+                connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
+                    QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
+                    for(int i = 0; i < classResult.size(); i++){
+                        QVector<QString> info;
+                        info.push_back(classResult[i]->name);
+                        info.push_back(classResult[i]->teacher);
+                        info.push_back(classResult[i]->place);
+                        info.push_back(classResult[i]->time);
+                        info.push_back(classResult[i]->QQ);
+                        info.push_back(QString::asprintf("%d", classResult[i]->id));
+                        info.push_back(QString::number(classResult[i]->fileNames.size()));
+                        for(int j = 0; j < classResult[i]->fileNames.size(); j++){
+                            info.push_back(classResult[i]->fileNames[j]);
+                        }
+                        //info.push_back
 
-                    classWidget * newClass = new classWidget(info, itemWidget);
-                    connect(newClass, &classWidget::clicked, this, [=]{
-                        activityDtl->showDetail(info);
-                        activityDtl->setActivity(newClass);
-                        fileDlvr->setActivity(newClass);
-                        fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
-                        emit fileDlvr->download();
-                        homework->setClassId(newClass);
-                    });
-                    classList->addContent(newClass);
+                        classWidget * newClass = new classWidget(info, itemWidget);
+                        connect(newClass, &classWidget::clicked, this, [=]{
+                            activityDtl->showDetail(info);
+                            activityDtl->setActivity(newClass);
+                            fileDlvr->setActivity(newClass);
+                            fileDlvr->setDownloadInfo(newClass->getInfoWidget()->getDownloadInfo());
+                            emit fileDlvr->download();
+                            homework->setClassId(newClass);
+                        });
+                        classList->addContent(newClass);
+                    }
+                });
+                return;
+            } else if (selections->currentIndex() == 1) {
+                //by time to reorder
+                std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
+                    return a->getInfoWidget()->getInfo()[2] > b->getInfoWidget()->getInfo()[2];
+                });
+                for(int i = 0; i < reloadList.size(); i++) {
+                    classList->addContent(reloadList[i]);
                 }
-            });
-            return;
+                return;
+            } else if(selections->currentIndex() == 2) {
+                std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
+                    return a->getInfoWidget()->getInfo()[3] < b->getInfoWidget()->getInfo()[3];
+                });
+                for(int i = 0; i < reloadList.size(); i++) {
+                    classList->addContent(reloadList[i]);
+                }
+                return;
+            }
         }
         search = new ClassSearch(classSearch->value(), selections->currentIndex());
         connect(search, &ClassSearch::receive, this, [=](QVariant varValue){
@@ -389,6 +409,7 @@ void ClassPage::resizeEvent(QResizeEvent*) {
 }
 
 void ClassPage::LoadInfo() {
+    classList->cleanContent();
     ClassQuery* query = new ClassQuery();
     connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
         QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
@@ -404,7 +425,11 @@ void ClassPage::LoadInfo() {
             for(int j = 0; j < classResult[i]->fileNames.size(); j++){
                 info.push_back(classResult[i]->fileNames[j]);
             }
-            //info.push_back
+            info.push_back(QString::number(classResult[i]->examBegin.week));
+            info.push_back(QString::number(classResult[i]->examBegin.day));
+            info.push_back(classResult[i]->examBegin.ToString());
+            info.push_back(classResult[i]->examEnd.ToString());
+            info.push_back(classResult[i]->examPlace);
 
             classWidget * newClass = new classWidget(info, itemWidget);
             connect(newClass, &classWidget::clicked, this, [=]{
@@ -416,7 +441,13 @@ void ClassPage::LoadInfo() {
                 homework->setClassId(newClass);
             //TODO adding specific class page
             });
-            classList->addContent(newClass);
+            //classList->addContent(newClass);
+            newClass->hide();
+            reloadList.push_back(newClass);
+        }
+        for(int j = 0; j < reloadList.size(); j++) {
+            classList->addContent(reloadList[j]);
+            reloadList[j]->show();
         }
     });
 }
@@ -442,14 +473,14 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     QVBoxLayout* listLayout = new QVBoxLayout(listWidget);
     listLayout->setAlignment(Qt::AlignTop);
     fileList = new ScrollAreaCustom(false, listWidget);
-    fileList->setFixedWidth(300);
+    fileList->setFixedWidth(600);
 //        fileList->AddWidget();
     listLayout->addWidget(fileList);
     QWidget* downloadWidget = new QWidget(this);
     QVBoxLayout* downloadLayout = new QVBoxLayout(downloadWidget);
     downloadLayout->setAlignment(Qt::AlignTop);
     downloadList = new ScrollAreaCustom(false, downloadWidget);
-    downloadList->setFixedWidth(300);
+    downloadList->setFixedWidth(600);
     downloadLayout->addWidget(downloadList);
 
 
@@ -462,7 +493,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
         filesToSubmit.push_back(filestring.toStdString());
         QFileInfo fileInfo(filePath);
         QLabel* tmp = new QLabel(fileInfo.fileName(),fileList);
-        tmp->setFixedHeight(20);
+        tmp->setFixedHeight(30);
         fileNames.push_back(fileInfo.fileName());
         fileList->addWidget(tmp,true);
         file.close();
@@ -524,6 +555,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
             downloadLayout->addWidget(downloadButton);
             downloadList->AddWidget(downloadElement, true);*/
             QLabel* tmp = new QLabel(fileToDownload[i], downloadList);
+            tmp->setFixedHeight(30);
             downloadList->addWidget(tmp, true);
         }
 
@@ -553,11 +585,27 @@ classDetailWidget::classDetailWidget(QWidget *parent) : QWidget(parent){
     place = new textInputItem("地点：",this);
     time = new textInputItem("时间：", this);
     qq = new textInputItem("QQ：", this);
+    QWidget* examWidget = new QWidget(this);
+    examTime = new QLabel("考试时间：", examWidget);
+    QHBoxLayout* examLayout = new QHBoxLayout();
+    examLayout->addWidget(examTime);
+    week = new textInputItem("周：", examWidget);
+    examLayout->addWidget(week);
+    day = new textInputItem("天：", examWidget);
+    examLayout->addWidget(day);
+    begin = new textInputItem("开始：", examWidget);
+    examLayout->addWidget(begin);
+    end = new textInputItem("结束：", examWidget);
+    examLayout->addWidget(end);
+    examWidget->setLayout(examLayout);
+    examPlace = new textInputItem("考试地点：", this);
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
     mainLayout->addWidget(time);
     mainLayout->addWidget(qq);
+    mainLayout->addWidget(examWidget);
+    mainLayout->addWidget(examPlace);
 }
 QVector<QString> classDetailWidget::collectMsg() {
     QVector<QString> tmp;
@@ -577,7 +625,11 @@ void classDetailWidget::showDetail(QVector<QString> info) {
     place->setValue(info[2]);
     time->setValue(info[3]);
     qq->setValue(info[4]);
-
+    week->setValue(info[info.size() - 5]);
+    day->setValue(info[info.size() - 4]);
+    begin->setValue(info[info.size() - 3]);
+    end->setValue(info[info.size() - 2]);
+    examPlace->setValue(info[info.size() - 1]);
     //isPersonal = info[4].toInt();
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);

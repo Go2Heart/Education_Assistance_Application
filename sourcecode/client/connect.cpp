@@ -218,8 +218,8 @@ ClassQuery::ClassQuery() {
         while(i < parms.size()) {
             QString name = parms[i]->qsMessage;
             QString teacher = parms[i + 1]->qsMessage;
-            QString place = parms[i + 3]->qsMessage;
-            QString time = parms[i + 2]->qsMessage;
+            QString place = parms[i + 2]->qsMessage;
+            QString time = parms[i + 3]->qsMessage;
             QString QQ = parms[i + 4]->qsMessage;
             int id = parms[i + 5]->number;
             QVector<QString> files;
@@ -234,6 +234,7 @@ ClassQuery::ClassQuery() {
             Timer examBegin = UnzipTimer(parms[i + 7 + fileNum]->number);
             Timer examEnd = UnzipTimer(parms[i + 8 + fileNum]->number);
             QString examPlace = parms[i + 9 + fileNum]->qsMessage;
+            qDebug() << "--" << examPlace;
             i += 10 + fileNum;
             v.push_back(new ClassResult(name, teacher, place, time, QQ, id, files, examBegin, examEnd, examPlace));
         }
@@ -328,6 +329,10 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
     //qDebug() << "activity time: " << v[3];
     paras.push_back(new Parameter(id)); //content
     connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        emit receive(parms[0]->number);
+    });
 }
 
 FileUpload::FileUpload(QString id, QString descripter,std::string info, int studentId, int mode) {
@@ -380,16 +385,10 @@ TriggersQuery::TriggersQuery() {
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
-        QVector<Alarm> v;
+        QVector<QString> ss;
         int size = parms[0]->number;
-        for(int i = 1, j = 1; i <= size; i++, j += 6)
-            v.push_back(Alarm(UnzipTimer(parms[j]->number),
-                parms[j + 1]->number,
-                parms[j + 2]->qsMessage,
-                parms[j + 3]->qsMessage,
-                parms[j + 4]->number,
-                parms[j + 5]->number));
-        emit receive(QVariant::fromValue(v));
+        for(int i = 0; i < size; i++) ss.push_back(parms[i + 1]->qsMessage);
+        emit receive(QVariant::fromValue(ss));
     });
 }
 
@@ -462,7 +461,7 @@ StudentInfoQuery::StudentInfoQuery() {
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
-        emit receive(QVariant::fromValue(Student(parms[0]->qsMessage, parms[1]->qsMessage)));
+        emit receive(QVariant::fromValue(Student(parms[0]->qsMessage, parms[1]->qsMessage, parms[2]->number)));
     });
 }
 
@@ -509,4 +508,57 @@ TeacherInfoQuery::TeacherInfoQuery() {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
         emit receive(QVariant::fromValue(Teacher(parms[0]->qsMessage, parms[1]->qsMessage)));
     });
+}
+
+StudentGroupQuery::StudentGroupQuery() {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x1B));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<Student> v;
+        int size = parms[0]->number;
+        for(int i = 0, j = 1; i < size; i++, j += 3) {
+            v.push_back(Student(parms[j]->qsMessage, parms[j + 1]->qsMessage, parms[j + 2]->number));
+        }
+        emit receive(QVariant::fromValue(v));
+    });
+}
+
+ClassAddQuery::ClassAddQuery(QString place, QString name, QString QQ, int beginwk, int endwk, int day, int bgNum, int edNum, QVector<Student> students) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x1C));
+    paras.push_back(new Parameter(place));
+    paras.push_back(new Parameter(teacherId));
+    paras.push_back(new Parameter(name));
+    paras.push_back(new Parameter(QQ));
+    paras.push_back(new Parameter(beginwk));
+    paras.push_back(new Parameter(endwk));
+    paras.push_back(new Parameter(day));
+    paras.push_back(new Parameter(bgNum));
+    paras.push_back(new Parameter(edNum));
+    paras.push_back(new Parameter(students.size()));
+    for(int i = 0; i < students.size(); i++) {
+        paras.push_back(new Parameter(students[i].id));
+    }
+    connector = new TcpConnector(paras);
+}
+
+TeacherHomeworkQuery::TeacherHomeworkQuery(int id) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x1D));
+    paras.push_back(new Parameter(teacherId));
+    paras.push_back(new Parameter(id));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<TeacherHomework*> v;
+        int size = parms[0]->number;
+        for(int i = 0; i < size; i++) {
+            v.push_back(new TeacherHomework(parms[i+1]->qsMessage));
+            qDebug() << "received" << parms[i+1]->qsMessage;
+        }
+        emit receive(QVariant::fromValue(v));
+    });
+
 }

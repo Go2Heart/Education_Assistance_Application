@@ -68,6 +68,12 @@ private:
     textInputItem* place;
     textInputItem* time;
     textInputItem* qq;
+    QLabel* examTime;
+    textInputItem* week;
+    textInputItem* day;
+    textInputItem* begin;
+    textInputItem* end;
+    textInputItem* examPlace;
     textInputItem* frequency;
     bool isPersonal = true;
     bool alarm = true;
@@ -85,8 +91,13 @@ public:
         lines.append(time->value());
         return lines;
     }
+    QString id;
     void setActivity(classWidget* activity) {
         currentActivity = activity;
+        id = activity->getInfoWidget()->getId();
+        if(id == "") {
+            id = "0";
+        }
     }
     classWidget* getActivity() {
         return currentActivity;
@@ -148,7 +159,7 @@ private:
     classFileDeliver* fileDlvr = nullptr;
     classHomeworkWidget* homework = nullptr;
     ClassSearch* search = nullptr;
-
+    QVector<classWidget*> reloadList = QVector<classWidget*>();
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
@@ -179,10 +190,11 @@ public:
         itemList.push_back(p);
     }
      void cleanContent(){
-        for(int i = 0; i < itemList.size(); i++){
+        /*for(int i = 0; i < itemList.size(); i++){
             container->removeWidget(itemList[i]);
 
-        }
+        }*/
+        container->clear();
         itemList.clear();
     }
     void resizeEvent(QResizeEvent*);

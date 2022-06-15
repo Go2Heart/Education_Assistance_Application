@@ -13,6 +13,7 @@
 #include "classpage.h"
 #include "clock.h"
 #include "teacherpage.h"
+#include "classaddpage.h"
 
 class UserInfoWidget : public QWidget { // 用户名片widget类
     Q_OBJECT
@@ -116,6 +117,7 @@ private:
     TeacherInfoWidget* teacherDetail = nullptr;
     ActivityPage* activityPage;
     TeacherPage* teacherPage;
+    ClassAddPage* classAddPage;
 
     Clock* clock = nullptr;
     ScrollAreaCustom* infoContainer = nullptr;
@@ -135,6 +137,7 @@ private:
     bigIconButton* classBtn;
     bigIconButton* activityBtn;
     bigIconButton* guideBtn;
+    bigIconButton* classAddBtn;
     bigIconButton* logoutBtn;
 
     void hideCurrentPage();
@@ -142,7 +145,7 @@ private:
     void resizeEvent(QResizeEvent*);
 public:
     enum PageType {
-        MAIN = 0, CLASS = 1, ACTIVITY = 2, GUIDE = 3, TEACHERPAGE = 4
+        MAIN = 0, CLASS = 1, ACTIVITY = 2, GUIDE = 3, TEACHERPAGE = 4, CLASSADD = 5
     };
     mainPage(QWidget* parent = nullptr);
     void LoadInfo();

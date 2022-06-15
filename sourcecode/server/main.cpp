@@ -32,7 +32,7 @@ String GetStr(FILE *fin) {
 }
 
 void InitStudent() {
-	FILE *in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
+	FILE *in = fopen("default_settings/student.in", "r");//fopen("default_settings/student.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -43,7 +43,7 @@ void InitStudent() {
 }
 
 void InitTeacher() {
-	FILE *in = fopen("/root/trans_test/new_version/Education_Assistance_Application/sourcecode/server/default_settings/teacher.in", "r");//fopen("default_settings/student.in", "r");
+	FILE *in = fopen("default_settings/teacher.in", "r");//fopen("default_settings/student.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -54,7 +54,7 @@ void InitTeacher() {
 }
 
 void InitTime() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/time.in", "r");
+	FILE* in = fopen("default_settings/time.in", "r");
 	fscanf(in, "%d", &timeN);
 	for(int i = 1; i <= timeN; i++) {
 		int beg_hour, beg_min, end_hour, end_min;
@@ -66,7 +66,7 @@ void InitTime() {
 }
 
 void InitLesson() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/class.in", "r");
+	FILE* in = fopen("default_settings/class.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -96,12 +96,35 @@ void InitLesson() {
 		for(int j = 0; j < m; j++)
 			tmpStudents[j]->events->AddLesson(lessonId);
 		teacherGroup.FromName(teacher)->AddLesson(lessonId);
+		int homeworkNum;
+		fscanf(in, "%d", &homeworkNum);
+		for(int j = 0; j < homeworkNum; j++) tmpLesson->AddHomework(new Homework(GetStr(in)));
+		for(int j = 0; j < m; j++) {
+			for(int k = 0; k < homeworkNum; k++) {
+				int resultSize;
+				fscanf(in, "%d", &resultSize);
+				if(resultSize > 0) {
+					Vector<File*> ff;
+					for(int jj = 0; jj < resultSize; jj++) {
+						String savePath = GetStr(in), fileName = GetStr(in), hash = GetStr(in);
+						ff.push_back(new File(savePath, fileName, hash));
+					}
+					tmpStudents[j]->events->GetLesson(lessonId)->GetHomework(k)->Upload(ff);
+				}
+			}
+		}
+		int fileNum;
+		fscanf(in, "%d", &fileNum);
+		for(int j = 0; j < fileNum; j++) {
+			String savePath = GetStr(in), fileName = GetStr(in), hash = GetStr(in);
+			tmpLesson->AddFile(new File(savePath, fileName, hash));
+		}
 	}
 	fclose(in);
 }
 
 void InitActivity() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "r");
+	FILE* in = fopen("default_settings/activity.in", "r");
 	int n, m;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -135,7 +158,7 @@ int GenerateAlarmId() {
 	return alarmN;
 }
 void InitAlarms() {
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	FILE* in = fopen("default_settings/alarm.in", "r");
 	int n;
 	fscanf(in, "%d", &n);
 	for(int i = 1; i <= n; i++) {
@@ -163,17 +186,14 @@ int ToEndNum(Timer x) {
 }
 
 void LoadToFile() {
-	FILE* file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/activity.in", "w");
+	FILE* file = fopen("default_settings/activity.in", "w");
 	activityGroup.WriteToFile(file);
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("default_settings/alarm.in", "w");
 	alarmGroup.WriteToFile(file);
 	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
-	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
-	fclose(file);
-	file = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/alarm.in", "r");
+	file = fopen("default_settings/class.in", "w");
+	lessonGroup.WriteToFile(file);
 	fclose(file);
 }
 
@@ -204,4 +224,5 @@ int main() {
 	graph.Init();
 	puts("phase 5 finished.");
 	server.run();
+	LoadToFile();
 }

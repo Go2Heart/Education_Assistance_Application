@@ -31,11 +31,11 @@ private:
     String classPlace, examPlace, teacher, name, QQnumber;
     Vector<Duration> classDurations;
     Duration examDuration;
-    Vector<Homework*> homeworks;
-    Vector<File*> files;
-    Vector<Student*> students;
 public:
     int lessonId;
+    Vector<Homework*> homeworks;
+    Vector<Student*> students;
+    Vector<File*> files;
     Lesson(
         String classPlace,
         String teacher,
@@ -85,6 +85,9 @@ public:
         this->QQnumber = QQnumber;
         this->examDuration = examDuration;
         this->examPlace = examPlace;
+        for(int i = 0; i < students.size(); i++) {
+            students[i]->TriggerMessage("课程： " + name + " 的课程信息已被教师修改。");
+        }
     }
     void AddFile(File* file) {
         bool find = false;
@@ -123,6 +126,7 @@ public:
         return tmp;*/
         return nameSort.Find(name);
     }
+    void WriteToFile(FILE* file);
 };
 
 class Activity {

@@ -294,9 +294,10 @@ class ActivityUpload : public QObject {
     Q_OBJECT
 private:
     TcpConnector* connector = nullptr;
-
 public:
     ActivityUpload(QVector<QString> v, int id);
+signals:
+    void receive(int);
 };
 
 class FileUpload : public QObject {
@@ -390,10 +391,12 @@ signals:
 class Student {
 public:
     QString name, studentNumber;
+    int id;
     Student() {}
-    Student(QString name, QString number) :
+    Student(QString name, QString number, int id) :
         name(name),
-        studentNumber(number)
+        studentNumber(number),
+        id(id)
     {}
 };
 Q_DECLARE_METATYPE(Student)
@@ -443,6 +446,46 @@ private:
     TcpConnector* connector = nullptr;
 public:
     TeacherInfoQuery();
+signals:
+    void receive(QVariant x);
+};
+
+class StudentGroupQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    StudentGroupQuery();
+signals:
+    void receive(QVariant x);
+};
+
+class ClassAddQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    ClassAddQuery(QString place, QString name, QString QQ, int beginwk, int endwk, int day, int bgNum, int edNum, QVector<Student> students);
+signals:
+    void receive(QVariant x);
+};
+
+class TeacherHomework {
+public:
+    QString desc;
+    TeacherHomework() {}
+    TeacherHomework(QString desc) :
+        desc(desc)
+    {}
+};
+Q_DECLARE_METATYPE(TeacherHomework*)
+
+class TeacherHomeworkQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TeacherHomeworkQuery(int classId);
 signals:
     void receive(QVariant x);
 };

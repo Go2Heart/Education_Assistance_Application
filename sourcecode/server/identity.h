@@ -9,7 +9,7 @@ public:
 	String name, studentNumber, password;
 	EventGroup* events;
 	Vector<int> alarms;
-	Vector<int> triggerAlarms;
+	Vector<String> triggerMessage;
 	Student(String number, String name, String password) : 
 		name(name),
 		studentNumber(number),
@@ -22,15 +22,15 @@ public:
 		for(int i = 0; i < alarms.size(); i++)
 			if(alarms[i] == id) alarms.del(i);
 	}
-	void TriggerAlarm(int id) { triggerAlarms.push_back(id); }
-	void ClearTrigger() { triggerAlarms.clear(); }
+	void TriggerMessage(String message) { triggerMessage.push_back(message); }
+	void ClearTrigger() { triggerMessage.clear(); }
 };
 
 class Students {
 private:
-	Vector<Student*> students;
 	RbTree<String, Student*> numberSort;
 public:
+	Vector<Student*> students;
 	~Students() {
 		for(int i = 0; i < students.size(); i++) delete(students[i]);
 	}

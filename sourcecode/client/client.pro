@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     activitypage.cpp \
     basicClass.cpp \
+    classaddpage.cpp \
     classpage.cpp \
     clock.cpp \
     connect.cpp \
@@ -25,11 +26,13 @@ SOURCES += \
     mainwindow.cpp \
     mycanvas.cpp \
     slidepage.cpp \
+    specifiedWidgets.cpp \
     teacherpage.cpp
 
 HEADERS += \
     activitypage.h \
     basicClass.h \
+    classaddpage.h \
     classpage.h \
     clock.h \
     connect.h \
@@ -44,6 +47,7 @@ HEADERS += \
     mainwindow.h \
     mycanvas.h \
     slidepage.h \
+    specifiedWidgets.h \
     teacherpage.h
 
 FORMS += \

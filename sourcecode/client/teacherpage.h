@@ -232,7 +232,6 @@ private:
     int margin = 5, spacing = 5;
     QWidget* infoWidget;
     QLabel* titleLabel;
-    QLabel* descriptionLabel;
     QVector<QString> info;
     int id;
     bool finished = false;
@@ -292,7 +291,7 @@ private:
     //void resizeEvent(QResizeEvent*);
 
 public:
-    HomeworkQuery* homeworkQuery = nullptr;
+    TeacherHomeworkQuery* homeworkQuery = nullptr;
     HomeworkPost* homeworkPost = nullptr;
     bool received = false;
     int chooseId;

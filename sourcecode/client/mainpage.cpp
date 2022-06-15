@@ -401,6 +401,9 @@ mainPage::mainPage(QWidget* parent) :
             guideBtn = new bigIconButton(2, "", "导航", "微软雅黑", 13, cornerRadius, toolbar);
             guideBtn->setFixedSize(40, 40);
             guideBtn->hide();
+            classAddBtn = new bigIconButton(2, "", "添加课程", "微软雅黑", 10, cornerRadius, toolbar);
+            classAddBtn->setFixedSize(40, 40);
+            classAddBtn->hide();
             logoutBtn = new bigIconButton(1, ":/icons/icons/logout.svg", "", "", 0, cornerRadius, toolbar);
             logoutBtn->setFixedSize(40, 40);
             logoutBtn->hide();
@@ -458,6 +461,16 @@ mainPage::mainPage(QWidget* parent) :
         userInfo->bgWidget->setStyleSheet("background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 255, 200, 255), stop:0.3 rgba(255, 255, 240, 255), stop:1 rgba(255, 255, 255, 255));border-radius:10px;");
         slidePageList.push_back(userInfo);
         connect(userBtn, &bigIconButton::clicked, userInfo, &SlidePage::slideIn);
+
+        guidePage = new GuidePage(this);
+        guidePage->hide();
+
+        classPage = new ClassPage(this);
+        classPage->hide();
+
+        classAddPage = new ClassAddPage(this);
+        classAddPage->hide();
+
         connect(activityBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == ACTIVITY){
@@ -465,16 +478,11 @@ mainPage::mainPage(QWidget* parent) :
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                activityPage->LoadInfo();
                 showNewPage(activityPage);
                 currentPage = ACTIVITY;
             }
         });
-
-        guidePage = new GuidePage(this);
-        guidePage->hide();
-
-        classPage = new ClassPage(this);
-        classPage->hide();
         connect(classBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == CLASS){
@@ -482,6 +490,7 @@ mainPage::mainPage(QWidget* parent) :
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                classPage->LoadInfo();
                 showNewPage(classPage);
                 currentPage = CLASS;
             }
@@ -495,6 +504,18 @@ mainPage::mainPage(QWidget* parent) :
             } else {
                 showNewPage(guidePage);
                 currentPage = GUIDE;
+            }
+        });
+        connect(classAddBtn, &bigIconButton::clicked, this, [=] {
+            hideCurrentPage();
+            if (currentPage == CLASSADD){
+                teacherPage->LoadInfo();
+                showNewPage(teacherPage);
+                currentPage = TEACHERPAGE;
+            } else {
+                classAddPage->reloadInfo();
+                showNewPage(classAddPage);
+                currentPage = CLASSADD;
             }
         });
         connect(logoutBtn, &bigIconButton::clicked, this, [=] {
@@ -562,6 +583,9 @@ void mainPage::hideCurrentPage() {
         case TEACHERPAGE:
             mainLayout->removeWidget(teacherPage);
             teacherPage->hide();
+        case CLASSADD:
+            mainLayout->removeWidget(classAddPage);
+            classAddPage->hide();
     }
 }
 
@@ -595,6 +619,8 @@ void mainPage::LoadInfo() {
         userInfo->RemoveContent(userDetail);
         userDetail->deleteLater();
     } else {
+        toolLayout->removeWidget(classAddBtn);
+        classAddBtn->hide();
         userInfo->RemoveContent(teacherDetail);
         teacherDetail->deleteLater();
     }
@@ -613,11 +639,11 @@ void mainPage::LoadInfo() {
             nowStudent = varValue.value<Student>();
             emit getInfo();
         });
-        classPage->LoadInfo();
-        activityPage->LoadInfo();
         clockWidget->reloadInfo();
         LoadTriggerInfo();
     } else {
+        toolLayout->addWidget(classAddBtn);
+        classAddBtn->show();
         TeacherInfoQuery* nowQuery = new TeacherInfoQuery();
         connect(nowQuery, &TeacherInfoQuery::receive, this, [=](QVariant varValue) {
             nowTeacher = varValue.value<Teacher>();
@@ -632,11 +658,10 @@ void mainPage::LoadInfo() {
 void mainPage::LoadTriggerInfo() {
     TriggersQuery* nowQuery = new TriggersQuery();
     connect(nowQuery, &TriggersQuery::receive, this, [=](QVariant varValue) {
-        QVector<Alarm> triggerAlarms = varValue.value<QVector<Alarm>>();
-        for(int i = 0; i < triggerAlarms.size(); i++) {
-            Alarm nowAlarm = triggerAlarms[i];
-            QMessageBox::information(this, "提醒", "   闹钟：" + nowAlarm.t.ToString() + " 内容: " + nowAlarm.desc + "  地点： " + nowAlarm.place);
-            QLabel* nowLabel = new QLabel("   闹钟：" + nowAlarm.t.ToString() + " 内容: " + nowAlarm.desc + "  地点： " + nowAlarm.place, this);
+        QVector<QString> triggers = varValue.value<QVector<QString>>();
+        for(int i = 0; i < triggers.size(); i++) {
+            QMessageBox::information(this, "提醒", triggers[i]);
+            QLabel* nowLabel = new QLabel(triggers[i], this);
             nowLabel->setStyleSheet("background-color:#ffffb3");
             infoContainer->addWidget(nowLabel, true);
         }

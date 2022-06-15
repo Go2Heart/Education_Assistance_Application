@@ -29,7 +29,8 @@ void Clock::addTimer() {
         } else if(alarm->frequency == Alarm::WEEKLY) {
             timeHeap.Push(ClockTimer(tmp.t + Timer(0, 0, 0, 1), alarm->id));
         }
-        studentGroup.GetStudent(alarm->belongId)->TriggerAlarm(tmp.originId);
+        String nowMessage = "   闹钟：" + ToString_Time(alarm->t.hour) + ":" + ToString_Time(alarm->t.minute) + "  内容: " + alarm->desc + "  地点： " + alarm->place;
+        studentGroup.GetStudent(alarm->belongId)->TriggerMessage(nowMessage);
     }
     if(timer.week == 21) {
         timeHeap.clear();

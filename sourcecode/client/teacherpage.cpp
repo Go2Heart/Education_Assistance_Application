@@ -230,7 +230,7 @@ TeacherPage::TeacherPage(QWidget* parent):
     textButton* detailTabButton2 = new textButton("材料提交", detailTab);
     tabLayout->addWidget(detailTabButton2);
 
-    textButton* detailTabButton3 = new textButton("作业提交", detailTab);
+    textButton* detailTabButton3 = new textButton("作业发布", detailTab);
     tabLayout->addWidget(detailTabButton3);
 
     detailLayout->addWidget(detailTab);
@@ -289,8 +289,8 @@ TeacherPage::TeacherPage(QWidget* parent):
     });
     connect(detailTabButton3, &textButton::clicked, this, [=]{
         homework->cleanContent();
+        //homework->homeworkQuery = new TeacherHomeworkQuery(activityDtl->getActivity()->getInfoWidget()->getId().toInt());
         emit checkHomework(studentId, activityDtl->getActivity()->getInfoWidget()->getId().toInt());
-        homework->homeworkPost = new HomeworkPost(7, "作业1");
         qDebug() << studentId << "teacherClass id"<< activityDtl->getActivity()->getInfoWidget()->getId();
         activityDtl->hide();
         materialDlvr->hide();
@@ -298,20 +298,19 @@ TeacherPage::TeacherPage(QWidget* parent):
 
     });
     connect(this, &TeacherPage::checkHomework, this, [=](int studentId, int teacherClassId) {
-        homework->homeworkQuery = new HomeworkQuery(studentId, teacherClassId);
-        connect(homework->homeworkQuery, &HomeworkQuery::receive, this, [=](QVariant varValue){
-            QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
+        homework->homeworkQuery = new TeacherHomeworkQuery(teacherClassId);
+        connect(homework->homeworkQuery, &TeacherHomeworkQuery::receive, this, [=](QVariant varValue){
+            QVector<TeacherHomework*> result = varValue.value<QVector<TeacherHomework*>>();
             for(int i = 0; i < result.size(); i++){
                 QVector<QString> info;
-                info.push_back(QString::number(result[i]->id));
-                info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
-
+                qDebug() << i << " " << result[i]->desc;
                 teacherHomeworkWidget *infoWidget = new teacherHomeworkWidget(info, homework);
                 homework->addContent(infoWidget);
-                connect(infoWidget, &teacherHomeworkWidget::clicked, this, [=](int homeworkId){
+                /*connect(infoWidget, &teacherHomeworkWidget::clicked, this, [=](int homeworkId){
                     homework->chooseId = homeworkId;
                 });
+                 */
             }
         });
     });
@@ -426,6 +425,7 @@ void TeacherPage::resizeEvent(QResizeEvent*) {
 }
 
 void TeacherPage::LoadInfo() {
+    teacherClassList->cleanContent();
     ClassQuery* query = new ClassQuery();
     connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
         QVector<ClassResult*> teacherClassResult = varValue.value<QVector<ClassResult*>>();
@@ -441,6 +441,11 @@ void TeacherPage::LoadInfo() {
             for(int j = 0; j < teacherClassResult[i]->fileNames.size(); j++){
                 info.push_back(teacherClassResult[i]->fileNames[j]);
             }
+            info.push_back(QString::number(teacherClassResult[i]->examBegin.week));
+            info.push_back(QString::number(teacherClassResult[i]->examBegin.day));
+            info.push_back(teacherClassResult[i]->examBegin.ToString());
+            info.push_back(teacherClassResult[i]->examEnd.ToString());
+            info.push_back(teacherClassResult[i]->examPlace);
             //info.push_back
 
             teacherClassWidget * newteacherClass = new teacherClassWidget(info, itemWidget);
@@ -451,7 +456,6 @@ void TeacherPage::LoadInfo() {
                 fileDlvr->setDownloadInfo(newteacherClass->getInfoWidget()->getDownloadInfo());
                 emit fileDlvr->download();
                 homework->setteacherClassId(newteacherClass);
-                //TODO adding specific teacherClass page
             });
             teacherClassList->addContent(newteacherClass);
         }
@@ -543,6 +547,7 @@ teacherClassFileDeliver::teacherClassFileDeliver(QWidget *parent):QWidget(parent
         for(int i = 0; i < fileToDownload.size(); i++) {
 
             QLabel* tmp = new QLabel(fileToDownload[i], downloadList);
+            tmp->setFixedHeight(30);
             downloadList->addWidget(tmp, true);
         }
 
@@ -634,8 +639,8 @@ QVector<QString> teacherClassDetailWidget::collectMsg() {
 void teacherClassDetailWidget::showDetail(QVector<QString> info) {
     title->setValue(info[0]);
     description->setValue(info[1]);
-    place->setValue(info[3]);
-    time->setValue(info[2]);
+    place->setValue(info[2]);
+    time->setValue(info[3]);
     qq->setValue(info[4]);
     week->setValue(info[info.size() - 5]);
     day->setValue(info[info.size() - 4]);
@@ -667,35 +672,17 @@ teacherClassHomeworkWidget::teacherClassHomeworkWidget(QWidget *parent) {
     mainLayout->addWidget(container);
 
 
-    textButton* choose = new textButton("添加待提交作业", this);
-    choose->setFixedHeight(40);
-    mainLayout->addWidget(choose);
-    tempHomework = new ScrollAreaCustom(false, this);
-    tempHomework->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    tempHomework->setFixedHeight(100);
-    mainLayout->addWidget(tempHomework);
-    textButton* deliver = new textButton("提交作业", this);
+    textInputItem* title = new textInputItem("作业：", this);
+    mainLayout->addWidget(title);
+    textButton* deliver = new textButton("发布作业", this);
     deliver->setFixedHeight(40);
     mainLayout->addWidget(deliver);
 
-    connect(choose, &textButton::clicked, this,[=]{
-        QString filePath = QFileDialog::getOpenFileName(this, QStringLiteral("添加待提交"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));
-        QFile file(filePath);
-        file.open(QIODevice::ReadOnly);
-        QByteArray filestring = file.readAll();
-        filesToSubmit.push_back(filestring.toStdString());
-        QFileInfo fileInfo(filePath);
-        QLabel* tmp = new QLabel(fileInfo.fileName(),tempHomework);
-        fileNames.push_back(fileInfo.fileName());
-        tempHomework->addWidget(tmp,true);
-        file.close();
-    });
 
     connect(deliver, &textButton::clicked, this, [=] {
-        homeworkUploader = new HomeworkUpload(studentId, teacherClassId, chooseId, fileNames.size(), fileNames, filesToSubmit);
+        homeworkPost = new HomeworkPost(teacherClassId, title->value());
         fileNames.clear();
         filesToSubmit.clear();
-        tempHomework->clear();
     });
 
     connect(searchButton, &bigIconButton::clicked, this, [=]{
@@ -705,8 +692,6 @@ teacherClassHomeworkWidget::teacherClassHomeworkWidget(QWidget *parent) {
             QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
             for(int i = 0; i < result.size(); i++){
                 QVector<QString> info;
-                info.push_back(QString::number(result[i]->id));
-                info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
                 teacherHomeworkWidget *infoWidget = new teacherHomeworkWidget(info, this);
                 this->addContent(infoWidget);
@@ -741,8 +726,6 @@ teacherClassHomeworkInfoWidget::teacherClassHomeworkInfoWidget(QVector<QString> 
         QWidget(parent)
 {
     this->info = info;
-    id = info[0].toInt();
-    finished = info[1].toInt();
     setStyleSheet("background-color:transparent;");
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     infoWidget = new QWidget(this);
@@ -754,22 +737,12 @@ teacherClassHomeworkInfoWidget::teacherClassHomeworkInfoWidget(QVector<QString> 
     QFont descFont = QFont("Corbel Light", 13);
     QFontMetrics descm(descFont);
     descFont.setStyleStrategy(QFont::PreferAntialias);
-    QString isFinished = finished == 1 ? "已完成" : "未完成";
-    titleLabel = new QLabel("[作业ID]" + info[0], infoWidget);
+    titleLabel = new QLabel("[作业内容]" + info[0], infoWidget);
     titleLabel->setFont(descFont);
     titleLabel->setFixedHeight(descm.lineSpacing());
     titleLabel->setStyleSheet("color: black");
     infoLayout->addWidget(titleLabel);
-
-    QFont detailFont = QFont("Corbel Light", 10);
-    QFontMetrics detailm(detailFont);
-    detailFont.setStyleStrategy(QFont::PreferAntialias);
-    descriptionLabel = new QLabel("[状态]" + isFinished + "[内容]" + info[2], infoWidget);
-    descriptionLabel->setFont(detailFont);
-    descriptionLabel->setFixedHeight(detailm.lineSpacing());
-    descriptionLabel->setStyleSheet("color: gray");
-    infoLayout->addWidget(descriptionLabel);
-
+    
 }
 
 teacherHomeworkWidget::teacherHomeworkWidget(QVector<QString> info, QWidget *parent): QWidget(parent) {

@@ -229,7 +229,7 @@ void ScrollAreaCustom::clear() { container->clear(); }
 ScrollListContainer::ScrollListContainer(QWidget *parent) :
     QWidget(parent)
 {
-
+    //setStyleSheet("background-color:red");
 }
 
 void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
@@ -239,10 +239,9 @@ void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
     widgets.push_back(widget);
     size++;
     ys.push_back(0);
-
     //重订宽度
-    widget->resize(210, 300);
-    //widget->resize(this->width(), widget->height());
+    //widget->resize(210, 300);
+    widget->resize(this->width(), widget->height());
     widget->show();
 
     if(setAnimation) {
@@ -291,6 +290,8 @@ void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
             widgets[i]->move(QPoint(widgets[i]->pos().x(), ys[i]));
         }
     }
+    //qDebug()<< "after addwidget, ys is:";
+    //for(int i = 0; i < ys.size(); i++) qDebug() << ys[i];
 }
 
 void ScrollListContainer::RemoveWidget(QWidget *widget) {
@@ -318,6 +319,7 @@ void ScrollListContainer::RemoveWidget(QWidget *widget) {
     widgets.remove(index);
     size--;
     ys.remove(index);
+    //qDebug()<<"after remove,ys size is"<< ys.size();
 }
 
 void ScrollListContainer::updateHeight() {
@@ -335,8 +337,9 @@ void ScrollListContainer::clear() {
 
 void ScrollListContainer::paintEvent(QPaintEvent *event) {
     for(int i = 0; i < widgets.size(); i++) {
-        qDebug() << "paint" << width() << widgets[i]->height();
+        //qDebug() << "paint" << width() << widgets[i]->height();
         widgets[i]->resize(width(), widgets[i]->height());
+        widgets[i]->move(0, ys[i]);
     }
 }
 
