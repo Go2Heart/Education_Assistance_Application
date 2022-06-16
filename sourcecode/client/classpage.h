@@ -124,8 +124,8 @@ private:
     QString id;
     FileUpload* fileUploader;
     FileDownload* fileDownloader;
-    QVector<QLabel*> reloadList;
 public:
+    QVector<QLabel*> reloadList;
     classFileDeliver(QWidget* parent);
     void setActivity(classWidget* activity) {
         currentActivity = activity;
@@ -160,10 +160,11 @@ private:
     classDetailWidget* activityDtl = nullptr;
     classFileDeliver* fileDlvr = nullptr;
     classHomeworkWidget* homework = nullptr;
-    QVector<classWidget*> reloadList = QVector<classWidget*>();
+
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 public:
+    QVector<classWidget*> reloadList = QVector<classWidget*>();
     ClassPage(QWidget* parent = nullptr);
     void LoadInfo();
 signals:

@@ -7,6 +7,80 @@
 #include "loginpage.h"
 #include "global.h"
 
+//sort place
+
+inline void classWidgetMerge(classWidget** array, int l, int mid, int r, bool (*compare)(classWidget* x, classWidget* y)) {
+    classWidget* *temp = new classWidget*[r - l + 1];
+    int i = l;
+    int j = mid + 1;
+    int k = 0;
+    while (i <= mid &&j <= r) {
+        if (compare(array[j], array[i])) temp[k++] = array[i++];
+        else temp[k++] = array[j++];
+    }
+    while (i <= mid) temp[k++] = array[i++];
+    while (j <= r) temp[k++] = array[j++];
+    for (i = l, k = 0; i <= r;) array[i++] = temp[k++];
+    delete []temp;
+}
+
+inline void classWidgetsort(classWidget* * array, int l, int r, bool (*compare)(classWidget* x, classWidget* y)) {
+    if (l < r) {
+        int mid = (l + r) / 2;
+        classWidgetsort(array, l, mid, compare);
+        classWidgetsort(array, mid + 1, r, compare);
+        classWidgetMerge(array, l, mid, r, compare);
+    }
+}
+
+inline void homeworkWidgetMerge(homeworkWidget** array, int l, int mid, int r, bool (*compare)(homeworkWidget* x, homeworkWidget* y)) {
+    homeworkWidget* *temp = new homeworkWidget*[r - l + 1];
+    int i = l;
+    int j = mid + 1;
+    int k = 0;
+    while (i <= mid &&j <= r) {
+        if (compare(array[j], array[i])) temp[k++] = array[i++];
+        else temp[k++] = array[j++];
+    }
+    while (i <= mid) temp[k++] = array[i++];
+    while (j <= r) temp[k++] = array[j++];
+    for (i = l, k = 0; i <= r;) array[i++] = temp[k++];
+    delete []temp;
+}
+
+inline void homeworkWidgetsort(homeworkWidget* * array, int l, int r, bool (*compare)(homeworkWidget* x, homeworkWidget* y)) {
+    if (l < r) {
+        int mid = (l + r) / 2;
+        homeworkWidgetsort(array, l, mid, compare);
+        homeworkWidgetsort(array, mid + 1, r, compare);
+        homeworkWidgetMerge(array, l, mid, r, compare);
+    }
+}
+
+inline void QLabelMerge(QLabel** array, int l, int mid, int r, bool (*compare)(QLabel* x, QLabel* y)) {
+    QLabel* *temp = new QLabel*[r - l + 1];
+    int i = l;
+    int j = mid + 1;
+    int k = 0;
+    while (i <= mid &&j <= r) {
+        if (compare(array[j], array[i])) temp[k++] = array[i++];
+        else temp[k++] = array[j++];
+    }
+    while (i <= mid) temp[k++] = array[i++];
+    while (j <= r) temp[k++] = array[j++];
+    for (i = l, k = 0; i <= r;) array[i++] = temp[k++];
+    delete []temp;
+}
+
+inline void QLabelsort(QLabel* * array, int l, int r, bool (*compare)(QLabel* x, QLabel* y)) {
+    if (l < r) {
+        int mid = (l + r) / 2;
+        QLabelsort(array, l, mid, compare);
+        QLabelsort(array, mid + 1, r, compare);
+        QLabelMerge(array, l, mid, r, compare);
+    }
+}
+
 classInfoWidget::classInfoWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent),
     classType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
@@ -118,6 +192,14 @@ classWidget::classWidget(QVector<QString> info, QWidget* parent) :
 
 void classWidget::resizeEvent(QResizeEvent*) {
     bgWidget->resize(this->size());
+}
+
+bool classWidgetsort1(classWidget* a, classWidget* b) {
+    return a->getInfoWidget()->getInfo()[2] > b->getInfoWidget()->getInfo()[2];
+}
+
+bool classWidgetsort2(classWidget* a, classWidget* b) {
+    return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
 }
 
 ClassPage::ClassPage(QWidget* parent):
@@ -354,17 +436,27 @@ ClassPage::ClassPage(QWidget* parent):
                 return;
             } else if (selections->currentIndex() == 1) {
                 //by time to reorder
-                std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
+                classWidget** tmpV = new classWidget*[reloadList.size()];
+                for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+                classWidgetsort(tmpV, 0, reloadList.size() - 1, classWidgetsort1);
+                for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+                delete []tmpV;
+                /*std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
                     return a->getInfoWidget()->getInfo()[2] > b->getInfoWidget()->getInfo()[2];
-                });
+                });*/
                 for(int i = 0; i < reloadList.size(); i++) {
                     classList->addContent(reloadList[i]);
                 }
                 return;
             } else if(selections->currentIndex() == 2) {
-                std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
+                classWidget** tmpV = new classWidget*[reloadList.size()];
+                for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+                classWidgetsort(tmpV, 0, reloadList.size() - 1, classWidgetsort2);
+                for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+                delete []tmpV;
+                /*std::sort(reloadList.begin(), reloadList.end(), [=](classWidget* a, classWidget* b){
                     return a->getInfoWidget()->getInfo()[3] < b->getInfoWidget()->getInfo()[3];
-                });
+                });*/
                 for(int i = 0; i < reloadList.size(); i++) {
                     classList->addContent(reloadList[i]);
                 }
@@ -463,6 +555,14 @@ void ClassPage::LoadInfo() {
     });
 }
 
+bool qlabelsort1(QLabel* a, QLabel* b) {
+    return a->text() > b->text();
+}
+
+bool qlabelsort2(QLabel* a, QLabel* b) {
+    return a->text() < b->text();
+}
+
 classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setAlignment(Qt::AlignCenter);
@@ -498,17 +598,28 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
         downloadList->clear();
         if(sortButton->text() == "正向排序") {
             sortButton->setText("反向排序");
-            std::sort(reloadList.begin(), reloadList.end(), [](QLabel* a, QLabel* b) {
+            QLabel** tmpV = new QLabel*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            QLabelsort(tmpV, 0, reloadList.size() - 1, qlabelsort1);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
+            /*std::sort(reloadList.begin(), reloadList.end(), [](QLabel* a, QLabel* b) {
                 return a->text() > b->text();
-            });
+            });*/
             for (int i = 0; i < reloadList.size(); i++) {
                 downloadList->addWidget(reloadList[i], true);
             }
         } else {
             sortButton->setText("正向排序");
+            /*
             std::sort(reloadList.begin(), reloadList.end(), [](QLabel* a, QLabel* b) {
                 return a->text() < b->text();
-            });
+            });*/
+            QLabel** tmpV = new QLabel*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            QLabelsort(tmpV, 0, reloadList.size() - 1, qlabelsort2);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
             for (int i = 0; i < reloadList.size(); i++) {
                 downloadList->addWidget(reloadList[i], true);
             }
@@ -672,6 +783,14 @@ void classDetailWidget::showDetail(QVector<QString> info) {
     //frequency->setValue(info[6]);
 
 }
+
+bool homeworksort1(homeworkWidget* a, homeworkWidget* b) {
+    return a->getInfoWidget()->getFinished() > b->getInfoWidget()->getFinished();
+}
+
+bool homeworksort2(homeworkWidget* a, homeworkWidget* b) {
+    return a->getInfoWidget()->getFinished() < b->getInfoWidget()->getFinished();
+}
 classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
         searchBar = new QWidget(this);
@@ -742,17 +861,28 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
     connect(searchButton, &bigIconButton::clicked, this, [=]{
         this->cleanContent();
         if(searchType->currentText() == "未完成") {
-            std::sort(reloadList.begin(), reloadList.end(), [](homeworkWidget* a, homeworkWidget* b) {
+            homeworkWidget** tmpV = new homeworkWidget*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            homeworkWidgetsort(tmpV, 0, reloadList.size() - 1, homeworksort1);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
+            /*std::sort(reloadList.begin(), reloadList.end(), [](homeworkWidget* a, homeworkWidget* b) {
                 return a->getInfoWidget()->getFinished() > b->getInfoWidget()->getFinished();
-            });
+            });*/
             for (int i = 0; i < reloadList.size(); i++) {
                 this->addContent(reloadList[i]);
             }
             return;
         } else if(searchType->currentText() == "已完成") {
+            homeworkWidget** tmpV = new homeworkWidget*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            homeworkWidgetsort(tmpV, 0, reloadList.size() - 1, homeworksort1);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
+            /*
             std::sort(reloadList.begin(), reloadList.end(), [](homeworkWidget* a, homeworkWidget* b) {
                 return a->getInfoWidget()->getFinished() < b->getInfoWidget()->getFinished();
-            });
+            });*/
             for (int i = 0; i < reloadList.size(); i++) {
                 this->addContent(reloadList[i]);
             }

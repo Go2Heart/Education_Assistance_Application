@@ -10,6 +10,7 @@
 #include "slidepage.h"
 #include "clock.h"
 #include "specifiedWidgets.h"
+#include "sort.h"
 class activityInfoWidget : public QWidget{
 Q_OBJECT
 private:
@@ -25,6 +26,7 @@ private:
     void resizeEvent(QResizeEvent*);
     QVector<QString> info;
 public:
+    bool isPersonal;
     activityInfoWidget(QVector<QString> info, QWidget* parent = nullptr);
     QVector<QString> getInfo(){return info;}
     QString getId(){return id;}
@@ -93,12 +95,12 @@ private:
     textInputItem* day;
     textInputItem* time;
     textInputItem* frequency;
-    bool isPersonal = true;
     bool alarm = true;
     QVector<QString> collectMsg();
 //    ScrollAreaCustom* materialList;
 //    ScrollAreaCustom* homeworkList;
 public:
+    bool isPersonal = true;
     activityDetailWidget(QWidget* parent);
     void showDetail(QVector<QString> info);
     QVector<QString> getLines() {
@@ -162,12 +164,13 @@ private:
     activityDetailWidget* activityDtl = nullptr;
     activityListWidget* activityList = nullptr;
     activityFileDeliver* fileDlvr = nullptr;
-    QVector<activityWidget*> reloadList = QVector<activityWidget*>();
+
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
 
     activityAdd* newPage;
 public:
+    QVector<activityWidget*> reloadList = QVector<activityWidget*>();
     ActivityPage(QWidget* parent = nullptr);
     void LoadInfo();
 };

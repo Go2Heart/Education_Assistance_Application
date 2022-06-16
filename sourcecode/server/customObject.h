@@ -91,7 +91,6 @@ public:
         }
     }
     void AddFile(File* file) {
-        bool find = false;
         if(!hashSort.Find(file->hash).size()) {
             files.push_back(file);
             hashSort.InsertNode(file->hash, file);
@@ -140,6 +139,7 @@ public:
     Vector<Student*> students;
     Vector<File*> files;
     int activityId;
+    RbTree<String, File*> hashSort;
     Activity(String place, String name, int type, Duration duration, Vector<Student*> students) :
             place(place),
             name(name),
@@ -151,9 +151,10 @@ public:
         for(int i = 0; i < files.size(); i++) delete(files[i]);
     }
     void AddFile(File* file) {
-        bool find = false;
-        for(int i = 0; i < files.size(); i++) if(file->hash == files[i]->hash) find = true;
-        if(!find) files.push_back(file);
+        if(!hashSort.Find(file->hash).size()) {
+            files.push_back(file);
+            hashSort.InsertNode(file->hash, file);
+        }
     }
 };
 

@@ -1,8 +1,35 @@
 #include "activitypage.h"
 #include "loginpage.h"
 #include "global.h"
+
+//sort area
+inline void activityWidgetMerge(activityWidget** array, int l, int mid, int r, bool (*compare)(activityWidget* x, activityWidget* y)) {
+    activityWidget* *temp = new activityWidget*[r - l + 1];
+    int i = l;
+    int j = mid + 1;
+    int k = 0;
+    while (i <= mid &&j <= r) {
+        if (compare(array[j], array[i])) temp[k++] = array[i++];
+        else temp[k++] = array[j++];
+    }
+    while (i <= mid) temp[k++] = array[i++];
+    while (j <= r) temp[k++] = array[j++];
+    for (i = l, k = 0; i <= r;) array[i++] = temp[k++];
+    delete []temp;
+}
+
+inline void activityWidgetsort(activityWidget* * array, int l, int r, bool (*compare)(activityWidget* x, activityWidget* y)) {
+    if (l < r) {
+        int mid = (l + r) / 2;
+        activityWidgetsort(array, l, mid, compare);
+        activityWidgetsort(array, mid + 1, r, compare);
+        activityWidgetMerge(array, l, mid, r, compare);
+    }
+}
+
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent),
+    isPersonal(info[5].toInt() == 1),
     activityType(new bigIconButton(13, info[5].toInt() == 1 ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
 {
     this->info = info;
@@ -242,6 +269,14 @@ void activityWidget::resizeEvent(QResizeEvent*) {
     bgWidget->resize(this->size());
 }
 
+bool activitysort1(activityWidget* a, activityWidget* b){
+    return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
+}
+
+bool activitysort2(activityWidget* a, activityWidget* b){
+    return a->getInfoWidget()->isPersonal > b->getInfoWidget()->isPersonal;
+}
+
 ActivityPage::ActivityPage(QWidget* parent):
         QWidget(parent)
 {
@@ -285,7 +320,7 @@ ActivityPage::ActivityPage(QWidget* parent):
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
     QStringList selectList;
-    selectList<<"名称"<<"地点"<<"时间"<<"时间排序";
+    selectList<<"名称"<<"地点"<<"时间"<<"时间排序"<<"类型排序";
     ComboBox* selections = new ComboBox(searchBar);
     selections->setFixedWidth(100);
 //                        selections->setStyleSheet("border-radius: 3");
@@ -425,9 +460,31 @@ ActivityPage::ActivityPage(QWidget* parent):
     connect(searchActivity, &bigIconButton::clicked, this, [=] {
         if(activitySearch->value() == "" && selections->currentIndex() == 3) {
             activityList->cleanContent();
+
+            activityWidget** tmpV = new activityWidget*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            activityWidgetsort(tmpV, 0, reloadList.size() - 1, activitysort1);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
+            /*
             std::sort(reloadList.begin(), reloadList.end(), [=](activityWidget* a, activityWidget* b){
                 return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
-            });
+            });*/
+            for(int i = 0; i < reloadList.size(); i++) {
+                activityList->addContent(reloadList[i]);
+            }
+        } else if(activitySearch->value() == "" && selections->currentIndex() == 4) {
+            activityList->cleanContent();
+
+            activityWidget** tmpV = new activityWidget*[reloadList.size()];
+            for(int i = 0; i < reloadList.size(); i++) tmpV[i] = reloadList[i];
+            activityWidgetsort(tmpV, 0, reloadList.size() - 1, activitysort2);
+            for(int i = 0; i < reloadList.size(); i++) reloadList[i] = tmpV[i];
+            delete []tmpV;
+            /*
+            std::sort(reloadList.begin(), reloadList.end(), [=](activityWidget* a, activityWidget* b){
+                return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
+            });*/
             for(int i = 0; i < reloadList.size(); i++) {
                 activityList->addContent(reloadList[i]);
             }
