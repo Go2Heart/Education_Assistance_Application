@@ -11,6 +11,7 @@ extern class Encoder encodeSolver;
 extern class Decoder decodeSolver;
 extern class Clock timeTracker;
 extern class TimeHeap timeHeap;
+extern class HomeworkFiles homeworkFiles;
 extern FILE* logFile;
 class Timer;
 extern Timer beg[20];

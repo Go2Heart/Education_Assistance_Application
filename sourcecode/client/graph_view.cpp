@@ -4,19 +4,21 @@
 
 #include "graph_view.h"
 
-viewLog::viewLog(QString log, QWidget *parent) :
+viewLog::viewLog(QString log, int type, QWidget *parent) :
         QLabel(parent)
 {
     logText = log;
     this->setFont(logFont);
     this->setText(log);
-    this->setFixedHeight(QFontMetrics(logFont).lineSpacing());
+    this->setWordWrap(true);
+    this->setFixedHeight(QFontMetrics(logFont).lineSpacing() * (type == 0 ? 1 : type));
 }
 
 void viewLog::resizeEvent(QResizeEvent *event){
-    QString elideText = QFontMetrics(logFont).elidedText(logText, Qt::ElideRight, this->width() - 5);
-    this->setText(elideText);
-    this->show();
+    //QString elideText = QFontMetrics(logFont).elidedText(logText, Qt::ElideRight, this->width() - 5);
+    //this->setText(elideText);
+    //this->adjustSize();
+    //this->show();
 }
 
 //MyGraphicsView

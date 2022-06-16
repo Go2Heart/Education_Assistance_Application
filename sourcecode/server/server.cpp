@@ -243,6 +243,7 @@ void Server::run() {
                         Homework_Student* nowHomework = nowLesson->GetHomework(parms[3].number);
                         Log("[提交作业]  学生 " + nowStudent->name + " 对课程 " + lessonGroup.GetLesson(nowLesson->lessonId)->Name() + " 提交了 " + nowHomework->desc + " 作业");
                         Vector<File*> fileVector;
+                        bool success = true;
                         for(int j = 0, k = 5; j < parms[4].number; j++, k += 2) {
                             String savePath = "../Lesson/"
                             + ToString(parms[1].number) + "/"
@@ -250,13 +251,14 @@ void Server::run() {
                             + ToString(parms[3].number) + "/"
                             + parms[k].message;
                             String tmpHash = sha256(parms[k + 1].message);
+                            success &= homeworkFiles.verifyFile(tmpHash);
                             File* file = new File(savePath, parms[k].message, tmpHash);
                             fileVector.push_back(file);
                             WriteFile(savePath, parms[k + 1].message);
                         }
                         nowHomework->Upload(fileVector);
                         Vector<Parameter> resultParms;
-                        resultParms.push_back(Parameter(String("ack"), false));
+                        resultParms.push_back(Parameter(success));
                         sendAll(i, resultParms, false);
                         break;
                         break;
@@ -392,7 +394,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + " "  + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -422,7 +424,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + " "  + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -466,7 +468,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -496,7 +498,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -1045,6 +1047,38 @@ void Server::run() {
                         Vector<Lesson*> lessons = studentGroup.GetStudent(parms[1].number)->events->FromLessonName(parms[2].message);
                         if(lessons.size()) {
                             resultParms.push_back(Parameter(graph.GetPointId(lessons[0]->Place())));
+                        } else {
+                            resultParms.push_back(Parameter(6666));
+                        }
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x22 : { // query place
+                        Vector<Parameter> resultParms;
+                        Vector<Lesson_Student*> lessons = studentGroup.GetStudent(parms[1].number)->events->lessons;
+                        Timer t1 = timeTracker.NowTimer();
+                        Timer t2 = UnzipTimer(parms[2].number);
+                        Timer t3 = Timer(t2.hour, t2.minute, t1.day, t1.week);
+                        Timer lessTimer;
+                        Lesson* resultLesson = NULL;
+                        for(int j = 0; j < lessons.size(); j++) {
+                            Lesson* nowLesson = lessonGroup.GetLesson(lessons[j]->lessonId);
+                            Vector<Duration> nowDurations = nowLesson->ClassDurations();
+                            bool find = false;
+                            for(int k = 0; k < nowDurations.size(); k++) {
+                                if(nowDurations[k].begin.week <= t3.week && t3.week <= nowDurations[k].end.week &&
+                                    nowDurations[k].begin.day == t3.day && t3.HMLess(nowDurations[k].begin)) {
+                                    if(!resultLesson || nowDurations[k].begin.HMLess(lessTimer)) {
+                                        resultLesson = nowLesson;
+                                        lessTimer = nowDurations[k].begin;
+                                        find = true;
+                                    }
+                                }
+                                if(find) break;
+                            }
+                        }
+                        if(resultLesson) {
+                            resultParms.push_back(Parameter(graph.GetPointId(resultLesson->Place())));
                         } else {
                             resultParms.push_back(Parameter(6666));
                         }

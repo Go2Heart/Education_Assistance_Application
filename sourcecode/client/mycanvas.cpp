@@ -25,6 +25,10 @@ LogWidget::LogWidget(QWidget* parent) :
     setFixedWidth(250);
 }
 
+void LogWidget::clear() {
+    container->clear();
+}
+
 MyCanvas::MyCanvas(QTextStream &ts, int radius, QWidget *parent) :
         QWidget(parent)
 {
@@ -59,6 +63,7 @@ MyCanvas::MyCanvas(QTextStream &ts, int radius, QWidget *parent) :
     connect(view, &MyGraphicsView::visitClear, this, [=](){g->ClearVisit();});
     view->ReadFromFile(ts);
     for(int i = 0; i < view->arcNum; i++){
+        qDebug()<< view->lines[i]->stVex()->id << view->lines[i]->edVex()->id;
         int w;
         ts >> w;
         if(w != 0)
@@ -432,6 +437,7 @@ void MyCanvas::Init(){
     });
     connect(goIcon, &bigIconButton::clicked, this, [=] {
         if(start != nullptr && end != nullptr) {
+            logWidget->clear();
             QVector<int> v;
             v.push_back(start->id);
             for(int i = 0; i < pathVector.size(); i++) v.push_back(pathVector[i]->id);
@@ -439,13 +445,22 @@ void MyCanvas::Init(){
             DisQuery* query = new DisQuery(v, modeBox->currentIndex() + 1);
             connect(query, &DisQuery::receive, this, [=](QVariant varValue) {
                 ResPackage result = varValue.value<ResPackage>();
-                result.timeCost.Print();
+                logWidget->AddContent(new viewLog("[搜索结果]    已找到路径。路径搜索模式为 " + modeBox->currentText() + " 。路径总耗时为 " + QString::asprintf("%d 分, %d 秒", result.timeCost.hour + result.timeCost.day * 24 + result.timeCost.week * 168, result.timeCost.minute), 3));
                 for(int i = 0, j = 0; i < result.v.size(); i = j + 1, j = i) {
                     //view->hasVisitedItem = true;
-                    if(result.v[j].type == 3) {
+                    QString normalTool[2] = {"步行", "骑自行车"};
+                    QString specifiedTool[2] = {"乘公车", "乘班车"};
+                    int nowMode = modeBox->currentIndex();
+                    if(result.v[i].type == 3) {
                         while(result.v[j].type != 4) ++j;
                         int beginVexId;
+                        if(i != 0) {
+                            logWidget->AddContent(new viewLog("[路径]    从途经点 " + view->vexFromId(result.v[i + 1].id)->Text() + " 出发", 2));
+                        } else {
+                            logWidget->AddContent(new viewLog("[路径]    从起点 " + view->vexFromId(result.v[i + 1].id)->Text() + " 出发", 2));
+                        }
                         for(int k = i + 1; k < j; k++) {
+                            if(result.v[k].type == 5) continue;
                             if(result.v[k].type == 2) {
                                 view->vexFromId(result.v[k].id)->visit();
                                 beginVexId = result.v[k].id;
@@ -453,12 +468,24 @@ void MyCanvas::Init(){
                                 MyGraphicsLineItem* line = view->lineFromId(result.v[k].id);
                                 if(line->stVex()->id != beginVexId) line->reverseDirection();
                                 line->visit();
+                                if(result.v[k].id == 0) {
+                                    logWidget->AddContent(new viewLog("[路径]    " + (nowMode ? specifiedTool[result.v[k].tool] : QString("")) + "从点 " + line->stVex()->Text() + " 到 " + line->edVex()->Text() + " 。耗时" + QString::asprintf("%d 分, %d 秒", result.v[k + 1].tool / 60, result.v[k + 1].tool % 60), 3));
+                                } else {
+                                    logWidget->AddContent(new viewLog("[路径]    " + (nowMode ? normalTool[result.v[k].tool] : QString("")) + "从点 " + line->stVex()->Text() + " 到 " + line->edVex()->Text() + " 。耗时" + QString::asprintf("%d 分, %d 秒", line->weightText().toInt() / 60, line->weightText().toInt() % 60), 3));
+                                }
                             }
+                        }
+                        if(j == result.v.size() - 1) {
+                            logWidget->AddContent(new viewLog("[路径]    已到达终点" + view->vexFromId(result.v[j - 1].id)->Text(), 2));
+                        } else {
+                            logWidget->AddContent(new viewLog("[路径]    已到达途经点" + view->vexFromId(result.v[j - 1].id)->Text(), 2));
                         }
                     } else qDebug()<<"format error!";
                     //view->visitClear();
                 }
             });
+            pathVector.clear();
+            pathArea->clear();
         }
     });
 }
@@ -484,4 +511,5 @@ void MyCanvas::LoadInfo() {
 
 void MyCanvas::changeEndVex(int x) {
     end = view->vexFromId(x);
+    emit endChanged();
 }

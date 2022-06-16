@@ -19,7 +19,7 @@ timeWidget::timeWidget(QWidget* parent) :
     }
     textItem* split = new textItem(":", "Corbel Light", 13, this);
     boxs[0]->setNumberRange(0, 24);
-    boxs[1]->setFixedSize(0, 60);
+    boxs[1]->setNumberRange(0, 60);
     layout->addWidget(boxs[0]);
     layout->addWidget(split);
     layout->addWidget(boxs[1]);

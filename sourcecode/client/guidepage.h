@@ -13,6 +13,7 @@
 #include "slidepage.h"
 #include "mycanvas.h"
 #include "connect.h"
+#include "specifiedWidgets.h"
 #include <QVector>
 class GuidePage : public QWidget {
     Q_OBJECT

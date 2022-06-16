@@ -263,4 +263,21 @@ public:
     }
 };
 
+class HomeworkFiles {
+public:
+    Vector<File*> files;
+    RbTree<String, File*> hashSort;
+    HomeworkFiles() {}
+    ~HomeworkFiles() {}
+    void AddFile(File* file) {
+        files.push_back(file);
+        hashSort.InsertNode(file->hash, file);
+    }
+    bool verifyFile(String hash) {
+        Vector<File*> result = hashSort.Find(hash);
+        if(result.size()) return false;
+        return true;
+    }
+};
+
 #endif

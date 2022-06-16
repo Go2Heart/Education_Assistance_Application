@@ -532,5 +532,16 @@ signals:
     void receive(int x);
 };
 
+class TimePointQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TimePointQuery(Timer t);
+signals:
+    void receive(int x);
+};
+
+
 
 #endif // CONNECT_H

@@ -293,7 +293,7 @@ void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
             widgets[i]->move(QPoint(widgets[i]->pos().x(), ys[i]));
         }
     }
-    qDebug()<< "after addwidget, ys is:" << ys.size();
+    //qDebug()<< "after addwidget, ys is:" << ys.size();
     //for(int i = 0; i < ys.size(); i++) qDebug() << ys[i];
 }
 
@@ -322,7 +322,7 @@ void ScrollListContainer::RemoveWidget(QWidget *widget) {
     widgets.remove(index);
     size--;
     ys.remove(index);
-    qDebug()<<"after remove,ys size is"<< ys.size();
+    //qDebug()<<"after remove,ys size is"<< ys.size();
 }
 
 void ScrollListContainer::updateHeight() {

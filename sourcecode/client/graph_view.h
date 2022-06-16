@@ -37,10 +37,11 @@ class viewLog : public QLabel{
 Q_OBJECT
 private:
     QFont logFont = QFont("Corbel", 12);
+    int type = 0;
     QString logText;
     void resizeEvent(QResizeEvent *event);
 public:
-    viewLog(QString log, QWidget *parent = nullptr);
+    viewLog(QString log, int type = 0, QWidget *parent = nullptr);
 };
 
 class MyGraphicsView;

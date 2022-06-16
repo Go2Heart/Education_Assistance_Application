@@ -19,6 +19,7 @@ Alarms alarmGroup;
 Graph graph;
 Server server;
 Clock timeTracker;
+HomeworkFiles homeworkFiles;
 TimeHeap timeHeap(20005);
 
 int timeN;
@@ -107,7 +108,9 @@ void InitLesson() {
 					Vector<File*> ff;
 					for(int jj = 0; jj < resultSize; jj++) {
 						String savePath = GetStr(in), fileName = GetStr(in), hash = GetStr(in);
-						ff.push_back(new File(savePath, fileName, hash));
+						File* fff = new File(savePath, fileName, hash);
+						ff.push_back(fff);
+						homeworkFiles.AddFile(fff);
 					}
 					tmpStudents[j]->events->GetLesson(lessonId)->GetHomework(k)->Upload(ff);
 				}

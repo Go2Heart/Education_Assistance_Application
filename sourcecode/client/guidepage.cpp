@@ -88,7 +88,8 @@ GuidePage::GuidePage(QWidget *parent) :
         timeStart->hide();*/
         SlidePage *timeInfo = new SlidePage(10, SlidePage::FIXED, 400, 500, "Timeinfo", this, 10);
         textButton *timeSearch = new textButton("Search", timeInfo);
-        textInputItem *timeStart = new textInputItem("Start", timeInfo);
+            timeWidget* nowTimeWidget = new timeWidget(timeInfo);
+        customWidget* nowTime = new customWidget("起始搜索时间", nowTimeWidget, timeInfo);
         QWidget *modeChange2 = new QWidget(timeInfo);
         modeChange2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QHBoxLayout *modeChangeLayout2 = new QHBoxLayout(modeChange2);
@@ -108,7 +109,7 @@ GuidePage::GuidePage(QWidget *parent) :
         modeChange2->setFixedHeight(classMode2->height());
         timeInfo->AddContent(timeSearch);
         timeInfo->AddSpacing(10);
-        timeInfo->AddContent(timeStart);
+        timeInfo->AddContent(nowTime);
         timeInfo->AddSpacing(10);
         timeInfo->AddContent(modeChange2);
         pageList.push_back(timeInfo);
@@ -168,12 +169,15 @@ GuidePage::GuidePage(QWidget *parent) :
             //qDebug()<<"classSearch";
             ClassPointQuery* nowQuery = new ClassPointQuery(classSelectBox->currentText());
             connect(nowQuery, &ClassPointQuery::receive, this, [=](int id) {
-                if(id != 6666)nowCanvas->changeEndVex(id);
+                if(id != 6666) nowCanvas->changeEndVex(id);
             });
             classInfo->slideOut();
         });
         connect(timeSearch, &textButton::clicked, this, [=]() {
-            //qDebug()<<"timeSearch";
+            TimePointQuery* nowQuery = new TimePointQuery(nowTimeWidget->GetTimer());
+            connect(nowQuery, &TimePointQuery::receive, this, [=](int id) {
+                if(id != 6666) nowCanvas->changeEndVex(id);
+            });
             timeInfo->slideOut();
         });
     }

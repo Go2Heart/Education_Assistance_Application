@@ -80,6 +80,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 			now = x;
 		}
 		tmpRes.push_back(Result(2, 0, rt[p[t].Bel()]));
+		tmpRes.push_back(Result(5, crossTime, 0));
 		tmpRes.push_back(Result(p[t].Bel() ^ 1, crossType, crossEdgeId));
 		now = rt[p[s].Bel()];
 		while(now != s) {

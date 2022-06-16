@@ -57,7 +57,7 @@ public:
 };
 
 struct Result {
-// type: 0: x -> y 1: y -> x 2: point 3: start 4: end
+// type: 0: x -> y 1: y -> x 2: point 3: start 4: end 5: crossTime
 // tool: 对于校区内的路:0: foot 1: bicycle
 // tool：对于校区间的路:0: bus 1: shuttle
 	int type, tool;

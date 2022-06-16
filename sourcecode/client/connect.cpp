@@ -613,3 +613,14 @@ ClassPointQuery::ClassPointQuery(QString name) {
     });
 }
 
+TimePointQuery::TimePointQuery(Timer t) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x22));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(t.Zip()));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        emit receive(parms[0]->number);
+    });
+}
