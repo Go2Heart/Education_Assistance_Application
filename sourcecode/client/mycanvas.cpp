@@ -3,17 +3,56 @@
 //
 #include "mycanvas.h"
 
+LogWidget::LogWidget(QWidget* parent) :
+    QWidget(parent)
+{
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    QLabel *logLabel = new QLabel(this);
+    logLabel->setText("LOG");
+    logLabel->setFont(QFont("Corbel", 20));
+    logLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    logLabel->setStyleSheet("color:#2c2c2c");
+    QWidget *splitter = new QWidget(this);
+    splitter->setFixedSize(30, 6);
+    splitter->setStyleSheet("background-color:#3c3c3c;border-radius:3px;");
+    container = new ScrollAreaCustom(false, this);
+    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    layout->addWidget(logLabel);
+    layout->addWidget(splitter);
+    layout->addWidget(container);
+    setFixedWidth(250);
+}
+
 MyCanvas::MyCanvas(QTextStream &ts, int radius, QWidget *parent) :
         QWidget(parent)
 {
     /* create canvas */
     mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setContentsMargins(20, 0, 20, 20);
     this->setLayout(mainLayout);
-    view = new MyGraphicsView(MyGraphicsView::UDG);
-    view->setSceneRect(view->rect());
-    view->setStyleSheet("background-color: #FFFFFF;border:1px solid #cfcfcf;border-radius:10px;");
-    mainLayout->addWidget(view);
+    QWidget* viewWidget = new QWidget(this);
+    viewWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* viewLayout = new QVBoxLayout(viewWidget);
+    viewLayout->setContentsMargins(0, 0, 0, 0);
+        QLabel *viewLabel = new QLabel(this);
+        viewLabel->setText("Graph");
+        viewLabel->setFont(QFont("Corbel", 20));
+        viewLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        viewLabel->setStyleSheet("color:#2c2c2c");
+        QWidget *splitter = new QWidget(this);
+        splitter->setFixedSize(30, 6);
+        splitter->setStyleSheet("background-color:#3c3c3c;border-radius:3px;");
+        view = new MyGraphicsView(MyGraphicsView::UDG);
+        view->setSceneRect(view->rect());
+        view->setStyleSheet("background-color: #FFFFFF;border:1px solid #cfcfcf;border-radius:10px;");
+
+        viewLayout->addWidget(viewLabel);
+        viewLayout->addWidget(splitter);
+        viewLayout->addWidget(view);
+
+    mainLayout->addWidget(viewWidget);
     g = new ALGraph(1);
     connect(view, SIGNAL(vexAdded(MyGraphicsVexItem*)), this, SLOT(addVex(MyGraphicsVexItem*)));
     connect(view, SIGNAL(arcAdded(MyGraphicsLineItem*)), this, SLOT(addArc(MyGraphicsLineItem*)));
@@ -36,9 +75,12 @@ void MyCanvas::Init(){
     /* Create info widget */
 
     infoWidget = new QWidget(this);
+    logWidget = new LogWidget(this);
+    mainLayout->addWidget(logWidget);
     mainLayout->addWidget(infoWidget);
-    mainLayout->setStretch(0, 7);
-    mainLayout->setStretch(1, 3);
+    mainLayout->setStretch(0, 6);
+    mainLayout->setStretch(1, 2);
+    mainLayout->setStretch(2, 2);
     infoWidget->setMinimumWidth(250);
     infoWidget->setMaximumWidth(500);
 
@@ -91,32 +133,23 @@ void MyCanvas::Init(){
     modeWidget->setObjectName("modeWidget");
     modeWidget->setStyleSheet("QWidget#modeWidget{border:2px solid transparent;border-radius:5px;}");
     modeWidget->setLayout(modeLayout);
-    textInputItem *chooseMode = new textInputItem("Mode", upper);
-    QString qsmode = "时间搜索模式";
-    chooseMode->setValue(qsmode);
-    chooseMode->setEnabled(false);
 
+        modeBox = new ComboBox(upper);
+        modeBox->setFixedSize(120, 25);
+        modeBox->addItem("最短距离");
+        modeBox->addItem("最短时间");
+        modeBox->addItem("交通工具的最短时间");
+        modeBox->setCurrentIndex(0);
+        connect(modeBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                [=](int index){ LoadInfo(); });
+    customWidget* chooseMode = new customWidget("Mode", modeBox);
     modeLayout->addWidget(chooseMode);
 
     bigIconButton *modeBtn = new bigIconButton(1, ":/icons/icons/add.svg", "", "", 0, 15, upper);
     modeBtn->setFixedSize(30, 30);
     modeLayout->addWidget(modeBtn);
-    //QWidget *lowerSplitter2 = new QWidget(lower);
-    //lowerSplitter2->setObjectName("LowerSplitter2");
-    //lowerSplitter2->setStyleSheet("QWidget#LowerSplitter2{border:2px solid transparent #cfcfcf;border-radius:5px;}");
-
-    //QHBoxLayout *lowerLayout2 = new QHBoxLayout(lowerSplitter2);
-    //lowerSplitter2->setLayout(lowerLayout2);
-    //lowerLayout2->setContentsMargins(10, 5, 12, 5);
-    //lowerLayout2->setAlignment(Qt::AlignLeft);
-    //textInputItem *choosePass = new textInputItem("Pass", lowerSplitter2);
-    //choosePass->setValue("选择路径");
-    //choosePass->setEnabled(false);
-    //lowerLayout2->addWidget(choosePass);
-    //bigIconButton *passChooseIcon = new bigIconButton(1, ":/icons/icons/add.svg", "", 15, lowerSplitter2);
     connect(modeBtn, &bigIconButton::clicked, this, [=] {
         emit modeBtnClicked();
-        //modeInfo->slideIn();
     });
     //connect(passChooseIcon, &bigIconButton::clicked, this, [=] {
     //    emit passBtnClicked();
@@ -141,7 +174,7 @@ void MyCanvas::Init(){
     pathLabel->setText("路径");
     pathLabel->setObjectName("pathLabel");
     pathLabel->setAlignment(Qt::AlignCenter | Qt::AlignTop);
-    ScrollAreaCustom *pathArea = new ScrollAreaCustom(path);
+    ScrollAreaCustom *pathArea = new ScrollAreaCustom(false, path, false);
     pathArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     pathLayout->addWidget(pathLabel);
@@ -300,16 +333,15 @@ void MyCanvas::Init(){
     arcTextItems->setStyleSheet("QWidget#VexTextItems{border:1px solid #cfcfcf;border-radius:5px;}");
     QVBoxLayout *arcTextLayout = new QVBoxLayout(arcTextItems);
     arcTextLayout->setContentsMargins(0, 5, 0, 5);
-    textInputItem *arcWeight = new textInputItem("Pow", arcInfoPage, 1);
+    textInputItem *arcWeight = new textInputItem("路径耗时", arcInfoPage, 1);
     arcTextLayout->addWidget(arcWeight);
-    /*info about chaos*/
+    /*info about chaos
     textInputItem *chaos = new textInputItem("Chaos", arcInfoPage, 1);
     arcTextLayout->addWidget(chaos);
     chaos->setValue("getChaos()");
-
-
     QRegularExpression re("^[1-9]\\d*$");
     arcWeight->setValidator(new QRegularExpressionValidator(re));
+    */
     textInputItem *arcStart = new textInputItem("Start", arcInfoPage, 1);
     arcStart->setValue("NA");
     arcStart->setEnabled(false);
@@ -319,10 +351,12 @@ void MyCanvas::Init(){
     arcEnd->setEnabled(false);
     arcTextLayout->addWidget(arcEnd);
     arcInfoLayout->addWidget(arcTextItems);
-    textButton *reverseBtn = new textButton("Reverse", arcInfoPage);
-    arcInfoLayout->addWidget(reverseBtn);
-    textButton *delArc = new textButton("Delete", "#1acb1b45","#2acb1b45","#3acb1b45", arcInfoPage);
-    arcInfoLayout->addWidget(delArc);
+    /*
+        textButton *reverseBtn = new textButton("Reverse", arcInfoPage);
+        arcInfoLayout->addWidget(reverseBtn);
+        textButton *delArc = new textButton("Delete", "#1acb1b45","#2acb1b45","#3acb1b45", arcInfoPage);
+        arcInfoLayout->addWidget(delArc);
+    */
     upperLayout->addWidget(arcInfoPage);
     arcInfoPage->hide();
 
@@ -400,8 +434,9 @@ void MyCanvas::Init(){
         if(start != nullptr && end != nullptr) {
             QVector<int> v;
             v.push_back(start->id);
+            for(int i = 0; i < pathVector.size(); i++) v.push_back(pathVector[i]->id);
             v.push_back(end->id);
-            DisQuery* query = new DisQuery(v);
+            DisQuery* query = new DisQuery(v, modeBox->currentIndex() + 1);
             connect(query, &DisQuery::receive, this, [=](QVariant varValue) {
                 ResPackage result = varValue.value<ResPackage>();
                 result.timeCost.Print();
@@ -436,3 +471,17 @@ void MyCanvas::addArc(MyGraphicsLineItem *arc) {
     g->AddArc(arc);
 }
 
+void MyCanvas::LoadInfo() {
+    MapQuery* nowQuery = new MapQuery(modeBox->currentIndex() + 1);
+    connect(nowQuery, &MapQuery::receive, this, [=](QVariant varValue) {
+        QVector<int> v = varValue.value<QVector<int>>();
+        view->lineFromId(0)->setText("校区连接路径");
+        for(int i = 1; i < v.size(); i++) {
+            view->lineFromId(i)->setText(QString::asprintf("%d", v[i]));
+        }
+    });
+}
+
+void MyCanvas::changeEndVex(int x) {
+    end = view->vexFromId(x);
+}

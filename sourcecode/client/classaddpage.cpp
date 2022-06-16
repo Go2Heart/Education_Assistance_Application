@@ -80,7 +80,7 @@ ClassAddPage::ClassAddPage(QWidget* parent) :
 
 
                 textButton* createBtn = new textButton("创建课程!", createWidget);
-                connect(createBtn, &textButton::clicked, this, [=] { // 查询界面，逻辑类似于mainpage中的搜索
+                connect(createBtn, &textButton::clicked, this, [=] {
                     ClassAddQuery* nowAdd = new ClassAddQuery(
                         classPlace->value(),
                         className->value(),

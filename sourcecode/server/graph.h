@@ -5,6 +5,7 @@
 #include "data_structure/string.h"
 #include "data_structure/vector.h"
 #include "data_structure/heap.h"
+#include "data_structure/rbtree.h"
 //#include <vector>
 #include "basicClass.h"
 #include <cstdlib>
@@ -35,13 +36,15 @@ class Edge {
 private:
 	int to, next;
 	int dis, type;
+	int originId;
 	double spdRatio = 1;
 public:
-	Edge(int to, int next, int dis, int type) :
+	Edge(int to, int next, int dis, int type, int origin) :
 		to(to),
 		next(next),
 		dis(dis),
-		type(type)
+		type(type),
+		originId(origin)
 	{}
 	Edge() {}
 	void setSpdRatio(double ratio) { spdRatio = ratio; }
@@ -49,6 +52,7 @@ public:
 	int To() { return to; }
 	int Nxt() { return next; }
 	int Type() { return type; }
+	int Ori() { return originId; }
 	double Ratio() { return spdRatio; }
 };
 
@@ -85,27 +89,29 @@ struct ResPackage {
 
 class Graph {
 private:
-	int num = 1, n, m;
-	Point p[105];
-	Edge e[1005];
 	int head[105];
 	int rt[2];
 	int col[105];
-	int crossEdgeId, crossTime, crossType;
-	
 	int dis[105], sour[105];
 	bool vis[105];
-	
 	Timer lastTime;
+	RbTree<String, int> nameSort;
 public:
+	int num = 1, n, m;
+	int crossEdgeId, crossTime, crossType;
+	Point p[105];
+	Edge e[1005];
 	enum { INF = 1 << 30 };
-	void AddEdge(int x, int y, int dis, int type) {
-		++num; e[num] = Edge(y, head[x], dis, type); head[x] = num;
-		++num; e[num] = Edge(x, head[y], dis, type); head[y] = num;
+	void AddEdge(int x, int y, int dis, int type, int ori) {
+		++num; e[num] = Edge(y, head[x], dis, type, ori); head[x] = num;
+		++num; e[num] = Edge(x, head[y], dis, type, ori); head[y] = num;
 	}
 	int GetRandDis() { return 25 + rand()%10; }
 	void GetColor(int id, int c);
 	void GetCross(Timer t);
+	int GetPointId(String s) {
+		return nameSort.Find(s)[0];
+	}
 	void Dij(int x, int mode);
 	ResPackage QueryDis(int s, int t, int mode);
 	ResPackage QueryDis(Vector<int> v, int mode) {

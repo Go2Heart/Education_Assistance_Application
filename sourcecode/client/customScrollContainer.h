@@ -46,6 +46,7 @@ private:
     bool outofEdge = false;
     bool ignoreMaxSpeed = false;
     bool indicatorEnabled = false;
+    bool paintBorder = true;
 
     int lastY;
     int strtY;
@@ -66,7 +67,7 @@ private:
     void wheelEvent(QWheelEvent *event);
     void bounceback();
 public:
-    ScrollAreaCustom(bool b, QWidget *parent = nullptr);
+    ScrollAreaCustom(bool b, QWidget *parent = nullptr, bool paintBorder = true);
     void addSpacing(int x);
     void addWidget(QWidget *widget, bool setAnimation);
     void addWidgets(QVector<QWidget*> widgets) {

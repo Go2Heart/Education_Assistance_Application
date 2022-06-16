@@ -149,12 +149,13 @@ HomeworkSearch::HomeworkSearch(int studentId, int classId, QString key) {
     });
 }
 
-DisQuery::DisQuery(QVector<int> v) {
+DisQuery::DisQuery(QVector<int> v, int mode) {
     QVector<Parameter*> paras;
     paras.push_back(new Parameter(0x05));
+    paras.push_back(new Parameter(studentId));
     paras.push_back(new Parameter(v.size()));
     for(int i = 0; i < v.size(); i++) paras.push_back(new Parameter(v[i]));
-    paras.push_back(new Parameter(1));
+    paras.push_back(new Parameter(mode));
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
@@ -292,12 +293,15 @@ ActivityQuery::ActivityQuery(int id) {
     paras.push_back(new Parameter(id));
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
-       QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
-       QVector<ActivityResult*> v;
-       for(int i = 0; i < parms.size(); i += 5) {
-           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number));
-       }
-       emit receive(QVariant::fromValue(v));
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        QVector<ActivityResult*> v;
+        int cnt=0;
+        for(int i = 0; i < parms.size(); i += 7) {
+            cnt++;
+            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number, parms[i + 5]->number, parms[i + 6]->number));
+        }
+        qDebug() <<  "receive activity, size:" <<cnt;
+        emit receive(QVariant::fromValue(v));
     });
 }
 
@@ -311,8 +315,8 @@ ActivitySearch::ActivitySearch(QString name, int type) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
         QVector<ActivityResult*> v;
-        for(int i = 0; i < parms.size(); i += 4) {
-            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number));
+        for(int i = 0; i < parms.size(); i += 7) {
+            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number, parms[i + 5]->number, parms[i + 6]->number));
         }
         emit receive(QVariant::fromValue(v));
     });
@@ -326,12 +330,15 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
     paras.push_back(new Parameter(v[1])); //name
     paras.push_back(new Parameter(v[2].toInt())); //type
     qDebug() << "v[2].toInt(): " << v[2].toInt();
-    paras.push_back(new Parameter(v[3])); //time
-    //qDebug() << "activity time: " << v[3];
+    paras.push_back(new Parameter(v[3].toInt())); //week
+    paras.push_back(new Parameter(v[4].toInt())); //day
+    paras.push_back(new Parameter(v[5])); //time
+
+    qDebug() << "activity time: " << v[3] << " " << v[4] << " - " << v[5];
     paras.push_back(new Parameter(id)); //content
     for(int i = 1; i < v[2].toInt(); i++) {
-        paras.push_back(new Parameter(v[4 + i].toInt()));
-        qDebug() << "v[3 + i].toInt(): " << v[4 + i].toInt();
+        paras.push_back(new Parameter(v[6 + i].toInt()));
+        qDebug() << "v[6 + i].toInt(): " << v[6 + i].toInt();
     }
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
@@ -364,16 +371,17 @@ FileUpload::FileUpload(QString id, QString descripter,std::string info, int stud
     connector = new TcpConnector(paras);
 }
 
-FileDownload::FileDownload(QString id, QString descripter, int studentId, int mode) {
+FileDownload::FileDownload(QString id, QString descripter, int mode) {
     QVector<Parameter*> paras;
     if (mode == 0)paras.push_back(new Parameter(0x10));
     else paras.push_back(new Parameter(0x11));
-    qDebug() << "file download student id: " << studentId;
+    paras.push_back(new Parameter(type));
+    if(type == 0) paras.push_back(new Parameter(studentId));
+    else paras.push_back(new Parameter(teacherId));
     if (id == "")
         paras.push_back(new Parameter(0));
     else
         paras.push_back(new Parameter(id.toInt()));
-    if(mode != 0) paras.push_back(new Parameter(studentId));
     paras.push_back(new Parameter(descripter));
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
@@ -565,5 +573,43 @@ TeacherHomeworkQuery::TeacherHomeworkQuery(int id) {
         }
         emit receive(QVariant::fromValue(v));
     });
-
 }
+
+StartTimer::StartTimer() {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x1E));
+    connector = new TcpConnector(paras);
+}
+
+StopTimer::StopTimer() {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x1F));
+    connector = new TcpConnector(paras);
+}
+
+MapQuery::MapQuery(int mode) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x20));
+    paras.push_back(new Parameter(mode));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        int size = parms[0]->number;
+        QVector<int> v;
+        for(int i = 1; i <= size; i++) v.push_back(parms[i]->number);
+        emit receive(QVariant::fromValue(v));
+    });
+}
+
+ClassPointQuery::ClassPointQuery(QString name) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x21));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(name));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        emit receive(parms[0]->number);
+    });
+}
+

@@ -1,4 +1,3 @@
-#include <QMessageBox>
 #include "activitypage.h"
 #include "loginpage.h"
 #include "global.h"
@@ -59,9 +58,6 @@ void activityInfoWidget::resizeEvent(QResizeEvent *event) {
     activityType->move(this->width() - activityType->width() - margin, this->height() / 2 - activityType->height() / 2);
 }
 
-
-
-
 activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent) :
     QWidget(parent),
     extraIcons(icons),
@@ -84,28 +80,6 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
         connect(extraIcons[i], &bigIconButton::clicked, this, [=] {emit clicked(i);});
     }
     container = new ScrollAreaCustom(false, this);
-    connect(icons[0], &bigIconButton::clicked, this, [=] {
-        /*activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", slideParent);
-        emit addPage(newPage);
-        connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
-            activityWidget* newWidget = new activityWidget(s, this);
-            emit newActivity(newWidget);
-            addContent(newWidget);
-
-            connect(newWidget, &activityWidget::clicked, this, [=] {
-                QVector<QString> tmp = newWidget->getInfo();
-                detailWidget->setActivity(newWidget);
-                emit detailWidget->showDetail(tmp);
-            });
-            connect(detailWidget, &activityDetailWidget::modify, this, [=](activityWidget* activity) {
-                qDebug() << "modify";
-                QVector<QString> tmp = detailWidget->getLines();
-                detailWidget->getActivity()->modify(tmp);
-            });
-            pageList.push_back(newPage);
-        });
-        newPage->slideIn();*/
-    });
     //for Server message
     connect(this, &activityListWidget::addReceived, this, [=](QVector<QString> s) {
         /*@todo  How to create slidePage for Server message?*/
@@ -153,6 +127,7 @@ activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
     title=new textInputItem("标题：", this);
     description = new textInputItem("内容：", this);
     place = new textInputItem("地点：",this);
+    day = new textInputItem("日期：", this);
     time = new textInputItem("时间：", this);
     textButton* modifyBtn = new textButton("Modify!", this);
     connect(modifyBtn, &textButton::clicked, this, [=]{
@@ -163,6 +138,7 @@ activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
+    mainLayout->addWidget(day);
     mainLayout->addWidget(time);
     mainLayout->addWidget(modifyBtn);
 }
@@ -183,6 +159,7 @@ void activityDetailWidget::showDetail(QVector<QString> info) {
     description->setValue(info[1]);
     place->setValue(info[2]);
     time->setValue(info[3]);
+    day->setValue(info[8]);
     //isPersonal = info[4].toInt();
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);
@@ -410,9 +387,8 @@ ActivityPage::ActivityPage(QWidget* parent):
         itemWidget->hide();
     });
     activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
-    /*connect(activityList, &activityListWidget::addPage, this, [=](activityAdd* page){
-        itemWidget->hide();
-        mainLayout->addWidget(page);
+    /*connect(activityList, &activityListWidget::addPage, this, [=](activityAddPage* page){
+        pageList.push_back(page);
     });*/
 
     eventLayout->addWidget(activityList);
@@ -447,42 +423,48 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     /*Detail Widget*/
     connect(searchActivity, &bigIconButton::clicked, this, [=] {
-        activityList->cleanContent();
         if(activitySearch->value() == "" && selections->currentIndex() == 3) {
+            activityList->cleanContent();
             std::sort(reloadList.begin(), reloadList.end(), [=](activityWidget* a, activityWidget* b){
                 return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
             });
             for(int i = 0; i < reloadList.size(); i++) {
                 activityList->addContent(reloadList[i]);
             }
-            return;
+        } else {
+            ActivitySearch* search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
+            connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
+                activityList->cleanContent();
+                reloadList.clear();
+                QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
+                for(int i = 0; i < activityResult.size(); i++){
+                    QVector<QString> info;
+                    info.push_back(activityResult[i]->name);
+                    info.push_back(activityResult[i]->name);
+                    info.push_back(activityResult[i]->place);
+                    info.push_back(activityResult[i]->time);
+                    info.push_back(QString::asprintf("%d", activityResult[i]->id));
+                    info.push_back(QString::number(activityResult[i]->type));
+                    info.push_back("true");
+                    info.push_back("1");
+                    info.push_back("第" + QString::number(activityResult[i]->week)+ "周 " + QString::number(activityResult[i]->day));
+
+                    //info.push_back
+                    activityWidget* newWidget = new activityWidget(info, this);
+                    connect(newWidget, &activityWidget::clicked, this, [=](){
+                        activityDtl->showDetail(newWidget->getInfo());
+                        activityDtl->setActivity(newWidget);
+                        fileDlvr->setActivity(newWidget);
+                    });
+                    newWidget->hide();
+                    reloadList.push_back(newWidget);
+                }
+                for (int i = 0; i < reloadList.size(); i++) {
+                    activityList->addContent(reloadList[i]);
+                }
+            });
         }
-        search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
-        connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
-            QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
-            for(int i = 0; i < activityResult.size(); i++){
-                QVector<QString> info;
-                info.push_back(activityResult[i]->name);
-                info.push_back(activityResult[i]->name);
-                info.push_back(activityResult[i]->place);
-                info.push_back(activityResult[i]->time);
-                info.push_back(QString::asprintf("%d", activityResult[i]->id));
-                info.push_back("true");
-                info.push_back("true");
-                info.push_back("1");
-
-                //info.push_back
-                activityWidget* newWidget = new activityWidget(info, this);
-                activityList->addContent(newWidget);
-                connect(newWidget, &activityWidget::clicked, this, [=](){
-                    activityDtl->showDetail(newWidget->getInfo());
-                    activityDtl->setActivity(newWidget);
-                    fileDlvr->setActivity(newWidget);
-                });
-            }
-        });
     });
-
 }
 void ActivityPage::resizeEvent(QResizeEvent*) {
     itemWidget->resize(this->size());
@@ -496,8 +478,10 @@ void ActivityPage::LoadInfo() {
     itemWidget->show();
     newPage->hide();
     activityList->cleanContent();
+    reloadList.clear();
     ActivityQuery* query = new ActivityQuery(studentId);
     connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
+        qDebug()<<"receive signal";
         QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
         for(int i = 0; i < activityResult.size(); i++){
             QVector<QString> info;
@@ -511,6 +495,7 @@ void ActivityPage::LoadInfo() {
             info.push_back("1");
 
             //info.push_back
+            info.push_back("第" + QString::number(activityResult[i]->week)+ "周 " + QString::number(activityResult[i]->day));
             activityWidget* newWidget = new activityWidget(info, this);
             connect(newWidget, &activityWidget::clicked, this, [=](){
                 activityDtl->showDetail(newWidget->getInfo());
@@ -522,7 +507,6 @@ void ActivityPage::LoadInfo() {
         }
         for (int i = 0; i < reloadList.size(); i++) {
             activityList->addContent(reloadList[i]);
-            reloadList[i]->show();
         }
     });
 }
@@ -555,6 +539,12 @@ activityAdd::activityAdd(QWidget *parent) {
 
     description = new textInputItem("内容：", this);
     place = new textInputItem("地点：", this);
+    QWidget* timeWidget = new QWidget(this);
+        QHBoxLayout* timeLayout = new QHBoxLayout(timeWidget);
+        week = new textInputItem("周次：", timeWidget);
+        day = new textInputItem("星期：", timeWidget);
+        timeLayout->addWidget(week);
+        timeLayout->addWidget(day);
     time = new textInputItem("时间：", this);
     activityBar = new QWidget(this);
     QHBoxLayout* activityLayout = new QHBoxLayout(activityBar);
@@ -610,6 +600,8 @@ activityAdd::activityAdd(QWidget *parent) {
             info.push_back(place->value());
             info.push_back(description->value());
             info.push_back(QString::number(1));
+            info.push_back(week->value());
+            info.push_back(day->value());
             info.push_back(time->value());
             ActivityUpload* upload = new ActivityUpload(info, studentId);
             connect(upload, &ActivityUpload::receive, this, [=](int result) {
@@ -622,6 +614,8 @@ activityAdd::activityAdd(QWidget *parent) {
             info.push_back(description->value());
             QVector<Student> students = selectContainer->GetStudents();
             info.push_back(QString::number(students.size() + 1));
+            info.push_back(week->value());
+            info.push_back(day->value());
             info.push_back(time->value());
             info.push_back(QString::number(studentId));
             for (int i = 0; i < students.size(); i++) {
@@ -638,6 +632,7 @@ activityAdd::activityAdd(QWidget *parent) {
 
     createLayout->addWidget(description);
     createLayout->addWidget(place);
+    createLayout->addWidget(timeWidget);
     createLayout->addWidget(time);
     createLayout->addWidget(activityBar);
     createLayout->addWidget(createBtn);

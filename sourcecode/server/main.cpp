@@ -225,4 +225,5 @@ int main() {
 	puts("phase 5 finished.");
 	server.run();
 	LoadToFile();
+	timeTracker.stop();
 }

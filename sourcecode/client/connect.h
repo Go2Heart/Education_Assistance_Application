@@ -169,7 +169,7 @@ class DisQuery : public QObject {
 private:
     TcpConnector* connector = nullptr;
 public:
-    DisQuery(QVector<int> v);
+    DisQuery(QVector<int> v, int mode);
 signals:
     void receive(QVariant varValue);
 };
@@ -259,13 +259,17 @@ struct ActivityResult {
     QString time;
     int id;
     int type;
+    int week;
+    int day;
     ActivityResult() {}
-    ActivityResult(QString& name, QString& place, QString& time, int& id, int type = 1) :
+    ActivityResult(QString& name, QString& place, QString& time, int& id, int type = 1, int week = 0, int day = 0) :
         name(name),
         place(place),
         time(time),
         id(id),
-        type(type)
+        type(type),
+        week(week),
+        day(day)
     {}
 };
 Q_DECLARE_METATYPE(ActivityResult*)
@@ -322,7 +326,7 @@ private :
     TcpConnector* connector = nullptr;
 
 public:
-    FileDownload(QString id, QString descripter, int studentId = 0, int mode = 0); // mode 0 for activity, 1 for class
+    FileDownload(QString id, QString descripter, int mode = 0); // mode 0 for activity, 1 for class
 
 signals:
     void receive(QVariant varValue);
@@ -491,5 +495,42 @@ public:
 signals:
     void receive(QVariant x);
 };
+
+class StartTimer : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    StartTimer();
+};
+
+class StopTimer : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    StopTimer();
+};
+
+class MapQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    MapQuery(int mode);
+signals:
+    void receive(QVariant x);
+};
+
+class ClassPointQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    ClassPointQuery(QString name);
+signals:
+    void receive(int x);
+};
+
 
 #endif // CONNECT_H

@@ -12,31 +12,25 @@
 #include "customWidgets.h"
 #include "slidepage.h"
 #include "mycanvas.h"
+#include "connect.h"
 #include <QVector>
-class GuidePage:public QWidget {
+class GuidePage : public QWidget {
     Q_OBJECT
 private:
-    SlidePage *createNewPage = nullptr;
-    SlidePage *defaultSettingsPage = nullptr;
-    SlidePage *curSettingsPage = nullptr;
-    QVector<MyCanvas*> canvasList;
-    MyCanvas* curCanvas = nullptr;
-    SlidePage *layersPage = nullptr;
-    singleSelectGroup *layerSel = nullptr;
-    QWidget *defaultPage;
+    MyCanvas *nowCanvas;
     QWidget *displayWidget;
     QVector<SlidePage*> pageList;
     int cornerRadius = 12;
-
-    QLineEdit *canvasTitle = nullptr;
-    QLineEdit *canvasDesc = nullptr;
-    customIcon *settingsIcon = nullptr;
     QVBoxLayout *displayLayout;
+
+    ComboBox* classSelectBox;
     MyCanvas *loadCanvas(const QString &path);
 
     void resizeEvent(QResizeEvent*);
 public:
     GuidePage(QWidget *parent = nullptr);
+    void LoadClassData();
+    void LoadInfo();
 signals:
     void addPage(SlidePage *page);
 };

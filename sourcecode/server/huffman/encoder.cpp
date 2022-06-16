@@ -95,7 +95,7 @@ bool Encoder::Encode(FILE *fin,FILE *fout, bool InTy, bool OuTy){//加密主程�
 			Temp >>= 8;
 		}
 	}		
-	Heap<HuffmanNode> Hp;//小根堆 
+	Heap<HuffmanNode> Hp(512);//小根堆 
 	int NodeCount = 0;//统计叶子节点个数 
 	for(int i = 0; i < 256; i++)
 		if(Cnt[i] != 0)

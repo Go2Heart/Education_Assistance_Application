@@ -152,11 +152,11 @@ bool Decoder::Decode(FILE *fin,FILE *fout, bool InTy, bool OuTy){//解码主程�
 	for(int i = 0; i < LastLen; i++)//若剩余字符中仍有1，即不为补0部分，输入非法 
 		if((Last >> i) % 2)
 			return false;
-	unsigned char test;
+	/*unsigned char test;
 	if(InputType == 1)
 		fscanf(InFile, "%c", &test);
 	else fread(&test, 1, 1, fin);
-	if(test != 0) return false;//若仍有可读入字节，输入非法 
+	if(test != 0) return false;//若仍有可读入字节，输入非法 */
 	fclose(fin);
 	fclose(fout);
 	return true;

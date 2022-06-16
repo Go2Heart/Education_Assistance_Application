@@ -248,14 +248,14 @@ public:
 
     void setValue(const QString &text); // 设置editor文字
     void setValidator(QValidator* vali){editor->setValidator(vali);} //设置editor文本过滤器，如正则式，整数过滤器等
-    /*void setIntValidator() {
+    void setIntValidator() {
         QRegExp regx("^[1-9][0-9]+$");
         setValidator(new QRegExpValidator(regx, this));
     }
     void setNumberValidator() {
         QRegExp regx("^[0-9]+$");
         setValidator(new QRegExpValidator(regx, this));
-    }*/
+    }
     void setEnabled(bool enable = true){enabled = enable;} // 是否启用
     void setPasswordMode() { isPassword = true; editor->setEchoMode(QLineEdit::EchoMode::PasswordEchoOnEdit); } // 密码模式（弃用）
 
@@ -281,6 +281,7 @@ private:
     void resizeEvent(QResizeEvent* event);
 
 public:
+    QString text() { return btnText->text(); }
     textButton(QString text, QWidget* parent = nullptr, qreal ratio = 0.5);
     textButton(QString text, QString defC, QString hoverC, QString pressedC, QWidget* parent = nullptr, qreal ratio = 0.5);
     void setText(QString s) { btnText->setText(s); }

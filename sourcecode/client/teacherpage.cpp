@@ -524,7 +524,7 @@ teacherClassFileDeliver::teacherClassFileDeliver(QWidget *parent):QWidget(parent
     });
     connect(downloadButton, &textButton::clicked, this, [=]{
         for(int i = 0; i < fileToDownload.size(); i ++) {
-            fileDownloader = new FileDownload(id, fileToDownload[i], studentId, 1);
+            fileDownloader = new FileDownload(id, fileToDownload[i], 1);
             connect(fileDownloader, &FileDownload::receive, this, [=](QVariant varValue){
                 FileResult* fileResult = varValue.value<FileResult*>();
                 QString filePath = QFileDialog::getSaveFileName(this, QStringLiteral("保存文件"), "", QStringLiteral("All Files(*.*);;docs(*.doc *.docx);;PDF Files(*.pdf);;code Files(*.c *.cpp *h. *.hpp *.html *.css *.js *.ts);;images(*.jpg;;*.jepg;;*.png;;*.bmp)"));

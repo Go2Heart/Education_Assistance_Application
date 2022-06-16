@@ -13,17 +13,26 @@
 #include "graph_implement.h"
 #include "connect.h"
 
+class LogWidget : public QWidget {
+    Q_OBJECT
+private:
+    ScrollAreaCustom* container = nullptr;
+public:
+    LogWidget(QWidget* parent = nullptr);
+    void clear();
+    void AddContent(QWidget* w) { container->addWidget(w, true); }
+};
+
 class MyCanvas : public QWidget {
     Q_OBJECT
 private:
-    //For display
     MyGraphicsView *view;
     QHBoxLayout *mainLayout;
     QWidget *infoWidget;
+    LogWidget* logWidget;
     QLabel *pageName;
-    //for guidance
-    /*QString startName="";
-    QString endName="";*/
+    ComboBox* modeBox;
+
     MyGraphicsVexItem* start;
     MyGraphicsVexItem* end;
     QVector <MyGraphicsVexItem*> pathVector;
@@ -32,7 +41,8 @@ private:
 
 public:
     MyCanvas(QTextStream &ts, int radius, QWidget *parent = nullptr);
-
+    void LoadInfo();
+    void changeEndVex(int x);
 signals:
     void setDel(MyCanvas* target);
     void startChanged();

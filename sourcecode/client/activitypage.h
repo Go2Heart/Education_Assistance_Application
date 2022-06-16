@@ -32,11 +32,14 @@ public:
 signals:
     void clicked();
 };
+
 class activityAdd : public QWidget {
     Q_OBJECT
 private:
     textInputItem* description;
     textInputItem* place;
+    textInputItem* week;
+    textInputItem* day;
     textInputItem* time;
     QWidget* activityBar;
     textInputItem* frequency;
@@ -87,6 +90,7 @@ private:
     textInputItem* title;
     textInputItem* description;
     textInputItem* place;
+    textInputItem* day;
     textInputItem* time;
     textInputItem* frequency;
     bool isPersonal = true;
@@ -158,7 +162,6 @@ private:
     activityDetailWidget* activityDtl = nullptr;
     activityListWidget* activityList = nullptr;
     activityFileDeliver* fileDlvr = nullptr;
-    ActivitySearch* search;
     QVector<activityWidget*> reloadList = QVector<activityWidget*>();
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
@@ -190,8 +193,10 @@ public:
         itemList.push_back(p);
     }
     void cleanContent() {
-    container->clear();
-    itemList.clear();
+        for(int i = 0; i < itemList.size(); i++){
+            container->removeWidget(itemList[i]);
+        }
+        itemList.clear();
     }
 signals:
     void clicked(int id);

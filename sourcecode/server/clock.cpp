@@ -12,11 +12,26 @@ void* func(void* p) {
         //timeTracker.Print();
     }
 }
-
+bool ClockStatus = false;
 Clock::Clock() {
     timer = Timer(8, 0, 1, 1);
     ratio = 1;
+    ClockStatus = true;
     pthread_create(&thread, NULL, func, NULL);
+    pthread_detach(thread);
+    pthread_join(thread, NULL);
+}
+
+void Clock::restart() {
+    ClockStatus = true;
+    pthread_create(&thread, NULL, func, NULL);
+    pthread_detach(thread);
+    pthread_join(thread, NULL);
+}
+
+void Clock::stop() {
+    ClockStatus = false;
+    pthread_cancel(thread);
 }
 
 void Clock::addTimer() {

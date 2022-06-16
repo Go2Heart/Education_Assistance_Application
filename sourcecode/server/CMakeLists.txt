@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project (Test)
-set(CMAKE_CXX_FLAGS	" -std=c++11 -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all ")
+set(CMAKE_CXX_FLAGS	" -std=c++11 -pthread -m64 -Wno-write-strings -fexceptions  -fno-inline -rdynamic -fsanitize=address -fsanitize-recover=all ")
 #set(CMAKE_CXX_STANDARD 11)
 add_executable(test
         data_structure/heap.h

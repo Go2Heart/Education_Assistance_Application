@@ -65,9 +65,9 @@ void WriteFile(String path, String file) {
         tmppath.push_back(path[i]);
     }
     FILE* tmpout = fopen("tmpfile", "wb");
-    fwrite(file.c_str(), file.length() - 1, 1, tmpout);
+    fwrite(file.c_str(), file.length(), 1, tmpout);
     fclose(tmpout);
-    tmpout = fopen("tmpfile", "wb");
+    tmpout = fopen("tmpfile", "rb");
     FILE* out = fopen(path.c_str(), "wb");
     encodeSolver.Encode(tmpout, out, 0, 0);
 }
@@ -369,6 +369,7 @@ void Server::run() {
                             value = studentGroup.GetStudentCheck(parms[2].message, parms[3].message);
                             if(value != 255) {
                                 Log("[登录请求] 学生 " + studentGroup.GetStudent(value)->name + " 已登录。");
+                                if(!ClockStatus) timeTracker.restart();
                             }
                         }
                         resultParms.push_back(Parameter(value));
@@ -391,7 +392,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -421,7 +422,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -465,7 +466,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -495,7 +496,7 @@ void Server::run() {
                                 Vector<Duration> d = nowLesson->ClassDurations();
                                 String time;
                                 for(int k = 0; k < d.size(); k++) {
-                                    time = time + " " + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
+                                    time = time + ToString(d[k].begin.day) + ToString_Time(d[k].begin.hour) + ':' + ToString_Time(d[k].begin.minute) + '-' + ToString_Time(d[k].end.hour) + ':' + ToString_Time(d[k].end.minute) + ' ';
                                 }
                                 resultParms.push_back(Parameter(time, false));
                                 resultParms.push_back(Parameter(nowLesson->QQ(), false));
@@ -536,6 +537,11 @@ void Server::run() {
                             time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                             resultParms.push_back(Parameter(time, false));
                             resultParms.push_back(Parameter(activities[j]));
+                            resultParms.push_back(Parameter(nowActivity->type));
+                            int week = d.begin.week;
+                            int day = d.begin.day;
+                            resultParms.push_back(Parameter(week));
+                            resultParms.push_back(Parameter(day));
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -563,6 +569,11 @@ void Server::run() {
                                     time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                     resultParms.push_back(Parameter(time, false));
                                     resultParms.push_back(Parameter(result[j]->activityId));
+                                    resultParms.push_back(Parameter(result[j]->type));
+                                    int week = d.begin.week;
+                                    int day = d.begin.day;
+                                    resultParms.push_back(Parameter(week));
+                                    resultParms.push_back(Parameter(day));
                                 }
                                 break;
                             }
@@ -577,6 +588,11 @@ void Server::run() {
                                     time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                     resultParms.push_back(Parameter(time, false));
                                     resultParms.push_back(Parameter(result[j]->activityId));
+                                    resultParms.push_back(Parameter(result[j]->type));
+                                    int week = d.begin.week;
+                                    int day = d.begin.day;
+                                    resultParms.push_back(Parameter(week));
+                                    resultParms.push_back(Parameter(day));
                                 }
 
                                 break;
@@ -613,6 +629,11 @@ void Server::run() {
                                         time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                         resultParms.push_back(Parameter(time, false));
                                         resultParms.push_back(Parameter(j));
+                                        resultParms.push_back(Parameter(nowActivity->type));
+                                        int week = d.begin.week;
+                                        int day = d.begin.day;
+                                        resultParms.push_back(Parameter(week));
+                                        resultParms.push_back(Parameter(day));
                                     }
                                 }
 
@@ -631,7 +652,9 @@ void Server::run() {
 
                         Vector<Student*> nowStudents;
                         nowStudents.push_back(nowStudent);
-                        const char* time = parms[4].message.c_str();
+                        int week = parms[4].number;
+                        int day = parms[5].number;
+                        const char* time = parms[6].message.c_str();
                         int index = 0;
                         int beginHour = 0;
                         int beginMin = 0;
@@ -656,15 +679,15 @@ void Server::run() {
                         }
                         index++;
                         while(time[index] != '\0') {
-                            int tmp = time[index] - '0';
+                            int tmp = time[index] - '0';    
                             endMin = endMin * 10 + tmp;
                             index++;
                         }
                         printf("%d %d %d %d\n", beginHour, beginMin, endHour, endMin);
 
                         Duration tmpDuration = Duration(
-                            Timer(beginHour, beginMin),
-                            Timer(endHour,endMin)
+                            Timer(beginHour, beginMin, day, week),
+                            Timer(endHour,endMin, day, week)
                         );
                         bool check = true;
                         Vector<Duration> vv;
@@ -672,12 +695,17 @@ void Server::run() {
                         for(int i = 0; i < nowStudents.size(); i++) {
                             check &= nowStudents[i]->events->VerifyDuration(vv);
                         }
+                        int type = parms[3].number == 1;//5 id
+                        for(int j = 1; j < parms[3].number; j++) {
+                            nowStudents.push_back(studentGroup.GetStudent(parms[j+7].number));
+                            printf("%d\n", parms[j+7].number);
+                        }
                         Vector<Parameter> resultParms;
                         if(check) {
-                            Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration, nowStudents);
+                            Activity* nowActivity = new Activity(parms[1].message, parms[2].message, type, tmpDuration, nowStudents);
                             int activityID = activityGroup.AddActivities(nowActivity);
                             nowActivity->activityId = activityID;
-                            studentGroup.GetStudent(parms[5].number)->events->AddActivity(activityID);
+                            studentGroup.GetStudent(parms[7].number)->events->AddActivity(activityID);
                             resultParms.push_back(Parameter(true));
                         } else {
                             resultParms.push_back(Parameter(false));
@@ -730,28 +758,30 @@ void Server::run() {
                     case 0x11 : { // 课程文件下载 log undone
                         printf("begin download\n");
                         Vector<Parameter> resultParms;
-                        int id = parms[1].number;
-                        int studentID = parms[2].number;
-                        String s1,s2;
-                        if (id == 0) s1 = "0";
-                        else s1 = ToString(id);
-                        if (studentID == 0) s2 = "0";
-                        else s2 = ToString(studentID);
+                        int id = parms[3].number;
                         Lesson* nowLesson = lessonGroup.GetLesson(id);
-                        String savePath = "Lesson/" + s1 + "/" + s2 +"/" + parms[3].message;
+                        if(parms[1].number == 0) {
+                            Student* nowStudent = studentGroup.GetStudent(parms[2].number);
+                            Log("[课程文件下载] 学生 " + nowStudent->name + " 下载了 " + nowLesson->Name() + " 的课程文件。");
+                        } else {
+                            Teacher* nowTeacher = teacherGroup.GetTeacher(parms[2].number);
+                            Log("[课程文件下载] 老师 " + nowTeacher->name + " 下载了 " + nowLesson->Name() + " 的课程文件。");
+                        }
+                        String savePath = "Lesson/" + ToString(id) + "/"  + parms[4].message;
                         FILE* file;
-                        if((file = fopen(savePath.c_str(), "r")) == NULL) {
+                        if((file = fopen(savePath.c_str(), "rb")) == NULL) {
                             printf("file not found\n");
                             break;
                         } else {
                             FILE* transfile = fopen("tmpfile", "wb");
                             decodeSolver.Decode(file, transfile, 0, 0);
-                            transfile = fopen("tmpfile", "wb");
+                            transfile = fopen("tmpfile", "rb");
                             String download;
                             while(!feof(transfile)) {
-                                char tmp[1024];
-                                fgets(tmp, 1024, transfile);
-                                download = download + tmp;
+                                unsigned char Cx;
+                                if(fread(&Cx, 1, 1, transfile) > 0) {
+                                    download.push_back(Cx);
+                                } else break;
                             }
                             fclose(transfile);
                             resultParms.push_back(Parameter(download, true));
@@ -952,6 +982,71 @@ void Server::run() {
                         resultParms.push_back(Parameter(homework.size()));
                         for (int i = 0; i < homework.size(); i++) {
                             resultParms.push_back(Parameter(homework[i]->desc, false));
+                        }
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x1E : { // start timer
+                        timeTracker.restart();
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x1F : { // stop timer
+                        timeTracker.stop();
+                        Vector<Parameter> resultParms;
+                        resultParms.push_back(Parameter(String("ack"), false));
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x20 : { //query 地图信息
+                        printf("Map Query!");
+                        Vector<Parameter> resultParms;
+                        Vector<int> result;
+                        int mode = parms[1].number;
+                        for(int i = 1; i < graph.num; i += 2) if(graph.e[i].Ori() < graph.crossEdgeId) {
+                            switch (mode) {
+                                case 1 :
+                                    result.push_back(graph.e[i].Dis());
+                                    break;
+                                case 2 :
+                                    result.push_back(graph.e[i].Dis() / (humanSpeed * graph.e[i].Ratio()));
+                                    break;
+                                case 3 :
+                                    result.push_back(graph.e[i].Dis() / ((graph.e[i].Type() ? bicycleSpeed : humanSpeed) * graph.e[i].Ratio()));
+                                    break;
+                            }
+                        }
+                        result.push_back(graph.crossTime);
+                        for(int i = 1; i < graph.num; i += 2) if(graph.e[i].Ori() > graph.crossEdgeId) {
+                            switch (mode) {
+                                case 1 :
+                                    result.push_back(graph.e[i].Dis());
+                                    break;
+                                case 2 :
+                                    result.push_back(graph.e[i].Dis() / (humanSpeed * graph.e[i].Ratio()));
+                                    break;
+                                case 3 :
+                                    result.push_back(graph.e[i].Dis() / ((graph.e[i].Type() ? bicycleSpeed : humanSpeed) * graph.e[i].Ratio()));
+                                    break;
+                            }
+                        }
+                        printf("size: %d\n", result.size());
+                        resultParms.push_back(Parameter(result.size()));
+                        for(int j = 0; j < result.size(); j++) {
+                            resultParms.push_back(Parameter(result[j]));
+                        }
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x21 : { // query place
+                        Vector<Parameter> resultParms;
+                        Vector<Lesson*> lessons = studentGroup.GetStudent(parms[1].number)->events->FromLessonName(parms[2].message);
+                        if(lessons.size()) {
+                            resultParms.push_back(Parameter(graph.GetPointId(lessons[0]->Place())));
+                        } else {
+                            resultParms.push_back(Parameter(6666));
                         }
                         sendAll(i, resultParms, true);
                         break;

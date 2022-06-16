@@ -1,8 +1,9 @@
 #include "customScrollContainer.h"
 
-ScrollAreaCustom::ScrollAreaCustom(bool b, QWidget *parent) :
+ScrollAreaCustom::ScrollAreaCustom(bool b, QWidget *parent, bool paintbool) :
     indicatorEnabled(b),
-    QWidget(parent)
+    QWidget(parent),
+    paintBorder(paintbool)
 {
     //setStyleSheet("background-color:red");
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
@@ -41,11 +42,13 @@ ScrollAreaCustom::ScrollAreaCustom(bool b, QWidget *parent) :
 }
 
 void ScrollAreaCustom::paintEvent(QPaintEvent *event) {
-    QPainter painter(this);
-    painter.setPen(QColor(200, 200, 200));
-    painter.setBrush(Qt::NoBrush);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.drawRoundedRect(this->rect(), 12, 12);
+    if(paintBorder) {
+        QPainter painter(this);
+        painter.setPen(QColor(200, 200, 200));
+        painter.setBrush(Qt::NoBrush);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.drawRoundedRect(this->rect(), 12, 12);
+    }
 
     container->resize(this->width() - 2 * margin, container->height());
     //missing
@@ -290,7 +293,7 @@ void ScrollListContainer::AddWidget(QWidget *widget, bool setAnimation) {
             widgets[i]->move(QPoint(widgets[i]->pos().x(), ys[i]));
         }
     }
-    //qDebug()<< "after addwidget, ys is:";
+    qDebug()<< "after addwidget, ys is:" << ys.size();
     //for(int i = 0; i < ys.size(); i++) qDebug() << ys[i];
 }
 
@@ -319,7 +322,7 @@ void ScrollListContainer::RemoveWidget(QWidget *widget) {
     widgets.remove(index);
     size--;
     ys.remove(index);
-    //qDebug()<<"after remove,ys size is"<< ys.size();
+    qDebug()<<"after remove,ys size is"<< ys.size();
 }
 
 void ScrollListContainer::updateHeight() {

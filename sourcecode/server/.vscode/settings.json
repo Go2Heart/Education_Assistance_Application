@@ -5,7 +5,9 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "array": "cpp",
+        "string_view": "cpp"
     },
     "cmake.configureOnOpen": true
 }

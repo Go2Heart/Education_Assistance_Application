@@ -27,11 +27,11 @@ GuidePage::GuidePage(QWidget *parent) :
     displayLayout->addWidget(spacing);
 
     QString inputPath = ":/map/test.map";
-    MyCanvas *newCanvas = loadCanvas(inputPath);
-    if(newCanvas != nullptr) {
-        displayLayout->addWidget(newCanvas);
-        newCanvas->show();
-        SlidePage *classInfo = new SlidePage(10, SlidePage::FIXED, 250, 500, "Modeinfo", this, 10);
+    nowCanvas = loadCanvas(inputPath);
+    if(nowCanvas != nullptr) {
+        displayLayout->addWidget(nowCanvas);
+        nowCanvas->show();
+        SlidePage *classInfo = new SlidePage(10, SlidePage::FIXED, 400, 500, "Modeinfo", this, 10);
         QWidget *whiteSpace = new QWidget(classInfo);
         whiteSpace->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         whiteSpace->setStyleSheet("background-color:transparent;");
@@ -60,7 +60,9 @@ GuidePage::GuidePage(QWidget *parent) :
         modeChange->setFixedHeight(classMode->height());
         whiteSpace->hide();
 
-        textInputItem *className = new textInputItem("Class", classInfo);
+        classSelectBox = new ComboBox(this);
+        classSelectBox->setFixedSize(200, 25);
+        customWidget* classSelect = new customWidget("课程", classSelectBox);
         textButton *classSearch = new textButton("Search", classInfo);
         /*
         QVector<QWidget*> *classModeWidgets = new QVector<QWidget*>();
@@ -71,7 +73,7 @@ GuidePage::GuidePage(QWidget *parent) :
         classModeWidgets->push_back(modeChange);*/
         classInfo->AddContent(classSearch);
         classInfo->AddSpacing(10);
-        classInfo->AddContent(className);
+        classInfo->AddContent(classSelect);
         classInfo->AddSpacing(10);
         classInfo->AddContent(modeChange);
         /*QVector<QWidget*> *timeModeWidgets = new QVector<QWidget*>();
@@ -84,7 +86,7 @@ GuidePage::GuidePage(QWidget *parent) :
         timeModeWidgets->push_back(modeChange);
         timeSearch->hide();
         timeStart->hide();*/
-        SlidePage *timeInfo = new SlidePage(10, SlidePage::FIXED, 250, 500, "Timeinfo", this, 10);
+        SlidePage *timeInfo = new SlidePage(10, SlidePage::FIXED, 400, 500, "Timeinfo", this, 10);
         textButton *timeSearch = new textButton("Search", timeInfo);
         textInputItem *timeStart = new textInputItem("Start", timeInfo);
         QWidget *modeChange2 = new QWidget(timeInfo);
@@ -129,7 +131,7 @@ GuidePage::GuidePage(QWidget *parent) :
         classInfo->AddContent(className);
         classInfo->AddContent(whiteSpace2);
         classInfo->AddContent(modeChange);*/
-        connect(newCanvas, &MyCanvas::modeBtnClicked, classInfo, [=]() {
+        connect(nowCanvas, &MyCanvas::modeBtnClicked, classInfo, [=]() {
             emit addPage(classInfo);
             emit addPage(timeInfo);
             classInfo->slideIn();
@@ -157,13 +159,17 @@ GuidePage::GuidePage(QWidget *parent) :
         passInfo->AddContent(passWidget);
         pageList.push_back(passInfo);
 
-        connect(newCanvas, &MyCanvas::passBtnClicked, passInfo, [=](){
+        connect(nowCanvas, &MyCanvas::passBtnClicked, passInfo, [=](){
             emit addPage(passInfo);
             passInfo->slideIn();
         });
 
         connect(classSearch, &textButton::clicked, this, [=]() {
             //qDebug()<<"classSearch";
+            ClassPointQuery* nowQuery = new ClassPointQuery(classSelectBox->currentText());
+            connect(nowQuery, &ClassPointQuery::receive, this, [=](int id) {
+                if(id != 6666)nowCanvas->changeEndVex(id);
+            });
             classInfo->slideOut();
         });
         connect(timeSearch, &textButton::clicked, this, [=]() {
@@ -187,4 +193,20 @@ void GuidePage::resizeEvent(QResizeEvent*) {
         pageList[i]->resize(pageList[i]->width() - 1, pageList[i]->Type() == SlidePage::EXPANDING ? height() : pageList[i]->height());
         pageList[i]->resize(pageList[i]->width() + 1, pageList[i]->height());
     }
+}
+
+void GuidePage::LoadClassData() {
+    classSelectBox->clear();
+    ClassQuery* query = new ClassQuery();
+    connect(query, &ClassQuery::receive, this, [=](QVariant varValue){
+        QVector<ClassResult*> classResult = varValue.value<QVector<ClassResult*>>();
+        for(int i = 0; i < classResult.size(); i++) {
+            classSelectBox->addItem(classResult[i]->name);
+        }
+    });
+}
+
+void GuidePage::LoadInfo() {
+    LoadClassData();
+    nowCanvas->LoadInfo();
 }

@@ -1,4 +1,3 @@
-#include <QInputDialog>
 #include "mainpage.h"
 #include "global.h"
 
@@ -475,10 +474,12 @@ mainPage::mainPage(QWidget* parent) :
         connect(activityBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == ACTIVITY){
+                StartTimer* restart = new StartTimer();
                 LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                StopTimer* stop = new StopTimer();
                 activityPage->LoadInfo();
                 showNewPage(activityPage);
                 currentPage = ACTIVITY;
@@ -487,10 +488,12 @@ mainPage::mainPage(QWidget* parent) :
         connect(classBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if(currentPage == CLASS){
+                StartTimer* restart = new StartTimer();
                 LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                StopTimer* stop = new StopTimer();
                 classPage->LoadInfo();
                 showNewPage(classPage);
                 currentPage = CLASS;
@@ -499,10 +502,13 @@ mainPage::mainPage(QWidget* parent) :
         connect(guideBtn, &bigIconButton::clicked, this, [=] {
             hideCurrentPage();
             if (currentPage == GUIDE){
+                StartTimer* restart = new StartTimer();
                 LoadInfo();
                 showNewPage(displayWidget);
                 currentPage = MAIN;
             } else {
+                StopTimer* stop = new StopTimer();
+                guidePage->LoadInfo();
                 showNewPage(guidePage);
                 currentPage = GUIDE;
             }
