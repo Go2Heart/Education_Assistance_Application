@@ -36,6 +36,7 @@ public:
     Vector<Homework*> homeworks;
     Vector<Student*> students;
     Vector<File*> files;
+    RbTree<String, File*> hashSort;
     Lesson(
         String classPlace,
         String teacher,
@@ -91,8 +92,10 @@ public:
     }
     void AddFile(File* file) {
         bool find = false;
-        for(int i = 0; i < files.size(); i++) if(file->hash == files[i]->hash) find = true;
-        if(!find) files.push_back(file);
+        if(!hashSort.Find(file->hash).size()) {
+            files.push_back(file);
+            hashSort.InsertNode(file->hash, file);
+        }
     }
     void SetExamPlace(String place) { examPlace = place; }
     void SetExamDura(Duration duration) { examDuration = duration; }
