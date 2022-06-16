@@ -135,7 +135,7 @@ Server::Server() {
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(43434);
 
     int on = 1;
     setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -536,6 +536,7 @@ void Server::run() {
                             time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                             resultParms.push_back(Parameter(time, false));
                             resultParms.push_back(Parameter(activities[j]));
+                            resultParms.push_back(Parameter(nowActivity->type));
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -672,9 +673,14 @@ void Server::run() {
                         for(int i = 0; i < nowStudents.size(); i++) {
                             check &= nowStudents[i]->events->VerifyDuration(vv);
                         }
+                        int type = parms[3].number == 1;//5 id
+                        for(int j = 1; j < parms[3].number; j++) {
+                            nowStudents.push_back(studentGroup.GetStudent(parms[j+5].number));
+                            printf("%d\n", parms[j+5].number);
+                        }
                         Vector<Parameter> resultParms;
                         if(check) {
-                            Activity* nowActivity = new Activity(parms[1].message, parms[2].message, parms[3].number, tmpDuration, nowStudents);
+                            Activity* nowActivity = new Activity(parms[1].message, parms[2].message, type, tmpDuration, nowStudents);
                             int activityID = activityGroup.AddActivities(nowActivity);
                             nowActivity->activityId = activityID;
                             studentGroup.GetStudent(parms[5].number)->events->AddActivity(activityID);

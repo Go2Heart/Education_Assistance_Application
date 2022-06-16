@@ -116,7 +116,7 @@ ResPackage Graph::QueryDis(int s, int t, int mode) {
 
 void Graph::Init() {
 	puts("graph init begin.");
-	FILE* in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/graph.in", "r");
+	FILE* in = fopen("default_settings/graph.in", "r");
 	fscanf(in, "%d %d", &n, &m);
 	for(int i = 0; i < n; i++) {
 		char name[45];
@@ -142,7 +142,7 @@ void Graph::Init() {
 	GetColor(rt[1], 1);
 	fclose(in);
 
-	in = fopen("/root/trans_test/server_git/Education_Assistance_Application/server 2/default_settings/traffic.in", "r");
+	in = fopen("default_settings/traffic.in", "r");
 	int x, y, z;
 	fscanf(in, "%d", &x);
 	for(int i = 0; i < x; i++)
