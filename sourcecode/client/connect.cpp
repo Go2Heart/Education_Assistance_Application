@@ -97,7 +97,7 @@ HomeworkPost::HomeworkPost(int id, QString desc) {
     paras.push_back(new Parameter(teacherId));
     paras.push_back(new Parameter(id));
     paras.push_back(new Parameter(desc));
-    connector = new TcpConnector(paras);
+    connector = new TcpConnector(paras);  
 }
 
 HomeworkUpload::HomeworkUpload(int studentId, int classId, int homeworkId, int count, QVector<QString> fileNames,
@@ -113,6 +113,10 @@ HomeworkUpload::HomeworkUpload(int studentId, int classId, int homeworkId, int c
         paras.push_back(new Parameter(fileData[i]));
     }
     connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        emit receive(parms[0]->number);
+    });
 }
 
 HomeworkQuery::HomeworkQuery(int studentId, int classId) {

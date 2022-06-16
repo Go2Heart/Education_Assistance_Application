@@ -728,7 +728,12 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
     });
 
     connect(deliver, &textButton::clicked, this, [=] {
-        homeworkUploader = new HomeworkUpload(studentId, classId, chooseId, fileNames.size(), fileNames, filesToSubmit);
+        HomeworkUpload* homeworkUploader = new HomeworkUpload(studentId, classId, chooseId, fileNames.size(), fileNames, filesToSubmit);
+        connect(homeworkUploader, &HomeworkUpload::receive, this, [=](int result) {
+             if(result == false) {
+                 QMessageBox::information(this, "警告", "您的作业未通过查重!");
+             }
+        });
         fileNames.clear();
         filesToSubmit.clear();
         tempHomework->clear();

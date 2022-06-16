@@ -264,7 +264,6 @@ private:
     QVector<QString> fileNames;
     QVector<std::string> filesToSubmit;
     QVector<QString> fileToDownload;
-    HomeworkUpload* homeworkUploader;
     //void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
     //void resizeEvent(QResizeEvent*);

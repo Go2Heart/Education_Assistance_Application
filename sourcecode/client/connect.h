@@ -87,8 +87,6 @@ private:
     TcpConnector* connector = nullptr;
 public:
     HomeworkPost(int id, QString desc);
-signals:
-    void receive(QVariant varValue);
 };
 
 class HomeworkUpload: public QObject {
@@ -100,7 +98,7 @@ public:
     HomeworkUpload(int studentId, int classId, int homeworkId, int count, QVector<QString> fileNames,
                    QVector<std::string> fileData);
 signals:
-    void receive(QVariant varValue);
+    void receive(int result);
 };
 
 struct HomeworkResult {
