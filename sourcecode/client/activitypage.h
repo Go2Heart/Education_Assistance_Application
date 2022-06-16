@@ -9,6 +9,7 @@
 #include "customScrollContainer.h"
 #include "slidepage.h"
 #include "clock.h"
+#include "specifiedWidgets.h"
 class activityInfoWidget : public QWidget{
 Q_OBJECT
 private:
@@ -31,11 +32,9 @@ public:
 signals:
     void clicked();
 };
-
-class activityAddPage : public SlidePage {
-Q_OBJECT
+class activityAdd : public QWidget {
+    Q_OBJECT
 private:
-    textInputItem* title;
     textInputItem* description;
     textInputItem* place;
     textInputItem* time;
@@ -44,13 +43,13 @@ private:
     bool isPersonal = true;
     bool alarm = true;
     bool created = false;
-    QVector<QString> collectMsg();
+    StudentSelectWidget* selectContainer = nullptr;
 public:
-    activityAddPage(int radius, int type, int width, int height, QString name, QWidget *parent = nullptr, int posy = 0);
+    activityAdd(QWidget *parent = nullptr);
+    void reloadInfo();
 signals:
-    void deliver(QVector<QString> msg);
-    void modify(QVector<QString> msg);
 };
+
 class activityWidget : public QWidget {
 Q_OBJECT
 private:
@@ -160,8 +159,11 @@ private:
     activityListWidget* activityList = nullptr;
     activityFileDeliver* fileDlvr = nullptr;
     ActivitySearch* search;
+    QVector<activityWidget*> reloadList = QVector<activityWidget*>();
     int cornerRadius = 12;
     void resizeEvent(QResizeEvent*);
+
+    activityAdd* newPage;
 public:
     ActivityPage(QWidget* parent = nullptr);
     void LoadInfo();
@@ -175,7 +177,6 @@ private:
     QWidget* slideParent;
     QWidget* titleWidget;
     QLabel* nameLabel;
-    QVector<activityAddPage*> pageList;
     QVector<bigIconButton*> extraIcons;
     ScrollAreaCustom* container;
     QVector<QWidget*> itemList;
@@ -189,13 +190,12 @@ public:
         itemList.push_back(p);
     }
     void cleanContent() {
-    for(int i = 0; i < itemList.size(); i++){
-        container->removeWidget(itemList[i]);
+    container->clear();
+    itemList.clear();
     }
-}
 signals:
     void clicked(int id);
-    void addPage(activityAddPage*);
+    void addPage(activityAdd*);
     void addReceived(QVector<QString>);
     void showDetail(activityWidget*);
     void newActivity(activityWidget*);

@@ -1,9 +1,10 @@
+#include <QMessageBox>
 #include "activitypage.h"
 #include "loginpage.h"
 #include "global.h"
 activityInfoWidget::activityInfoWidget(QVector<QString> info, QWidget* parent) :
     QWidget(parent),
-    activityType(new bigIconButton(13, info[3] == "true" ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
+    activityType(new bigIconButton(13, info[5].toInt() == 1 ? ":/icons/icons/personal-activity.svg"/*改成单人*/ : ":/icons/icons/group-activity.svg"/*改成集体*/, "", "", 0, 0, this))
 {
     this->info = info;
     id = info[4];
@@ -59,85 +60,7 @@ void activityInfoWidget::resizeEvent(QResizeEvent *event) {
 }
 
 
-activityAddPage::activityAddPage(int radius, int type, int width, int height, QString name, QWidget* parent, int posy) :
-        SlidePage(radius, type, width, height, name, parent, posy)
-{
-    title = new textInputItem("标题：", this);
-    description = new textInputItem("内容：", this);
-    place = new textInputItem("地点：", this);
-    time = new textInputItem("时间：", this);
-    activityBar = new QWidget(this);
-    QHBoxLayout* activityLayout = new QHBoxLayout(activityBar);
-    activityLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    activityLayout->setSpacing(10);
-    activityLayout->setContentsMargins(0, 0, 0, 0);
 
-    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
-    alarmOn->setFixedSize(30, 30);
-    activityLayout->addWidget(alarmOn);
-    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
-    alarmOff->setFixedSize(30, 30);
-    frequency = new textInputItem("频率：", activityBar);
-    activityLayout->addWidget(frequency);
-
-    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
-    TypeBtn->setFixedSize(30, 30);
-    activityLayout->addWidget(TypeBtn);
-    connect(TypeBtn, &bigIconButton::clicked, this, [=] {
-        if(isPersonal) {
-            TypeBtn->setPixmap(":/icons/icons/group-activity.svg");
-            isPersonal = false;
-        } else {
-            TypeBtn->setPixmap(":/icons/icons/personal-activity.svg");
-            isPersonal = true;
-        }
-    });
-
-    connect(alarmOn, &bigIconButton::clicked, this, [=] {
-        activityLayout->removeWidget(alarmOn);
-        alarmOn->hide();
-        activityLayout->insertWidget(0, alarmOff);
-        alarmOff->show();
-        alarm = false;
-    });
-    connect(alarmOff, &bigIconButton::clicked, this, [=] {
-        activityLayout->removeWidget(alarmOff);
-        alarmOff->hide();
-        activityLayout->insertWidget(0, alarmOn);
-        alarmOn->show();
-        alarm = true;
-    });
-
-    textButton* createBtn = new textButton("Create!", this);
-    connect(createBtn, &textButton::clicked, this, [=] {
-        slideOut();
-        createBtn->setText("Modify!");
-        if(created)
-                emit modify(collectMsg());
-        else {
-            created = true;
-            emit deliver(collectMsg());
-        }
-    });
-    AddContent(createBtn);
-    AddContent(activityBar);
-    AddContent(time);
-    AddContent(place);
-    AddContent(description);
-    AddContent(title);
-}
-
-QVector<QString> activityAddPage::collectMsg() {
-    QVector<QString> tmp;
-    tmp.push_back(title->value());
-    tmp.push_back(description->value());
-    tmp.push_back(place->value());
-    tmp.push_back(time->value());
-    tmp.push_back(isPersonal ? "true" : "false");
-    tmp.push_back(alarm ? "true" : "false");
-    tmp.push_back(frequency->value());
-    return tmp;
-}
 
 activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> icons, QWidget* p, activityDetailWidget* detailWidget,QWidget* parent) :
     QWidget(parent),
@@ -161,15 +84,14 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
         connect(extraIcons[i], &bigIconButton::clicked, this, [=] {emit clicked(i);});
     }
     container = new ScrollAreaCustom(false, this);
-
     connect(icons[0], &bigIconButton::clicked, this, [=] {
-        activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", slideParent);
+        /*activityAddPage* newPage = new activityAddPage(12, 1, 300, 0, "创建新活动", slideParent);
         emit addPage(newPage);
         connect(newPage, &activityAddPage::deliver, this, [=](QVector<QString> s) {
             activityWidget* newWidget = new activityWidget(s, this);
             emit newActivity(newWidget);
             addContent(newWidget);
-            /* for details */
+
             connect(newWidget, &activityWidget::clicked, this, [=] {
                 QVector<QString> tmp = newWidget->getInfo();
                 detailWidget->setActivity(newWidget);
@@ -182,7 +104,7 @@ activityListWidget::activityListWidget(QString name, QVector<bigIconButton*> ico
             });
             pageList.push_back(newPage);
         });
-        newPage->slideIn();
+        newPage->slideIn();*/
     });
     //for Server message
     connect(this, &activityListWidget::addReceived, this, [=](QVector<QString> s) {
@@ -386,7 +308,7 @@ ActivityPage::ActivityPage(QWidget* parent):
     searchLayout->setSpacing(10);
     searchLayout->setContentsMargins(0, 0, 3, 0);
     QStringList selectList;
-    selectList<<"名称"<<"地点"<<"时间"<<"类型"<<"成员";
+    selectList<<"名称"<<"地点"<<"时间"<<"时间排序";
     ComboBox* selections = new ComboBox(searchBar);
     selections->setFixedWidth(100);
 //                        selections->setStyleSheet("border-radius: 3");
@@ -480,11 +402,18 @@ ActivityPage::ActivityPage(QWidget* parent):
     detailLayout->addWidget(detailArea);
 
     /*end of detail layout*/
-
-    activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
-    connect(activityList, &activityListWidget::addPage, this, [=](activityAddPage* page){
-        pageList.push_back(page);
+    newPage = new activityAdd(this);
+    mainLayout->addWidget(newPage);
+    connect(iconVec[0], &bigIconButton::clicked, this, [=]{
+        newPage->reloadInfo();
+        newPage->show();
+        itemWidget->hide();
     });
+    activityList = new activityListWidget("activity", iconVec, itemWidget, activityDtl,eventWidget);
+    /*connect(activityList, &activityListWidget::addPage, this, [=](activityAdd* page){
+        itemWidget->hide();
+        mainLayout->addWidget(page);
+    });*/
 
     eventLayout->addWidget(activityList);
     QVector<QWidget*> items;
@@ -518,9 +447,18 @@ ActivityPage::ActivityPage(QWidget* parent):
 
     /*Detail Widget*/
     connect(searchActivity, &bigIconButton::clicked, this, [=] {
+        activityList->cleanContent();
+        if(activitySearch->value() == "" && selections->currentIndex() == 3) {
+            std::sort(reloadList.begin(), reloadList.end(), [=](activityWidget* a, activityWidget* b){
+                return a->getInfoWidget()->getInfo()[3] > b->getInfoWidget()->getInfo()[3];
+            });
+            for(int i = 0; i < reloadList.size(); i++) {
+                activityList->addContent(reloadList[i]);
+            }
+            return;
+        }
         search = new ActivitySearch(activitySearch->value(), selections->currentIndex());
         connect(search, &ActivitySearch::receive, this, [=](QVariant varValue){
-            activityList->cleanContent();
             QVector<ActivityResult*> activityResult = varValue.value<QVector<ActivityResult*>>();
             for(int i = 0; i < activityResult.size(); i++){
                 QVector<QString> info;
@@ -555,6 +493,8 @@ void ActivityPage::resizeEvent(QResizeEvent*) {
 }
 
 void ActivityPage::LoadInfo() {
+    itemWidget->show();
+    newPage->hide();
     activityList->cleanContent();
     ActivityQuery* query = new ActivityQuery(studentId);
     connect(query, &ActivityQuery::receive, this, [=](QVariant varValue){
@@ -566,18 +506,147 @@ void ActivityPage::LoadInfo() {
             info.push_back(activityResult[i]->place);
             info.push_back(activityResult[i]->time);
             info.push_back(QString::asprintf("%d", activityResult[i]->id));
-            info.push_back("true");
+            info.push_back(QString::number(activityResult[i]->type));
             info.push_back("true");
             info.push_back("1");
 
             //info.push_back
             activityWidget* newWidget = new activityWidget(info, this);
-            activityList->addContent(newWidget);
             connect(newWidget, &activityWidget::clicked, this, [=](){
                 activityDtl->showDetail(newWidget->getInfo());
                 activityDtl->setActivity(newWidget);
                 fileDlvr->setActivity(newWidget);
             });
+            newWidget->hide();
+            reloadList.push_back(newWidget);
+        }
+        for (int i = 0; i < reloadList.size(); i++) {
+            activityList->addContent(reloadList[i]);
+            reloadList[i]->show();
         }
     });
+}
+
+activityAdd::activityAdd(QWidget *parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(30, 30, 30, 30);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setSpacing(10);
+    textItem* title = new textItem("添加课程", "华文行楷", 30, this);
+    QWidget* spliter = new QWidget(this);
+    spliter->setFixedHeight(2);
+    spliter->setStyleSheet("background-color:gray;");
+    QWidget* nowWidget = new QWidget(this);
+    QHBoxLayout* nowLayout = new QHBoxLayout(nowWidget);
+    nowLayout->setContentsMargins(0, 10, 0, 30);
+    nowLayout->setAlignment(Qt::AlignCenter);
+    nowLayout->setSpacing(10);
+    selectContainer = new StudentSelectWidget(this);
+    nowLayout->addWidget(selectContainer);
+
+    QWidget* createWidget = new QWidget(this);
+    createWidget->setStyleSheet("border-radius:10px");
+    createWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* createLayout = new QVBoxLayout(createWidget);
+    createLayout->setContentsMargins(50, 50, 50, 50);
+    createLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    createLayout->setSpacing(10);
+
+    description = new textInputItem("内容：", this);
+    place = new textInputItem("地点：", this);
+    time = new textInputItem("时间：", this);
+    activityBar = new QWidget(this);
+    QHBoxLayout* activityLayout = new QHBoxLayout(activityBar);
+    activityLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    activityLayout->setSpacing(10);
+    activityLayout->setContentsMargins(0, 0, 0, 0);
+
+    bigIconButton* alarmOn = new bigIconButton(1, ":/icons/icons/alarm_on.svg", "", "", 0, 0, activityBar);
+    alarmOn->setFixedSize(30, 30);
+    activityLayout->addWidget(alarmOn);
+    bigIconButton* alarmOff = new bigIconButton(1, ":/icons/icons/alarm_off.svg", "", "", 0, 0, activityBar);
+    alarmOff->setFixedSize(30, 30);
+    frequency = new textInputItem("频率：", activityBar);
+    activityLayout->addWidget(frequency);
+
+    bigIconButton* TypeBtn = new bigIconButton(1, ":/icons/icons/personal-activity.svg", "", "", 0, 0, activityBar);
+    TypeBtn->setFixedSize(30, 30);
+    activityLayout->addWidget(TypeBtn);
+    connect(TypeBtn, &bigIconButton::clicked, this, [=] {
+        if(isPersonal) {
+            TypeBtn->setPixmap(":/icons/icons/group-activity.svg");
+            isPersonal = false;
+        } else {
+            TypeBtn->setPixmap(":/icons/icons/personal-activity.svg");
+            isPersonal = true;
+        }
+    });
+
+    connect(alarmOn, &bigIconButton::clicked, this, [=] {
+        activityLayout->removeWidget(alarmOn);
+        alarmOn->hide();
+        activityLayout->insertWidget(0, alarmOff);
+        alarmOff->show();
+        alarm = false;
+    });
+    connect(alarmOff, &bigIconButton::clicked, this, [=] {
+        activityLayout->removeWidget(alarmOff);
+        alarmOff->hide();
+        activityLayout->insertWidget(0, alarmOn);
+        alarmOn->show();
+        alarm = true;
+    });
+
+    textButton* createBtn = new textButton("Create!", this);
+    connect(createBtn, &textButton::clicked, this, [=] {
+        if (description->value().isEmpty() || place->value().isEmpty() || time->value().isEmpty() ||
+            frequency->value().isEmpty()) {
+            QMessageBox::warning(this, "Warning", "Please fill in all the information!");
+            return;
+        }
+        if (isPersonal) {
+            QVector<QString> info; //place + name + type + time +
+            info.push_back(place->value());
+            info.push_back(description->value());
+            info.push_back(QString::number(1));
+            info.push_back(time->value());
+            ActivityUpload* upload = new ActivityUpload(info, studentId);
+            connect(upload, &ActivityUpload::receive, this, [=](int result) {
+                if(result == 1) ;
+                else QMessageBox::information(this, "注意", "时间出现冲突！");
+            });
+        } else {
+            QVector<QString> info; //place + name + type + time + students
+            info.push_back(place->value());
+            info.push_back(description->value());
+            QVector<Student> students = selectContainer->GetStudents();
+            info.push_back(QString::number(students.size() + 1));
+            info.push_back(time->value());
+            info.push_back(QString::number(studentId));
+            for (int i = 0; i < students.size(); i++) {
+                info.push_back(QString::number(students[i].id)); // 5
+            }
+            ActivityUpload* upload = new ActivityUpload(info, studentId);
+            connect(upload, &ActivityUpload::receive, this, [=](int result) {
+                if(result == 1) ;
+                else QMessageBox::information(this, "注意", "时间出现冲突！");
+            });
+        }
+
+    });
+
+    createLayout->addWidget(description);
+    createLayout->addWidget(place);
+    createLayout->addWidget(time);
+    createLayout->addWidget(activityBar);
+    createLayout->addWidget(createBtn);
+    nowLayout->addWidget(createWidget);
+    layout->addWidget(title);
+    layout->addWidget(spliter);
+    layout->addWidget(nowWidget);
+}
+
+void activityAdd::reloadInfo() {
+    selectContainer->reloadInfo();
 }

@@ -258,12 +258,14 @@ struct ActivityResult {
     QString place;
     QString time;
     int id;
+    int type;
     ActivityResult() {}
-    ActivityResult(QString& name, QString& place, QString& time, int& id) :
+    ActivityResult(QString& name, QString& place, QString& time, int& id, int type = 1) :
         name(name),
         place(place),
         time(time),
-        id(id)
+        id(id),
+        type(type)
     {}
 };
 Q_DECLARE_METATYPE(ActivityResult*)

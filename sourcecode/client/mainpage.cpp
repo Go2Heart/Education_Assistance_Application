@@ -1,3 +1,4 @@
+#include <QInputDialog>
 #include "mainpage.h"
 #include "global.h"
 
