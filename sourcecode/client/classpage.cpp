@@ -269,6 +269,7 @@ ClassPage::ClassPage(QWidget* parent):
 
     });
     connect(this, &ClassPage::checkHomework, this, [=](int studentId, int classId) {
+        homework->reloadList.clear();
         homework->homeworkQuery = new HomeworkQuery(studentId, classId);
         connect(homework->homeworkQuery, &HomeworkQuery::receive, this, [=](QVariant varValue){
             QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
@@ -279,10 +280,13 @@ ClassPage::ClassPage(QWidget* parent):
                 info.push_back(result[i]->desc);
 
                 homeworkWidget *infoWidget = new homeworkWidget(info, homework);
-                homework->addContent(infoWidget);
+                homework->reloadList.push_back(infoWidget);
                 connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
                    homework->chooseId = homeworkId;
                 });
+            }
+            for(int i = 0; i < homework->reloadList.size(); i++){
+                homework->addContent(homework->reloadList[i]);
             }
         });
     });
@@ -467,6 +471,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     select = new textButton("选择文件", this);
     upload = new textButton("上传文件", this);
     downloadButton = new textButton("下载文件", this);
+    sortButton = new textButton("正向排序", this);
     QWidget* listWidget = new QWidget(this);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 //    setStyleSheet("Height:400; Width:400; background-color:transparent");
@@ -482,7 +487,27 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
     downloadList = new ScrollAreaCustom(false, downloadWidget);
     downloadList->setFixedWidth(600);
     downloadLayout->addWidget(downloadList);
+    connect(sortButton, &textButton::clicked, this, [=] {
+        downloadList->clear();
+        if(sortButton->text() == "正向排序") {
+            sortButton->setText("反向排序");
+            std::sort(reloadList.begin(), reloadList.end(), [](QLabel* a, QLabel* b) {
+                return a->text() > b->text();
+            });
+            for (int i = 0; i < reloadList.size(); i++) {
+                downloadList->addWidget(reloadList[i], true);
+            }
+        } else {
+            sortButton->setText("正向排序");
+            std::sort(reloadList.begin(), reloadList.end(), [](QLabel* a, QLabel* b) {
+                return a->text() < b->text();
+            });
+            for (int i = 0; i < reloadList.size(); i++) {
+                downloadList->addWidget(reloadList[i], true);
+            }
 
+        }
+    });
 
 
     connect(select, &textButton::clicked, this,[=]{
@@ -545,6 +570,7 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
 
     connect(this, &classFileDeliver::download, this, [=]{
         downloadList->clear();
+        reloadList.clear();
         for(int i = 0; i < fileToDownload.size(); i++) {
             /*downloadElement = new QWidget(downloadList);
             QHBoxLayout* downloadLayout = new QHBoxLayout(downloadElement);
@@ -556,11 +582,15 @@ classFileDeliver::classFileDeliver(QWidget *parent):QWidget(parent){
             downloadList->AddWidget(downloadElement, true);*/
             QLabel* tmp = new QLabel(fileToDownload[i], downloadList);
             tmp->setFixedHeight(30);
-            downloadList->addWidget(tmp, true);
+            reloadList.push_back(tmp);
+        }
+        for (int i = 0; i < reloadList.size(); i++) {
+            downloadList->addWidget(reloadList[i], true);
         }
 
     });
     //mainLayout->addWidget(downWidget);
+    mainLayout->addWidget(sortButton);
     mainLayout->addWidget(downloadWidget);
     mainLayout->addWidget(downloadButton);
     mainLayout->addWidget(splitter);
@@ -650,7 +680,14 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
         bigIconButton* searchButton = new bigIconButton(1, ":/icons/icons/search.svg", "", "", 0, 6, searchBar);
         searchButton->setFixedSize(30, 30);
         searchButton->setStyleSheet("background-color:rgb(255,255,255);");
+        QStringList selectList;
+        selectList << "全部" <<"未完成" << "已完成" ;
+        ComboBox* searchType = new ComboBox(searchBar);
+        searchType->setStyleSheet("background-color:rgb(255,255,255);");
+        searchType->setFixedWidth(100);
+        searchType->addItems(selectList);
         searchLayout->addWidget(search);
+        searchLayout->addWidget(searchType);
         searchLayout->addWidget(searchButton);
     mainLayout->addWidget(searchBar);
 
@@ -692,8 +729,26 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
 
     connect(searchButton, &bigIconButton::clicked, this, [=]{
         this->cleanContent();
+        if(searchType->currentText() == "未完成") {
+            std::sort(reloadList.begin(), reloadList.end(), [](homeworkWidget* a, homeworkWidget* b) {
+                return a->getInfoWidget()->getFinished() > b->getInfoWidget()->getFinished();
+            });
+            for (int i = 0; i < reloadList.size(); i++) {
+                this->addContent(reloadList[i]);
+            }
+            return;
+        } else if(searchType->currentText() == "已完成") {
+            std::sort(reloadList.begin(), reloadList.end(), [](homeworkWidget* a, homeworkWidget* b) {
+                return a->getInfoWidget()->getFinished() < b->getInfoWidget()->getFinished();
+            });
+            for (int i = 0; i < reloadList.size(); i++) {
+                this->addContent(reloadList[i]);
+            }
+            return;
+        }
         HomeworkSearch *searchEvent = new HomeworkSearch(studentId, classId, search->value());
         connect(searchEvent, &HomeworkSearch::receive, this, [=](QVariant varValue) {
+            reloadList.clear();
             QVector<HomeworkResult*> result = varValue.value<QVector<HomeworkResult*>>();
             for(int i = 0; i < result.size(); i++){
                 QVector<QString> info;
@@ -701,10 +756,13 @@ classHomeworkWidget::classHomeworkWidget(QWidget *parent) {
                 info.push_back(QString::number(result[i]->finished));
                 info.push_back(result[i]->desc);
                 homeworkWidget *infoWidget = new homeworkWidget(info, this);
-                this->addContent(infoWidget);
                 connect(infoWidget, &homeworkWidget::clicked, this, [=](int homeworkId){
                     this->chooseId = homeworkId;
                 });
+                reloadList.push_back(infoWidget);
+            }
+            for (int i = 0; i < reloadList.size(); i++) {
+                this->addContent(reloadList[i]);
             }
         });
     });

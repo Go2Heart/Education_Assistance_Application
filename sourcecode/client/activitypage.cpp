@@ -153,6 +153,7 @@ activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
     title=new textInputItem("标题：", this);
     description = new textInputItem("内容：", this);
     place = new textInputItem("地点：",this);
+    day = new textInputItem("日期：", this);
     time = new textInputItem("时间：", this);
     textButton* modifyBtn = new textButton("Modify!", this);
     connect(modifyBtn, &textButton::clicked, this, [=]{
@@ -163,6 +164,7 @@ activityDetailWidget::activityDetailWidget(QWidget* parent) : QWidget(parent){
     mainLayout->addWidget(title);
     mainLayout->addWidget(description);
     mainLayout->addWidget(place);
+    mainLayout->addWidget(day);
     mainLayout->addWidget(time);
     mainLayout->addWidget(modifyBtn);
 }
@@ -183,6 +185,7 @@ void activityDetailWidget::showDetail(QVector<QString> info) {
     description->setValue(info[1]);
     place->setValue(info[2]);
     time->setValue(info[3]);
+    day->setValue(info[8]);
     //isPersonal = info[4].toInt();
     //alarm = info[5].toInt();
     //frequency->setValue(info[6]);
@@ -470,6 +473,7 @@ ActivityPage::ActivityPage(QWidget* parent):
                 info.push_back("true");
                 info.push_back("true");
                 info.push_back("1");
+                info.push_back("第" + QString::number(activityResult[i]->week)+ "周 " + QString::number(activityResult[i]->day));
 
                 //info.push_back
                 activityWidget* newWidget = new activityWidget(info, this);
@@ -511,6 +515,7 @@ void ActivityPage::LoadInfo() {
             info.push_back("1");
 
             //info.push_back
+            info.push_back("第" + QString::number(activityResult[i]->week)+ "周 " + QString::number(activityResult[i]->day));
             activityWidget* newWidget = new activityWidget(info, this);
             connect(newWidget, &activityWidget::clicked, this, [=](){
                 activityDtl->showDetail(newWidget->getInfo());
@@ -555,6 +560,12 @@ activityAdd::activityAdd(QWidget *parent) {
 
     description = new textInputItem("内容：", this);
     place = new textInputItem("地点：", this);
+    QWidget* timeWidget = new QWidget(this);
+        QHBoxLayout* timeLayout = new QHBoxLayout(timeWidget);
+        week = new textInputItem("周次：", timeWidget);
+        day = new textInputItem("星期：", timeWidget);
+        timeLayout->addWidget(week);
+        timeLayout->addWidget(day);
     time = new textInputItem("时间：", this);
     activityBar = new QWidget(this);
     QHBoxLayout* activityLayout = new QHBoxLayout(activityBar);
@@ -610,6 +621,8 @@ activityAdd::activityAdd(QWidget *parent) {
             info.push_back(place->value());
             info.push_back(description->value());
             info.push_back(QString::number(1));
+            info.push_back(week->value());
+            info.push_back(day->value());
             info.push_back(time->value());
             ActivityUpload* upload = new ActivityUpload(info, studentId);
             connect(upload, &ActivityUpload::receive, this, [=](int result) {
@@ -622,6 +635,8 @@ activityAdd::activityAdd(QWidget *parent) {
             info.push_back(description->value());
             QVector<Student> students = selectContainer->GetStudents();
             info.push_back(QString::number(students.size() + 1));
+            info.push_back(week->value());
+            info.push_back(day->value());
             info.push_back(time->value());
             info.push_back(QString::number(studentId));
             for (int i = 0; i < students.size(); i++) {
@@ -638,6 +653,7 @@ activityAdd::activityAdd(QWidget *parent) {
 
     createLayout->addWidget(description);
     createLayout->addWidget(place);
+    createLayout->addWidget(timeWidget);
     createLayout->addWidget(time);
     createLayout->addWidget(activityBar);
     createLayout->addWidget(createBtn);

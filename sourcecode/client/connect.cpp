@@ -294,8 +294,8 @@ ActivityQuery::ActivityQuery(int id) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
        QVector<ActivityResult*> v;
-       for(int i = 0; i < parms.size(); i += 5) {
-           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number));
+       for(int i = 0; i < parms.size(); i += 7) {
+           v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number, parms[i + 5]->number, parms[i + 6]->number));
        }
        emit receive(QVariant::fromValue(v));
     });
@@ -311,8 +311,8 @@ ActivitySearch::ActivitySearch(QString name, int type) {
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
         QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
         QVector<ActivityResult*> v;
-        for(int i = 0; i < parms.size(); i += 4) {
-            v.push_back(new ActivityResult( parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number));
+        for(int i = 0; i < parms.size(); i += 7) {
+            v.push_back(new ActivityResult(  parms[i]->qsMessage, parms[i + 1]->qsMessage, parms[i + 2]->qsMessage, parms[i + 3]->number, parms[i + 4]->number, parms[i + 5]->number, parms[i + 6]->number));
         }
         emit receive(QVariant::fromValue(v));
     });
@@ -326,12 +326,15 @@ ActivityUpload::ActivityUpload(QVector<QString> v, int id) {
     paras.push_back(new Parameter(v[1])); //name
     paras.push_back(new Parameter(v[2].toInt())); //type
     qDebug() << "v[2].toInt(): " << v[2].toInt();
-    paras.push_back(new Parameter(v[3])); //time
-    //qDebug() << "activity time: " << v[3];
+    paras.push_back(new Parameter(v[3].toInt())); //week
+    paras.push_back(new Parameter(v[4].toInt())); //day
+    paras.push_back(new Parameter(v[5])); //time
+
+    qDebug() << "activity time: " << v[3] << " " << v[4] << " - " << v[5];
     paras.push_back(new Parameter(id)); //content
     for(int i = 1; i < v[2].toInt(); i++) {
-        paras.push_back(new Parameter(v[4 + i].toInt()));
-        qDebug() << "v[3 + i].toInt(): " << v[4 + i].toInt();
+        paras.push_back(new Parameter(v[6 + i].toInt()));
+        qDebug() << "v[6 + i].toInt(): " << v[6 + i].toInt();
     }
     connector = new TcpConnector(paras);
     connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {

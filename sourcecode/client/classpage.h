@@ -114,6 +114,7 @@ private:
     textButton* select=nullptr;
     textButton* upload=nullptr;
     textButton* downloadButton=nullptr;
+    textButton* sortButton=nullptr;
     ScrollAreaCustom* fileList=nullptr;
     ScrollAreaCustom* downloadList=nullptr;
     QVector<QString> fileNames;
@@ -123,6 +124,7 @@ private:
     QString id;
     FileUpload* fileUploader;
     FileDownload* fileDownloader;
+    QVector<QLabel*> reloadList;
 public:
     classFileDeliver(QWidget* parent);
     void setActivity(classWidget* activity) {
@@ -268,7 +270,9 @@ private:
     void mouseReleaseEvent(QMouseEvent*);
     //void resizeEvent(QResizeEvent*);
 
+
 public:
+    QVector<homeworkWidget*> reloadList = QVector<homeworkWidget*>();
     HomeworkQuery* homeworkQuery = nullptr;
     HomeworkPost* homeworkPost = nullptr;
     bool received = false;

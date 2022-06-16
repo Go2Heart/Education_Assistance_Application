@@ -532,11 +532,16 @@ void Server::run() {
                             //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
                             resultParms.push_back(Parameter(nowActivity->place, false));
                             Duration d = nowActivity->duration;
+
                             String time;
                             time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                             resultParms.push_back(Parameter(time, false));
                             resultParms.push_back(Parameter(activities[j]));
                             resultParms.push_back(Parameter(nowActivity->type));
+                            int week = d.begin.week;
+                            int day = d.begin.day;
+                            resultParms.push_back(Parameter(week));
+                            resultParms.push_back(Parameter(day));
                         }
                         sendAll(i, resultParms, false);
                         break;
@@ -564,6 +569,11 @@ void Server::run() {
                                     time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                     resultParms.push_back(Parameter(time, false));
                                     resultParms.push_back(Parameter(result[j]->activityId));
+                                    resultParms.push_back(Parameter(result[j]->type));
+                                    int week = d.begin.week;
+                                    int day = d.begin.day;
+                                    resultParms.push_back(Parameter(week));
+                                    resultParms.push_back(Parameter(day));
                                 }
                                 break;
                             }
@@ -578,6 +588,11 @@ void Server::run() {
                                     time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                     resultParms.push_back(Parameter(time, false));
                                     resultParms.push_back(Parameter(result[j]->activityId));
+                                    resultParms.push_back(Parameter(result[j]->type));
+                                    int week = d.begin.week;
+                                    int day = d.begin.day;
+                                    resultParms.push_back(Parameter(week));
+                                    resultParms.push_back(Parameter(day));
                                 }
 
                                 break;
@@ -614,6 +629,11 @@ void Server::run() {
                                         time = time + " " + ToString_Time(d.begin.hour) + ':' + ToString_Time(d.begin.minute) + '-' + ToString_Time(d.end.hour) + ':' + ToString_Time(d.end.minute) + ' ';
                                         resultParms.push_back(Parameter(time, false));
                                         resultParms.push_back(Parameter(j));
+                                        resultParms.push_back(Parameter(nowActivity->type));
+                                        int week = d.begin.week;
+                                        int day = d.begin.day;
+                                        resultParms.push_back(Parameter(week));
+                                        resultParms.push_back(Parameter(day));
                                     }
                                 }
 
@@ -632,7 +652,9 @@ void Server::run() {
 
                         Vector<Student*> nowStudents;
                         nowStudents.push_back(nowStudent);
-                        const char* time = parms[4].message.c_str();
+                        int week = parms[4].number;
+                        int day = parms[5].number;
+                        const char* time = parms[6].message.c_str();
                         int index = 0;
                         int beginHour = 0;
                         int beginMin = 0;
@@ -664,8 +686,8 @@ void Server::run() {
                         printf("%d %d %d %d\n", beginHour, beginMin, endHour, endMin);
 
                         Duration tmpDuration = Duration(
-                            Timer(beginHour, beginMin),
-                            Timer(endHour,endMin)
+                            Timer(beginHour, beginMin, day, week),
+                            Timer(endHour,endMin, day, week)
                         );
                         bool check = true;
                         Vector<Duration> vv;
@@ -675,15 +697,15 @@ void Server::run() {
                         }
                         int type = parms[3].number == 1;//5 id
                         for(int j = 1; j < parms[3].number; j++) {
-                            nowStudents.push_back(studentGroup.GetStudent(parms[j+5].number));
-                            printf("%d\n", parms[j+5].number);
+                            nowStudents.push_back(studentGroup.GetStudent(parms[j+7].number));
+                            printf("%d\n", parms[j+7].number);
                         }
                         Vector<Parameter> resultParms;
                         if(check) {
                             Activity* nowActivity = new Activity(parms[1].message, parms[2].message, type, tmpDuration, nowStudents);
                             int activityID = activityGroup.AddActivities(nowActivity);
                             nowActivity->activityId = activityID;
-                            studentGroup.GetStudent(parms[5].number)->events->AddActivity(activityID);
+                            studentGroup.GetStudent(parms[7].number)->events->AddActivity(activityID);
                             resultParms.push_back(Parameter(true));
                         } else {
                             resultParms.push_back(Parameter(false));

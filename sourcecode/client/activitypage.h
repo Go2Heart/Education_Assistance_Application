@@ -37,6 +37,8 @@ class activityAdd : public QWidget {
 private:
     textInputItem* description;
     textInputItem* place;
+    textInputItem* week;
+    textInputItem* day;
     textInputItem* time;
     QWidget* activityBar;
     textInputItem* frequency;
@@ -87,6 +89,7 @@ private:
     textInputItem* title;
     textInputItem* description;
     textInputItem* place;
+    textInputItem* day;
     textInputItem* time;
     textInputItem* frequency;
     bool isPersonal = true;

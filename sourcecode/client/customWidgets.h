@@ -281,6 +281,7 @@ private:
     void resizeEvent(QResizeEvent* event);
 
 public:
+    QString text() { return btnText->text(); }
     textButton(QString text, QWidget* parent = nullptr, qreal ratio = 0.5);
     textButton(QString text, QString defC, QString hoverC, QString pressedC, QWidget* parent = nullptr, qreal ratio = 0.5);
     void setText(QString s) { btnText->setText(s); }
