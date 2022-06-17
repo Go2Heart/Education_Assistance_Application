@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/user.svg</file>
+        <file>icons/arrow-down.svg</file>
+        <file>icons/arrow-left.svg</file>
+        <file>icons/add.svg</file>
+        <file>icons/alarm_off.svg</file>
+        <file>icons/alarm_on.svg</file>
+        <file>icons/group-activity.svg</file>
+        <file>icons/personal-activity.svg</file>
+        <file>icons/find-path.svg</file>
+        <file>icons/left-square.svg</file>
+        <file>icons/right-square.svg</file>
+        <file>icons/search.svg</file>
+        <file>icons/student.svg</file>
+        <file>icons/teacher.svg</file>
+        <file>icons/student-id.svg</file>
+        <file>icons/logout.svg</file>
+        <file>icons/addclasspage.svg</file>
+        <file>icons/classpage.svg</file>
+        <file>icons/guidepage.svg</file>
+        <file>icons/activitypage.svg</file>
+    </qresource>
+    <qresource prefix="/style">
+        <file>combostyle.qss</file>
+    </qresource>
+    <qresource prefix="/map">
+        <file>test.map</file>
+    </qresource>
+</RCC>

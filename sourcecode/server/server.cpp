@@ -255,12 +255,13 @@ void Server::run() {
                             File* file = new File(savePath, parms[k].message, tmpHash);
                             fileVector.push_back(file);
                             WriteFile(savePath, parms[k + 1].message);
+                            homeworkFiles.AddFile(file);
                         }
                         nowHomework->Upload(fileVector);
                         Vector<Parameter> resultParms;
+                        printf("success: %d\n", success);
                         resultParms.push_back(Parameter(success));
                         sendAll(i, resultParms, false);
-                        break;
                         break;
                     }
                     case 0x03 : { /* // case changed
@@ -648,7 +649,7 @@ void Server::run() {
 
                     }
                     case 0x0D : {//活动上传
-                        Student* nowStudent = studentGroup.GetStudent(parms[5].number);
+                        Student* nowStudent = studentGroup.GetStudent(parms[7].number);
 
                         Log("[活动添加] 学生 " + nowStudent->name + " 添加了活动。");
 
@@ -694,20 +695,21 @@ void Server::run() {
                         bool check = true;
                         Vector<Duration> vv;
                         vv.push_back(tmpDuration);
-                        for(int i = 0; i < nowStudents.size(); i++) {
-                            check &= nowStudents[i]->events->VerifyDuration(vv);
+                        for(int j = 0; j < nowStudents.size(); j++) {
+                            check &= nowStudents[j]->events->VerifyDuration(vv);
                         }
                         int type = parms[3].number == 1;//5 id
                         for(int j = 1; j < parms[3].number; j++) {
                             nowStudents.push_back(studentGroup.GetStudent(parms[j+7].number));
-                            printf("%d\n", parms[j+7].number);
+                            printf("%d\n", parms[j + 7].number);
                         }
                         Vector<Parameter> resultParms;
                         if(check) {
                             Activity* nowActivity = new Activity(parms[1].message, parms[2].message, type, tmpDuration, nowStudents);
                             int activityID = activityGroup.AddActivities(nowActivity);
                             nowActivity->activityId = activityID;
-                            studentGroup.GetStudent(parms[7].number)->events->AddActivity(activityID);
+                            for(int j = 0; j < nowStudents.size(); j++)
+                                nowStudents[j]->events->AddActivity(activityID);
                             resultParms.push_back(Parameter(true));
                         } else {
                             resultParms.push_back(Parameter(false));

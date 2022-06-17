@@ -2,23 +2,33 @@
 #define CLOCK_H
 
 #include "basicClass.h"
-#include <pthread.h>
-#include <unistd.h>
-extern bool ClockStatus;
-class Clock {
+#include "customWidgets.h"
+#include "connect.h"
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QTimer>
+#include <QDebug>
+
+class Clock : public QWidget
+{
+    Q_OBJECT
 private:
-    pthread_t thread;
-    double ratio;
-    Timer timer;
+    QLabel* clock;
+    QTimer* addTimer;
+
+    qreal defaultSpeed = 1000 / 6.0, ratio = 1;
+    Timer nowTime;
 public:
-    Clock();
-    void restart();
-    void stop();
-    Timer NowTimer() { return timer; }
-    void addTimer();
-    void ChgSpd(double x) { if(x - 0 > 1e-5) ratio = x; }
-    double Ratio() { return ratio; }
-    void Print() { timer.Print(); }
+    Clock(QWidget *parent = nullptr);
+    int Hour() {return nowTime.hour; }
+    int Min() {return nowTime.minute; }
+    int Day() {return nowTime.day; }
+signals:
+    void checkAlarm();
+public slots:
+    void Blocked() { addTimer->stop(); }
+    void Released() { addTimer->start(defaultSpeed * ratio); }
 };
 
-#endif
+
+#endif // CLOCK_H
