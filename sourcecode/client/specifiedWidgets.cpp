@@ -1,5 +1,6 @@
 #include "specifiedWidgets.h"
 #include "basicClass.h"
+#include "graph_view.h"
 
 timeWidget::timeWidget(QWidget* parent) :
     QWidget(parent)
@@ -132,4 +133,115 @@ QVector<Student> StudentSelectWidget::GetStudents() {
     QVector<Student> result;
     for(int i = 0; i < selectedWidgets.size(); i++) result.push_back(selectedWidgets[i]->student);
     return result;
+}
+
+CellWidget::CellWidget(QWidget* w) :
+    QWidget()
+{
+    w->setParent(this);
+    setStyleSheet("border:none; background-color:transparent;");
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->addWidget(w);
+}
+
+QLineDelegate::QLineDelegate(QTableView* tableView)
+{
+    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItem());
+    QColor gridColor = static_cast<QRgb>(gridHint);
+    pen = QPen(gridColor, 0, tableView->gridStyle());
+    view = tableView;
+}
+
+void QLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,const QModelIndex& index)const
+{
+    QStyledItemDelegate::paint(painter, option, index);
+    QPen oldPen = painter->pen();
+    painter->setPen(pen);
+
+    //draw verticalLine
+    //painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
+
+    //draw horizontalLine
+    //painter->drawLine(option.rect.bottomLeft(), option.rect.bottomRight());
+    //above code, line have breakpoint, the following code can solve it well
+
+    QPoint p1 = QPoint(option.rect.bottomLeft().x()-1,option.rect.bottomLeft().y());
+    QPoint p2 = QPoint(option.rect.bottomRight().x()+1,option.rect.bottomRight().y());
+    painter->drawLine(p1, p2);
+    painter->setPen(oldPen);
+}
+
+ClockTable::ClockTable(QWidget* parent) :
+    QTableWidget(parent)
+{
+    setColumnCount(8);
+    setRowCount(14);
+    setFocusPolicy(Qt::NoFocus);
+    setAlternatingRowColors(true);
+    setStyleSheet("border-radius:0px;"
+        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 100), stop:1 rgba(151, 169, 255, 150));"
+        "alternate-background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 250), stop:1 rgba(151, 169, 255, 200));"
+        "selection-background-color:gray");
+    setShowGrid(false);
+    //horizontalHeader()->setStretchLastSection(true);
+    horizontalHeader()->setDefaultSectionSize(100);
+    //horizontalHeader()->setHighlightSections(false);
+    horizontalHeader()->setStyleSheet("QHeaderView::section{"
+        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 0), stop:1 rgba(151, 169, 255, 100));"
+        "color: black;"
+        //"border-radius:12px"
+        "border-top:0px solid #D8D8D8;"
+        "border-left:0px solid #D8D8D8;"
+        "border-right:0px solid #D8D8D8;"
+        "border-bottom:1px solid #D8D8D8;"
+        "padding:4px;"
+    "}");
+    verticalHeader()->setVisible(false);
+
+    horizontalScrollBar()->setStyleSheet("QScrollBar{background:transparent; height:10px;}"
+        "QScrollBar::handle{background:lightgray; border:2px solid transparent; border-radius:5px;}"
+        "QScrollBar::handle:hover{background:gray;}"
+        "QScrollBar::sub-line{background:transparent;}"
+        "QScrollBar::sub-page{background:transparent;}"
+        "QScrollBar::add-line{background:transparent;}"
+        "QScrollBar::add-page{background:transparent;}");
+    setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    verticalScrollBar()->setStyleSheet("QScrollBar{background:transparent; height:10px;}"
+        "QScrollBar::handle{background:lightgray; border:2px solid transparent; border-radius:5px;}"
+        "QScrollBar::handle:hover{background:gray;}"
+        "QScrollBar::sub-line{background:transparent;}"
+        "QScrollBar::sub-page{background:transparent;}"
+        "QScrollBar::add-line{background:transparent;}"
+        "QScrollBar::add-page{background:transparent;}");
+    setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    //setItemDelegate(new QLineDelegate(this));
+    QStringList header;
+    header<<QString("节次")<<QString("周一")<<QString("周二")<<QString("周三")<<QString("周四")<<QString("周五")<<QString("周六")<<QString("周日");
+    setHorizontalHeaderLabels(header);
+    //setStyleSheet("selection-background-color:pink;border-radius:0px");
+    for(int i = 0; i < 14; i++) setRowHeight(i, 100), Height += 100;
+    for(int i = 0; i < 8; i++) setColumnWidth(i, 140), Width += 140;
+    for(int i = 0; i < 14; i++) {
+        setCellWidget(i, 0, new CellWidget(new viewLog(QString::asprintf("第 %d 节", i + 1))));
+    }
+    resize(Width, Height);
+}
+
+void ClockTable::LoadData() {
+    for(int i = 0; i < 14; i++) {
+        for(int j = 1; j < 8; j++) {
+            TableQuery* nowQuery = new TableQuery(j, i + 1);
+            qDebug() << "QUERY" << j << i;
+            connect(nowQuery, &TableQuery::receive, this, [=](QString message) {
+                setCellWidget(i, j, new CellWidget(new viewLog(message, 5)));
+            });
+        }
+    }
 }

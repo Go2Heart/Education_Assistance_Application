@@ -540,6 +540,16 @@ signals:
     void receive(int x);
 };
 
+class TableQuery : public QObject {
+    Q_OBJECT
+private:
+    TcpConnector* connector = nullptr;
+public:
+    TableQuery(int day, int num);
+signals:
+    void receive(QString x);
+};
+
 
 
 #endif // CONNECT_H

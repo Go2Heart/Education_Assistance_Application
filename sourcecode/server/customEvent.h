@@ -42,9 +42,13 @@ public:
 };
 
 class Lesson;
+class Activity;
 class EventGroup {
-    RbTree<int, Lesson_Student*> idSort;
+    RbTree<int, Lesson_Student*> lessonIdSort;
     RbTree<String, Lesson*> lessonNameSort;
+    RbTree<String, Activity*> activityIdSort;
+    RbTree<String, Activity*> activityNameSort;
+    RbTree<String, Activity*> activityPlaceSort;
 public:
     Vector<Lesson_Student*> lessons;
     Vector<int> activities;
@@ -55,16 +59,18 @@ public:
     void AddActivity(int ActivityId);
     bool VerifyDuration(Vector<Duration> durations);
     Lesson_Student* GetLesson(int lessonId) {
-        Vector<Lesson_Student*> result = idSort.Find(lessonId);
+        Vector<Lesson_Student*> result = lessonIdSort.Find(lessonId);
         if(result.size()) return result[0];
         else return nullptr;
-        /*
-        for(int i = 0; i < lessons.size(); i++)
-            if(lessons[i]->lessonId == lessonId) return lessons[i];
-        return nullptr;
-        */
+    }
+    Activity* GetActivity(int lessonId) {
+        Vector<Activity*> result = activityIdSort.Find(lessonId);
+        if(result.size()) return result[0];
+        else return nullptr;
     }
     Vector<Lesson*> FromLessonName(String name) { return lessonNameSort.Find(name); }
+    Vector<Activity*> FromActivityName(String name) { return activityNameSort.Find(name); }
+    Vector<Activity*> FromActivityPlace(String name) { return activityPlaceSort.Find(name); }
 };
 
 #endif

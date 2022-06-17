@@ -353,23 +353,6 @@ public:
     topButton(QWidget* parent = nullptr);
 };
 
-class QLineDelegate : public QStyledItemDelegate {
-public:
-    QLineDelegate(QTableView* tableView);
-protected:
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-private:
-    QPen pen;
-    QTableView* view;
-};
-
-class ClockTable : public QTableWidget {
-    Q_OBJECT
-private:
-    int Width = 100, Height = 30;
-public:
-    ClockTable(QWidget* parent = nullptr);
-};
 
 
 class foldWidget : public QWidget {

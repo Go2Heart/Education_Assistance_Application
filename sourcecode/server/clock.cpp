@@ -9,7 +9,6 @@ void* func(void* p) {
         usleep(100000 * (1 / timeTracker.Ratio()));
         timeTracker.addTimer();
         graph.UpdGraph(timeTracker.NowTimer());
-        //timeTracker.Print();
     }
 }
 bool ClockStatus = false;

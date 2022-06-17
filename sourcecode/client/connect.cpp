@@ -628,3 +628,16 @@ TimePointQuery::TimePointQuery(Timer t) {
         emit receive(parms[0]->number);
     });
 }
+
+TableQuery::TableQuery(int day, int num) {
+    QVector<Parameter*> paras;
+    paras.push_back(new Parameter(0x23));
+    paras.push_back(new Parameter(studentId));
+    paras.push_back(new Parameter(day));
+    paras.push_back(new Parameter(num));
+    connector = new TcpConnector(paras);
+    connect(connector, &TcpConnector::receive, this, [=](QVariant varValue) {
+        QVector<Parameter*> parms = varValue.value<QVector<Parameter*>>();
+        emit receive(parms[0]->qsMessage);
+    });
+}

@@ -1,4 +1,5 @@
 #include "customWidgets.h"
+#include "graph_view.h"
 
 //*********************************************************//
 //CustomIcon class implementation
@@ -1039,84 +1040,6 @@ topButton::topButton(QWidget* parent) :
 bool topButton::event(QEvent* e) {
     raise();
     return QPushButton::event(e);
-}
-
-QLineDelegate::QLineDelegate(QTableView* tableView)
-{
-    int gridHint = tableView->style()->styleHint(QStyle::SH_Table_GridLineColor, new QStyleOptionViewItem());
-    QColor gridColor = static_cast<QRgb>(gridHint);
-    pen = QPen(gridColor, 0, tableView->gridStyle());
-    view = tableView;
-}
-
-void QLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,const QModelIndex& index)const
-{
-    QStyledItemDelegate::paint(painter, option, index);
-    QPen oldPen = painter->pen();
-    painter->setPen(pen);
-
-    //draw verticalLine
-    //painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
-
-    //draw horizontalLine
-    //painter->drawLine(option.rect.bottomLeft(), option.rect.bottomRight());
-    //above code, line have breakpoint, the following code can solve it well
-
-    QPoint p1 = QPoint(option.rect.bottomLeft().x()-1,option.rect.bottomLeft().y());
-    QPoint p2 = QPoint(option.rect.bottomRight().x()+1,option.rect.bottomRight().y());
-    painter->drawLine(p1, p2);
-    painter->setPen(oldPen);
-}
-
-ClockTable::ClockTable(QWidget* parent) :
-    QTableWidget(parent)
-{
-    setColumnCount(5);
-    setRowCount(5);
-    setFocusPolicy(Qt::NoFocus);
-    setAlternatingRowColors(true);
-    setStyleSheet("border-radius:0px;"
-        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 100), stop:1 rgba(151, 169, 255, 150));"
-        "alternate-background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 250), stop:1 rgba(151, 169, 255, 200));"
-        "selection-background-color:gray");
-    setShowGrid(false);
-    //horizontalHeader()->setStretchLastSection(true);
-    horizontalHeader()->setDefaultSectionSize(100);
-    //horizontalHeader()->setHighlightSections(false);
-    horizontalHeader()->setStyleSheet("QHeaderView::section{"
-        "background-color:qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(151, 169, 255, 0), stop:1 rgba(151, 169, 255, 100));"
-        "color: black;"
-        //"border-radius:12px"
-        "border-top:0px solid #D8D8D8;"
-        "border-left:0px solid #D8D8D8;"
-        "border-right:0px solid #D8D8D8;"
-        "border-bottom:1px solid #D8D8D8;"
-        "padding:4px;"
-    "}");
-    verticalHeader()->setVisible(false);
-
-    horizontalScrollBar()->setStyleSheet("QScrollBar{background:transparent; height:10px;}"
-        "QScrollBar::handle{background:lightgray; border:2px solid transparent; border-radius:5px;}"
-        "QScrollBar::handle:hover{background:gray;}"
-        "QScrollBar::sub-line{background:transparent;}"
-        "QScrollBar::sub-page{background:transparent;}"
-        "QScrollBar::add-line{background:transparent;}"
-        "QScrollBar::add-page{background:transparent;}");
-    setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    //setItemDelegate(new QLineDelegate(this));
-    QStringList header;
-    header<<QString("时间")<<QString("仅一次")<<QString("循环");
-    setHorizontalHeaderLabels(header);
-    //setStyleSheet("selection-background-color:pink;border-radius:0px");
-    for(int i = 0; i < 5; i++) setRowHeight(i, 30), Height += 30;
-    for(int i = 0; i < 5; i++) setColumnWidth(i, 50), Width += 50;
-    setItem(0,0,new QTableWidgetItem("Tom"));
-    //qDebug()<<table->width()<<table->height();
-    resize(Width, Height);
 }
 
 foldWidget::foldWidget(QString name, int h, QVector<bigIconButton*> icons, QWidget* parent) :

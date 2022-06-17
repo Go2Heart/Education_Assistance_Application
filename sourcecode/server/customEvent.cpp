@@ -23,22 +23,25 @@ bool EventGroup::VerifyDuration(Vector<Duration> durations) {
 
 void EventGroup::AddLesson(int lessonId) {
     Lesson* nowLesson = lessonGroup.GetLesson(lessonId);
-    /*if(!VerifyDuration(lessonGroup.GetLesson(lessonId)->ClassDurations()))
-        puts("NO");
-    else {*/
     Lesson_Student* newLesson = new Lesson_Student(lessonId);
     lessons.push_back(newLesson);
     
     lessonNameSort.InsertNode(nowLesson->Name(), nowLesson);
-    idSort.InsertNode(lessonId, newLesson);
-    //}
+    lessonIdSort.InsertNode(lessonId, newLesson);
 }
 
 void EventGroup::AddActivity(int ActivityId) {
-    Vector<Duration> tmpDuration;
-    tmpDuration.push_back(activityGroup.GetActivity(ActivityId)->duration);
-    if(!VerifyDuration(tmpDuration))
-        puts("NO");
-    else
-        activities.push_back(ActivityId);
+    Activity* nowActivity = activityGroup.GetActivity(ActivityId);
+    /*Vector<Duration> tmp;
+    tmp.push_back(nowActivity->duration);
+    if(!VerifyDuration(tmp)) {
+        puts("error input!");
+    } */   
+    activities.push_back(ActivityId);
+    
+    activityNameSort.InsertNode(nowActivity->name, nowActivity);
+    activityPlaceSort.InsertNode(nowActivity->place, nowActivity);
+    activityIdSort.InsertNode(ActivityId, nowActivity);
+    
+    
 }

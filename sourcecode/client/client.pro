@@ -47,7 +47,6 @@ HEADERS += \
     mainwindow.h \
     mycanvas.h \
     slidepage.h \
-    sort.h \
     specifiedWidgets.h \
     teacherpage.h
 

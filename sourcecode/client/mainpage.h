@@ -115,6 +115,7 @@ private:
     SlidePage* userInfo;
     UserInfoWidget* userDetail = nullptr;
     TeacherInfoWidget* teacherDetail = nullptr;
+    ClockTable* newTable = nullptr;
     ActivityPage* activityPage;
     TeacherPage* teacherPage;
     ClassAddPage* classAddPage;

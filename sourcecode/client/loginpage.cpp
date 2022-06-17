@@ -17,8 +17,8 @@ loginPage::loginPage(QWidget *parent) :
         logoLayout->setContentsMargins(0, 0, 0, 0);
         logoLayout->setSpacing(0);
         logoLayout->setAlignment(Qt::AlignCenter);
-        //这里加入logo,使用qpixmap
-        //logoLayout->addItem
+            textItem* logo = new textItem("教 学 云 平 台", "华文行楷", 30, logoWidget);
+            logoLayout->addWidget(logo);
         loginLayout->addWidget(logoWidget);
 
         QWidget* checkWidget = new QWidget(this);

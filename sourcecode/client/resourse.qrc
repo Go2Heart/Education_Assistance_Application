@@ -16,6 +16,10 @@
         <file>icons/teacher.svg</file>
         <file>icons/student-id.svg</file>
         <file>icons/logout.svg</file>
+        <file>icons/addclasspage.svg</file>
+        <file>icons/classpage.svg</file>
+        <file>icons/guidepage.svg</file>
+        <file>icons/activitypage.svg</file>
     </qresource>
     <qresource prefix="/style">
         <file>combostyle.qss</file>

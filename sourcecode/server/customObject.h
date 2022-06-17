@@ -28,11 +28,12 @@ public:
 
 class Lesson {
 private:
-    String classPlace, examPlace, teacher, name, QQnumber;
+    String examPlace, teacher, name, QQnumber;
     Vector<Duration> classDurations;
     Duration examDuration;
 public:
     int lessonId;
+    String classPlace;
     Vector<Homework*> homeworks;
     Vector<Student*> students;
     Vector<File*> files;
@@ -76,6 +77,7 @@ public:
         int id = homeworks.size() - 1;
         for(int i = 0; i < students.size(); i++) {
             students[i]->events->GetLesson(lessonId)->AddHomework(id, homework->desc);
+            students[i]->TriggerMessage("   作业新增： 课程 " + name + " 新增了作业");
         }
     }
     void updateInfo(String name, String teacher, String classPlace, Vector<Duration> classdurations, String QQnumber, Duration examDuration, String examPlace){
@@ -87,10 +89,11 @@ public:
         this->examDuration = examDuration;
         this->examPlace = examPlace;
         for(int i = 0; i < students.size(); i++) {
-            students[i]->TriggerMessage("课程： " + name + " 的课程信息已被教师修改。");
+            students[i]->TriggerMessage("   课程： " + name + " 的课程信息已被教师修改。");
         }
     }
     void AddFile(File* file) {
+        bool find = false;
         if(!hashSort.Find(file->hash).size()) {
             files.push_back(file);
             hashSort.InsertNode(file->hash, file);
@@ -121,11 +124,6 @@ public:
         return lessons[id];
     }
     Vector<Lesson*> FromName(String name) {
-        /*Vector<Lesson*> tmp;
-        for(int i = 0; i < lessons.size(); i++)
-            if(name == lessons[i]->Name())
-                tmp.push_back(lessons[i]);
-        return tmp;*/
         return nameSort.Find(name);
     }
     void WriteToFile(FILE* file);
@@ -139,7 +137,6 @@ public:
     Vector<Student*> students;
     Vector<File*> files;
     int activityId;
-    RbTree<String, File*> hashSort;
     Activity(String place, String name, int type, Duration duration, Vector<Student*> students) :
             place(place),
             name(name),
@@ -151,10 +148,9 @@ public:
         for(int i = 0; i < files.size(); i++) delete(files[i]);
     }
     void AddFile(File* file) {
-        if(!hashSort.Find(file->hash).size()) {
-            files.push_back(file);
-            hashSort.InsertNode(file->hash, file);
-        }
+        bool find = false;
+        for(int i = 0; i < files.size(); i++) if(file->hash == files[i]->hash) find = true;
+        if(!find) files.push_back(file);
     }
 };
 
@@ -173,27 +169,15 @@ public:
         placeSort.InsertNode(activity->place, activity);
         return activities.size() - 1;
     }
-    int GetActivityId(String name) {
-        for(int i = 0; i < activities.size(); i++)
-            if(name == activities[i]->name)
-                return i;
-        return -1;
-    }
     int size() {return activities.size(); }
     Activity* GetActivity(int id) {
         return activities[id];
     }
     Vector<Activity*> FromName(String name) {
         return nameSort.Find(name);
-        /*Vector<Activity*> result;
-        for(int i = 0; i < activities.size(); i++) if(activities[i]->name == name) result.push_back(activities[i]);
-        return result;*/
     }
     Vector<Activity*> FromPlace(String place) {
         return placeSort.Find(place);
-        /*Vector<Activity*> result;
-        for(int i = 0; i < activities.size(); i++) if(activities[i]->name == name) result.push_back(activities[i]);
-        return result;*/
     }
     void WriteToFile(FILE* file);
 };
@@ -249,11 +233,6 @@ public:
         Vector<Alarm*> result = idSort.Find(id);
         if(result.size()) return result[0];
         else return nullptr;
-        /*
-        for(int i = 0; i < alarms.size(); i++) {
-            if(alarms[i]->id == id) return alarms[i];
-        }
-        return nullptr;*/
     }
     int Size() { return alarms.size(); }
     void WriteToFile(FILE* file) {

@@ -14,9 +14,10 @@ UserInfoWidget::UserInfoWidget(QWidget* parent) :
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(7);
-    layout->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    layout->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
     layout->setContentsMargins(10, 10, 0, 0);
         QWidget* line1 = new QWidget(this);
+        line1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QHBoxLayout* layout1 = new QHBoxLayout(line1);
         layout1->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
         layout1->setContentsMargins(0, 0, 0, 0);
@@ -27,22 +28,25 @@ UserInfoWidget::UserInfoWidget(QWidget* parent) :
             layout1->addWidget(identityIcon);
         line1->setFixedHeight(40);
         QWidget* split1 = new QWidget(this);
+        split1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         split1->setStyleSheet("background-color:#ff666666;");
         split1->setFixedHeight(2);
         layout->addWidget(line1);
         layout->addWidget(split1);
 
         QWidget* line2 = new QWidget(this);
+        line2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QHBoxLayout* layout2 = new QHBoxLayout(line2);
         layout2->setAlignment(Qt::AlignBottom|Qt::AlignLeft);
         layout2->setContentsMargins(0, 0, 0, 0);
             bigIconButton* idIcon = new bigIconButton(9, ":/icons/icons/student-id.svg", "", "", 0, 5, line2);
-            textItem* studentId = new textItem(nowStudent.studentNumber, "微软雅黑", 13, this);
+            textItem* studentId = new textItem(nowStudent.studentNumber, "微软雅黑", 13, line2);
             idIcon->setFixedSize(studentId->height(), studentId->height());
             layout2->addWidget(idIcon);
             layout2->addWidget(studentId);
         line2->setFixedHeight(30);
         QWidget* split2 = new QWidget(this);
+        split2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         split2->setStyleSheet("background-color:#ff666666;");
         split2->setFixedHeight(2);
         layout->addWidget(line2);
@@ -57,6 +61,13 @@ UserInfoWidget::UserInfoWidget(QWidget* parent) :
         });
         layout->addWidget(passwdBtn);
     setFixedHeight(300);
+    /*QTimer* t = new QTimer(this);
+    t->setSingleShot(true);
+    t->start(1000);
+    connect(t, &QTimer::timeout, this, [=] {
+        t->start(1000);
+        resize(220, 300);
+    });*/
 }
 
 TeacherInfoWidget::TeacherInfoWidget(QWidget* parent) :
@@ -66,11 +77,12 @@ TeacherInfoWidget::TeacherInfoWidget(QWidget* parent) :
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setSpacing(7);
-    layout->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    layout->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
     layout->setContentsMargins(10, 10, 0, 0);
         QWidget* line1 = new QWidget(this);
         QHBoxLayout* layout1 = new QHBoxLayout(line1);
         layout1->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
+        line1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         layout1->setContentsMargins(0, 0, 0, 0);
             textItem* username = new textItem(nowTeacher.name, "微软雅黑", 15, line1);
             bigIconButton* identityIcon = new bigIconButton(9, ":/icons/icons/teacher.svg", "", "", 0, 5, line1);
@@ -86,15 +98,17 @@ TeacherInfoWidget::TeacherInfoWidget(QWidget* parent) :
 
         QWidget* line2 = new QWidget(this);
         QHBoxLayout* layout2 = new QHBoxLayout(line2);
+        line2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         layout2->setAlignment(Qt::AlignBottom|Qt::AlignLeft);
         layout2->setContentsMargins(0, 0, 0, 0);
             bigIconButton* idIcon = new bigIconButton(9, ":/icons/icons/student-id.svg", "", "", 0, 5, line2);
-            textItem* studentId = new textItem(nowTeacher.teacherNumber, "微软雅黑", 13, this);
-            idIcon->setFixedSize(studentId->height(), studentId->height());
+            textItem* teacherId = new textItem(nowTeacher.teacherNumber, "微软雅黑", 13, line2);
+            idIcon->setFixedSize(teacherId->height(), teacherId->height());
             layout2->addWidget(idIcon);
-            layout2->addWidget(studentId);
+            layout2->addWidget(teacherId);
         line2->setFixedHeight(30);
         QWidget* split2 = new QWidget(this);
+        split2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         split2->setStyleSheet("background-color:#ff666666;");
         split2->setFixedHeight(2);
         layout->addWidget(line2);
@@ -392,16 +406,16 @@ mainPage::mainPage(QWidget* parent) :
             QWidget* spacing = new QWidget(toolbar);
             spacing->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             spacing->setFixedHeight(20);
-            classBtn = new bigIconButton(2, "", "课程", "微软雅黑", 13, cornerRadius, toolbar);
+            classBtn = new bigIconButton(1, ":/icons/icons/classpage.svg", "", "", 0, cornerRadius, toolbar);
             classBtn->setFixedSize(40, 40);
             classBtn->hide();
-            activityBtn = new bigIconButton(2, "", "活动", "微软雅黑", 13, cornerRadius, toolbar);
+            activityBtn = new bigIconButton(1, ":/icons/icons/activitypage.svg", "", "", 0, cornerRadius, toolbar);
             activityBtn->setFixedSize(40, 40);
             activityBtn->hide();
-            guideBtn = new bigIconButton(2, "", "导航", "微软雅黑", 13, cornerRadius, toolbar);
+            guideBtn = new bigIconButton(1, ":/icons/icons/guidepage.svg", "", "", 0, cornerRadius, toolbar);
             guideBtn->setFixedSize(40, 40);
             guideBtn->hide();
-            classAddBtn = new bigIconButton(2, "", "添加课程", "微软雅黑", 10, cornerRadius, toolbar);
+            classAddBtn = new bigIconButton(1, ":/icons/icons/addclasspage.svg", "", "", 0, cornerRadius, toolbar);
             classAddBtn->setFixedSize(40, 40);
             classAddBtn->hide();
             logoutBtn = new bigIconButton(1, ":/icons/icons/logout.svg", "", "", 0, cornerRadius, toolbar);
@@ -444,10 +458,16 @@ mainPage::mainPage(QWidget* parent) :
                     eventLayout->addWidget(clockWidget);
 
                 infoLayout->addWidget(eventWidget);
+                ScrollAreaCustom* classArea = new ScrollAreaCustom(true, displayWidget, false);
+                classArea->setFixedWidth(800);
+                newTable = new ClockTable(classArea);
+                classArea->addWidget(newTable, false);
+                /*
                 QWidget* classTable = new QWidget(displayWidget);
                 classTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                 classTable->setStyleSheet("border:1px solid gray;background-color:green");
-                infoLayout->addWidget(classTable);
+                */
+                infoLayout->addWidget(classArea);
             displayLayout->addWidget(infoWidget);
         displayWidget->hide();
 
@@ -624,12 +644,10 @@ void mainPage::LoadInfo() {
         activityBtn->hide();
         guideBtn->hide();
         userInfo->RemoveContent(userDetail);
-        userDetail->deleteLater();
     } else {
         toolLayout->removeWidget(classAddBtn);
         classAddBtn->hide();
         userInfo->RemoveContent(teacherDetail);
-        teacherDetail->deleteLater();
     }
     lastUserType = type;
     toolLayout->removeWidget(logoutBtn);
@@ -648,6 +666,7 @@ void mainPage::LoadInfo() {
         });
         clockWidget->reloadInfo();
         LoadTriggerInfo();
+        newTable->LoadData();
     } else {
         toolLayout->addWidget(classAddBtn);
         classAddBtn->show();

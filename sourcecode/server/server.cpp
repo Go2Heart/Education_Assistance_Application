@@ -245,7 +245,7 @@ void Server::run() {
                         Vector<File*> fileVector;
                         bool success = true;
                         for(int j = 0, k = 5; j < parms[4].number; j++, k += 2) {
-                            String savePath = "../Lesson/"
+                            String savePath = "HomeWork/"
                             + ToString(parms[1].number) + "/"
                             + ToString(parms[2].number) + "/" 
                             + ToString(parms[3].number) + "/"
@@ -561,7 +561,7 @@ void Server::run() {
                         int type = parms[2].number;
                         switch(type) {
                             case 0: {//活动名称
-                                Vector<Activity*> result = activityGroup.FromName(parms[3].message);
+                                Vector<Activity*> result = nowStudent->events->FromActivityName(parms[3].message);
                                 for(int j = 0; j < result.size(); j++) {
                                     resultParms.push_back(Parameter(result[j]->name, false));
                                     //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
@@ -580,7 +580,7 @@ void Server::run() {
                                 break;
                             }
                             case 1: {//活动地点
-                                Vector<Activity*> result = activityGroup.FromPlace(parms[3].message);
+                                Vector<Activity*> result = nowStudent->events->FromActivityPlace(parms[3].message);
                                 for(int j = 0; j < result.size(); j++) {
                                     resultParms.push_back(Parameter(result[j]->name, false));
                                     //resultParms.push_back(Parameter(lessonGroup.GetLesson[i]->Time(), false));
@@ -618,9 +618,9 @@ void Server::run() {
                                     index++;
                                 }
                                 Timer begin(beginHour, beginMin);
-
-                                for(int j = 0; j < activityGroup.size(); j++) {
-                                    Activity* nowActivity = activityGroup.GetActivity(j);
+                                Vector<int> result = nowStudent->events->activities;
+                                for(int j = 0; j < result.size(); j++) {
+                                    Activity* nowActivity = activityGroup.GetActivity(result[j]);
                                     if(nowActivity->duration.begin.HMLessEqual(begin) &&
                                         begin.HMLessEqual(activityGroup.GetActivity(j)->duration.end)) {
                                         resultParms.push_back(Parameter(nowActivity->name, false));
@@ -970,10 +970,12 @@ void Server::run() {
                         tmpLesson->lessonId = lessonId;
                         for(int j = 0; j < students.size(); j++) {
                             students[j]->events->AddLesson(lessonId);
+                            students[j]->TriggerMessage("   新增课程： 您有一门新增课程 " + parms[3].message);
                         }
                         nowTeacher->AddLesson(lessonId);
                         resultParms.push_back(Parameter("Ack", false));
                         sendAll(i, resultParms, true);
+                        break;
                     }
                     case 0X1D : { //teacher home work query
                         Teacher* nowTeacher = teacherGroup.GetTeacher(parms[1].number);
@@ -1082,6 +1084,34 @@ void Server::run() {
                         } else {
                             resultParms.push_back(Parameter(6666));
                         }
+                        sendAll(i, resultParms, true);
+                        break;
+                    }
+                    case 0x23 : {
+                        Vector<Parameter> resultParms;
+                        EventGroup* events = studentGroup.GetStudent(parms[1].number)->events;
+                        String resultString;
+                        for(int j = 0; j < events->lessons.size(); j++) {
+                            Lesson* nowLesson =  lessonGroup.GetLesson(events->lessons[j]->lessonId);
+                            for(int k = 0; k < nowLesson->ClassDurations().size(); k++) {
+                                Duration td = nowLesson->ClassDurations()[k];
+                                if(td.begin.day == parms[2].number && td.begin.week <= timeTracker.NowTimer().week && timeTracker.NowTimer().week <= td.end.week) {
+                                    if(td.begin.HMLessEqual(beg[parms[3].number]) && beg[parms[3].number].HMLessEqual(td.end)) {
+                                        resultString = nowLesson->Name() + "\n" + ToString(td.begin.week) + "-" + ToString(td.end.week) + "周";
+                                    }
+                                }
+                            }
+                        }
+                        for(int j = 0; j < events->activities.size(); j++) {
+                            Activity* nowActivity = activityGroup.GetActivity(events->activities[j]);
+                            Duration td = nowActivity->duration;
+                            if(td.begin.day == parms[2].number && td.begin.week <= timeTracker.NowTimer().week && timeTracker.NowTimer().week <= td.end.week) {
+                                if(td.begin.HMLessEqual(beg[parms[3].number]) && beg[parms[3].number].HMLessEqual(td.end)) {
+                                    resultString = nowActivity->name + "\n" + ToString(td.begin.week) + "-" + ToString(td.end.week) + "周";
+                                }
+                            }
+                        }
+                        resultParms.push_back(Parameter(resultString, false));
                         sendAll(i, resultParms, true);
                         break;
                     }
