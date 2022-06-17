@@ -44,6 +44,7 @@ public:
         memset(Pos, -1, sizeof(Pos));
     }
     void Push(ClockTimer x) {
+        x.t.Print();
         Obj[Sz] = x;
         Pos[x.originId] = Sz;
         int Cur = Sz;

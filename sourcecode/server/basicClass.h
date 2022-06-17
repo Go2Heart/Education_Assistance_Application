@@ -9,11 +9,11 @@ public:
     /*enum {
         Mon = 1, Tue = 2, Wed = 3, Thu = 4, Fri = 5, Sat = 6, Sun = 7
     };*/
-    Timer(int hour, int minute, int day = 0, int week = 0) :
-        week(week),
-        day(day),
-        hour(hour),
-        minute(minute)
+    Timer(int now_hour, int now_min, int now_day = 0, int now_week = 0) :
+        week(now_week),
+        day(now_day),
+        hour(now_hour),
+        minute(now_min)
     {}
     Timer() {}
     bool operator < (const Timer &t) {

@@ -202,10 +202,12 @@ public:
             if(t < x) return Timer(0, 0, 0, 21);
             else return t;
         } else if(frequency == EVERYDAY) {
-            if(t.HMLess(x)) return Timer(t.hour, t.minute, x.day, x.week) + Timer(0, 0, 1);
-            else return Timer(t.hour, t.minute, x.day, x.minute);
+            if(t.HMLessEqual(x)) return (Timer(t.hour, t.minute, x.day, x.week) + Timer(0, 0, 1));
+            else {
+                return Timer(t.hour, t.minute, x.day, x.week);
+            }
         } else if(frequency == WEEKLY) {
-            if(t.day < x.day || (t.day == x.day && t.HMLess(x))) return Timer(t.hour, t.minute, t.day, x.week) + Timer(0, 0, 0, 1);
+            if(t.day < x.day || (t.day == x.day && t.HMLessEqual(x))) return Timer(t.hour, t.minute, t.day, x.week) + Timer(0, 0, 0, 1);
             else return Timer(t.hour, t.minute, t.day, x.week);
         }
     }
